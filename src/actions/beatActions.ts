@@ -5,7 +5,11 @@ import { GoogleGenAI } from "@google/genai";
 import { Prisma } from "@prisma/client";
 import { prisma } from "@/src/lib/prisma";
 import { LeadMode } from "@/src/lib/leadMode";
-import { type BeatProspect } from "@/src/lib/beatProspects";
+import {
+  type BeatProspect,
+  type ProspectContacts,
+} from "@/src/lib/beatProspects";
+import { CHANNEL_ORDER, type ChannelKey } from "@/src/lib/channels";
 import { calculateArtistScore } from "@/src/lib/scoring";
 
 const SEARCH_MODEL = "gemini-2.5-flash";
@@ -96,27 +100,44 @@ export async function searchBeatProspects(
 function buildSearchPrompt(query: string): string {
   return `Знайди до ${MAX_RESULTS} реальних активних артистів/виконавців, що відповідають цьому опису: "${query}".
 
-Шукай через Google їхні публічні профілі на SoundCloud, YouTube, Instagram, BeatStars, Spotify, TikTok тощо. Пріоритезуй тих, хто:
+Шукай через Google їхні публічні профілі на SoundCloud, YouTube, Instagram, BeatStars, Spotify, TikTok, X (Twitter) тощо. Пріоритезуй тих, хто:
 - Активно випускає музику (релізи за останні 6-12 місяців)
 - Шукає інструментали/біти або співпрацю з продюсерами (підказки в bio: "type beat", "looking for beats", "submit beats", "DMs open for beats", "open to collabs")
-- Має публічні контакти (email або відкритий DM)
+- Має публічні контакти
 
-Поверни ВИКЛЮЧНО валідний JSON-масив без markdown-блоків, без коментарів, без пояснень. Кожен елемент мусить мати точно такі поля:
+ДЛЯ КОЖНОГО АРТИСТА збери МАКСИМУМ контактних каналів. Дивись у bio, link-in-bio (Linktree, beacons.ai), у YouTube About, в описах SoundCloud-треків, у пінованих твітах — там часто перелічені email, Telegram, Discord тощо.
+
+Поверни ВИКЛЮЧНО валідний JSON-масив без markdown-блоків, без коментарів. Кожен елемент мусить мати точно такі поля:
 [
   {
     "handle": "@нік або сценічний нік без @",
     "realName": "реальне імʼя або сценічне імʼя",
     "genre": "жанр / напрямок (1-3 слова)",
-    "platform": "SoundCloud" | "YouTube" | "Instagram" | "BeatStars" | "Spotify" | "TikTok",
-    "followers": число фоловерів/підписників (0 якщо невідомо),
-    "email": "контактний email або null",
+    "platform": "SoundCloud" | "YouTube" | "Instagram" | "BeatStars" | "Spotify" | "TikTok" | "Twitter",
+    "followers": число фоловерів/підписників на основній платформі (0 якщо невідомо),
     "lookingForType": true якщо явно шукає біти/type beats у bio чи постах, інакше false,
-    "profileUrl": "повний https URL профілю на платформі"
+    "profileUrl": "повний https URL основного профілю",
+    "contacts": {
+      "email": "email або null",
+      "phone": "номер телефону у E.164 або null",
+      "website": "URL особистого сайту або null",
+      "instagram": "instagram-нікнейм без @ або повний URL, або null",
+      "soundcloud": "soundcloud-нікнейм або повний URL, або null",
+      "youtube": "youtube-handle (наприклад @kosmo) або URL каналу, або null",
+      "tiktok": "tiktok-нікнейм без @ або URL, або null",
+      "twitter": "X/Twitter-нікнейм без @ або URL, або null",
+      "spotify": "URL артиста на Spotify або null",
+      "beatstars": "URL профілю на BeatStars або null",
+      "telegram": "telegram-нікнейм без @ (напр. luna_beats) або URL t.me/..., або null",
+      "discord": "discord-юзернейм (нова система, напр. luna.beats) або null",
+      "whatsapp": "номер у E.164 (напр. +380501234567) або null"
+    }
   }
 ]
 
 ВАЖЛИВО:
-- Тільки реальні існуючі артисти — НЕ вигадуй імена, нікнейми чи URL.
+- Тільки реальні існуючі артисти — НЕ вигадуй імена, нікнейми чи контакти.
+- Якщо канал не знайдено в публічних джерелах — постав null, НЕ ВИГАДУЙ.
 - Якщо нічого не знайдено — поверни порожній масив [].
 - Не додавай жодного тексту до або після JSON.`;
 }
@@ -166,15 +187,32 @@ function normalizeProspect(x: Record<string, unknown>): BeatProspect | null {
       ? Math.max(0, Math.round(x.followers))
       : 0;
 
-  const email =
-    typeof x.email === "string" && x.email.trim() && x.email !== "null"
-      ? x.email.trim()
-      : null;
-
   const profileUrl =
     typeof x.profileUrl === "string" && x.profileUrl.trim()
       ? x.profileUrl.trim()
       : null;
+
+  const contactsRaw =
+    x.contacts && typeof x.contacts === "object"
+      ? (x.contacts as Record<string, unknown>)
+      : {};
+
+  const contacts: ProspectContacts = {};
+  for (const key of CHANNEL_ORDER) {
+    const raw = contactsRaw[key];
+    if (typeof raw === "string") {
+      const trimmed = raw.trim();
+      if (trimmed && trimmed.toLowerCase() !== "null") {
+        contacts[key] = trimmed;
+      }
+    }
+  }
+
+  // Legacy `email` at top-level → fold into contacts so the UI is unified.
+  if (!contacts.email && typeof x.email === "string") {
+    const e = x.email.trim();
+    if (e && e.toLowerCase() !== "null") contacts.email = e;
+  }
 
   return {
     handle,
@@ -182,9 +220,10 @@ function normalizeProspect(x: Record<string, unknown>): BeatProspect | null {
     genre: typeof x.genre === "string" ? x.genre.trim() : "",
     platform,
     followers,
-    email,
+    email: contacts.email ?? null,
     lookingForType: Boolean(x.lookingForType),
     profileUrl,
+    contacts,
   };
 }
 
@@ -202,6 +241,7 @@ export interface SendBeatMessageInput {
   subject: string;
   body: string;
   demo: DemoMeta | null;
+  channels: ChannelKey[];
 }
 
 export interface SendBeatMessageResult {
@@ -221,7 +261,7 @@ export interface SendBeatMessageResult {
 export async function sendBeatMessage(
   input: SendBeatMessageInput
 ): Promise<SendBeatMessageResult> {
-  const { artist, subject, body, demo } = input;
+  const { artist, subject, body, demo, channels } = input;
 
   if (!artist?.handle) {
     return { success: false, error: "Missing artist data" };
@@ -253,41 +293,48 @@ export async function sendBeatMessage(
         }
       : undefined;
 
+    const socialLinks: Prisma.InputJsonValue | undefined = artist.contacts
+      ? sanitizeContactsForJson(artist.contacts)
+      : undefined;
+
+    const cleanChannels = Array.from(
+      new Set(
+        (channels ?? []).filter((c): c is ChannelKey =>
+          CHANNEL_ORDER.includes(c as ChannelKey)
+        )
+      )
+    );
+
     const result = await prisma.$transaction(async (tx) => {
       const existing = await tx.lead.findFirst({
         where: { mode: LeadMode.BEATS, companyName: artist.handle },
         select: { id: true },
       });
 
+      const leadData = {
+        status: "Contacted",
+        realName: artist.realName,
+        category: artist.genre,
+        source: artist.platform,
+        website: artist.profileUrl,
+        email: artist.email,
+        followers: artist.followers,
+        lookingForType: artist.lookingForType,
+        score,
+      };
+
       const lead = existing
         ? await tx.lead.update({
             where: { id: existing.id },
-            data: {
-              status: "Contacted",
-              realName: artist.realName,
-              category: artist.genre,
-              source: artist.platform,
-              website: artist.profileUrl,
-              email: artist.email,
-              followers: artist.followers,
-              lookingForType: artist.lookingForType,
-              score,
-            },
+            data: socialLinks !== undefined ? { ...leadData, socialLinks } : leadData,
             select: { id: true },
           })
         : await tx.lead.create({
             data: {
               mode: LeadMode.BEATS,
               companyName: artist.handle,
-              realName: artist.realName,
-              category: artist.genre,
-              source: artist.platform,
-              website: artist.profileUrl,
-              email: artist.email,
-              followers: artist.followers,
-              lookingForType: artist.lookingForType,
-              status: "Contacted",
-              score,
+              ...leadData,
+              ...(socialLinks !== undefined ? { socialLinks } : {}),
             },
             select: { id: true },
           });
@@ -299,6 +346,9 @@ export async function sendBeatMessage(
       };
       if (attachment !== undefined) {
         messageData.attachment = attachment;
+      }
+      if (cleanChannels.length > 0) {
+        messageData.channels = cleanChannels as Prisma.InputJsonValue;
       }
       await tx.message.create({ data: messageData });
 
@@ -316,4 +366,17 @@ export async function sendBeatMessage(
       error: error instanceof Error ? error.message : "Не вдалось зберегти лід",
     };
   }
+}
+
+function sanitizeContactsForJson(
+  contacts: ProspectContacts
+): Prisma.InputJsonValue {
+  const out: Record<string, string> = {};
+  for (const key of CHANNEL_ORDER) {
+    const v = contacts[key];
+    if (typeof v === "string" && v.trim()) {
+      out[key] = v.trim();
+    }
+  }
+  return out;
 }

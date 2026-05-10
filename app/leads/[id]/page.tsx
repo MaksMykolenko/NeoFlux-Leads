@@ -10,6 +10,12 @@ import {
   calculateLeadScore,
   getScoreContext,
 } from "@/src/lib/scoring";
+import {
+  CHANNELS,
+  getAvailableChannels,
+  parseContacts,
+  type ChannelKey,
+} from "@/src/lib/channels";
 
 export const dynamic = "force-dynamic";
 
@@ -270,6 +276,7 @@ interface ContactsCardProps {
     source: string | null;
     followers: number | null;
     lookingForType: boolean | null;
+    socialLinks: unknown;
   };
   isBeats: boolean;
 }
@@ -281,9 +288,24 @@ function fmtFollowers(n: number): string {
 
 function ContactsCard({ lead, isBeats }: ContactsCardProps) {
   if (isBeats) {
+    // Unify any legacy top-level email into the social-links blob so
+    // `getAvailableChannels` returns it alongside Instagram/Telegram/etc.
+    const parsedContacts = parseContacts(lead.socialLinks) ?? {};
+    if (lead.email && !parsedContacts.email) parsedContacts.email = lead.email;
+    if (lead.phone && !parsedContacts.phone) parsedContacts.phone = lead.phone;
+    const channels = getAvailableChannels(parsedContacts);
+
     return (
       <section className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-        <h2 className="text-base font-semibold text-gray-900">Контакти</h2>
+        <div className="flex items-start justify-between gap-3">
+          <h2 className="text-base font-semibold text-gray-900">Контакти</h2>
+          {channels.length > 0 && (
+            <span className="inline-flex items-center rounded-full bg-gray-100 px-2.5 py-0.5 text-xs font-medium text-gray-600">
+              {channels.length} {channels.length === 1 ? "канал" : "канали"}
+            </span>
+          )}
+        </div>
+
         <dl className="mt-4 divide-y divide-gray-100 text-sm">
           <ContactRow label="Реальне імʼя" value={lead.realName} />
           <ContactRow label="Жанр" value={lead.category} />
@@ -310,29 +332,36 @@ function ContactsCard({ lead, isBeats }: ContactsCardProps) {
               <span className="text-gray-500">Не шукає публічно</span>
             )}
           </ContactRow>
-          <ContactRow label="Профіль" value={lead.website}>
-            {lead.website && (
-              <a
-                href={lead.website}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-blue-600 hover:text-blue-800 hover:underline transition-colors"
-              >
-                {stripProtocol(lead.website)}
-              </a>
-            )}
-          </ContactRow>
-          <ContactRow label="Email" value={lead.email}>
-            {lead.email && (
-              <a
-                href={`mailto:${lead.email}`}
-                className="text-blue-600 hover:text-blue-800 hover:underline transition-colors"
-              >
-                {lead.email}
-              </a>
-            )}
-          </ContactRow>
         </dl>
+
+        {channels.length > 0 ? (
+          <div className="mt-5 border-t border-gray-100 pt-5">
+            <h3 className="text-xs font-semibold uppercase tracking-wider text-gray-500 mb-3">
+              Канали зв&apos;язку
+            </h3>
+            <div className="grid gap-2 sm:grid-cols-2">
+              {channels.map(({ def, value }) => (
+                <a
+                  key={def.key}
+                  href={def.buildHref(value)}
+                  target={def.key === "phone" || def.key === "email" ? undefined : "_blank"}
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-2 rounded-md border border-gray-200 bg-white px-3 py-2 text-xs transition-colors hover:border-gray-300 hover:bg-gray-50"
+                >
+                  <def.Icon className="w-3.5 h-3.5 flex-shrink-0 text-gray-500" />
+                  <span className="font-medium text-gray-900 flex-shrink-0">
+                    {def.label}
+                  </span>
+                  <span className="text-gray-500 truncate">{value}</span>
+                </a>
+              ))}
+            </div>
+          </div>
+        ) : (
+          <p className="mt-5 border-t border-gray-100 pt-5 text-sm text-gray-400">
+            Каналів зв&apos;язку не знайдено.
+          </p>
+        )}
       </section>
     );
   }
@@ -573,6 +602,14 @@ interface MessageItem {
   sentAt: Date;
   replyStatus: string;
   attachment: unknown;
+  channels: unknown;
+}
+
+function asChannels(value: unknown): ChannelKey[] {
+  if (!Array.isArray(value)) return [];
+  return value.filter(
+    (k): k is ChannelKey => typeof k === "string" && k in CHANNELS
+  );
 }
 
 function fmtBytes(b: number): string {
@@ -676,6 +713,7 @@ function MessageHistoryFeed({ messages }: { messages: MessageItem[] }) {
             <div className="border-t border-gray-100 bg-gray-50 px-4 py-3 text-sm leading-relaxed text-gray-700 whitespace-pre-wrap">
               {msg.body}
               <MessageAttachmentBadge attachment={asAttachment(msg.attachment)} />
+              <MessageChannelsBadge channels={asChannels(msg.channels)} />
             </div>
           </details>
         ))}
@@ -707,6 +745,29 @@ function MessageAttachmentBadge({
         {attachment.name}
       </span>
       {meta && <span className="text-violet-700/70">· {meta}</span>}
+    </div>
+  );
+}
+
+function MessageChannelsBadge({ channels }: { channels: ChannelKey[] }) {
+  if (channels.length === 0) return null;
+  return (
+    <div className="mt-3 flex flex-wrap items-center gap-1.5 not-prose">
+      <span className="text-[10px] uppercase tracking-wider text-gray-500">
+        Надіслано через:
+      </span>
+      {channels.map((key) => {
+        const def = CHANNELS[key];
+        return (
+          <span
+            key={key}
+            className="inline-flex items-center gap-1 rounded-md bg-blue-50 px-1.5 py-0.5 text-[10px] font-medium text-blue-700 ring-1 ring-inset ring-blue-200"
+          >
+            <def.Icon className="w-3 h-3" />
+            {def.label}
+          </span>
+        );
+      })}
     </div>
   );
 }

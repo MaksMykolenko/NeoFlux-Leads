@@ -17,6 +17,11 @@ import {
   type DemoMeta,
 } from "@/src/actions/beatActions";
 import type { BeatProspect } from "@/src/lib/beatProspects";
+import {
+  CHANNELS,
+  getAvailableChannels,
+  type ChannelKey,
+} from "@/src/lib/channels";
 
 interface DemoState {
   name: string;
@@ -345,6 +350,8 @@ interface ArtistCardProps {
 }
 
 function ArtistCard({ artist, selected, onToggle }: ArtistCardProps) {
+  const available = getAvailableChannels(artist.contacts);
+
   return (
     <button
       type="button"
@@ -376,12 +383,6 @@ function ArtistCard({ artist, selected, onToggle }: ArtistCardProps) {
             <span className="tabular-nums">
               {fmtFollowers(artist.followers)} фоловерів
             </span>
-            {artist.email && (
-              <>
-                <span className="text-gray-300">·</span>
-                <span className="text-gray-700 truncate">{artist.email}</span>
-              </>
-            )}
           </div>
         </div>
         <span
@@ -394,9 +395,23 @@ function ArtistCard({ artist, selected, onToggle }: ArtistCardProps) {
           {selected && <CheckIcon className="w-3.5 h-3.5" />}
         </span>
       </div>
-      {!artist.email && (
+
+      {available.length > 0 ? (
+        <div className="mt-3 flex flex-wrap items-center gap-1.5">
+          {available.map(({ def, value }) => (
+            <span
+              key={def.key}
+              title={`${def.label}: ${value}`}
+              className="inline-flex items-center gap-1 rounded-md bg-gray-100 px-1.5 py-0.5 text-[10px] font-medium text-gray-700"
+            >
+              <def.Icon className="w-3 h-3" />
+              {def.label}
+            </span>
+          ))}
+        </div>
+      ) : (
         <p className="mt-2 text-[11px] text-amber-700">
-          ⚠ Без публічного email — потрібно буде писати в DM на платформі.
+          ⚠ Контакти не знайдено — спробуй інший запит.
         </p>
       )}
     </button>
@@ -889,12 +904,20 @@ function MessageReview({
   );
   const [body, setBody] = useState(initialBody);
   const [generating, startGenerate] = useTransition();
-  const [sending, startSend] = useTransition();
-  const [sent, setSent] = useState(false);
+  const [saving, startSave] = useTransition();
+  const [saved, setSaved] = useState(false);
   const [copied, setCopied] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [openedChannels, setOpenedChannels] = useState<Set<ChannelKey>>(
+    () => new Set()
+  );
 
-  const isSent = sent || forceSent;
+  const available = useMemo(
+    () => getAvailableChannels(artist.contacts),
+    [artist.contacts]
+  );
+
+  const isSaved = saved || forceSent;
 
   function handleRegenerate() {
     setError(null);
@@ -923,17 +946,38 @@ function MessageReview({
     });
   }
 
-  async function handleCopy() {
+  async function copyMessageToClipboard() {
     try {
       await navigator.clipboard.writeText(`${subject}\n\n${body}`);
       setCopied(true);
       setTimeout(() => setCopied(false), 1500);
+      return true;
     } catch {
-      setError("Не вдалось скопіювати");
+      setError("Не вдалось скопіювати — можливо браузер блокує clipboard.");
+      return false;
     }
   }
 
-  function handleSend() {
+  async function handleOpenChannel(key: ChannelKey, value: string) {
+    setError(null);
+    const def = CHANNELS[key];
+    const href = def.buildHref(value, { subject, body });
+
+    // Copy first so the user can paste even into platforms that don't
+    // support a URL prefill (Instagram, SoundCloud, BeatStars, etc.).
+    if (!def.prefillsMessage) {
+      await copyMessageToClipboard();
+    }
+
+    window.open(href, "_blank", "noopener,noreferrer");
+    setOpenedChannels((s) => {
+      const next = new Set(s);
+      next.add(key);
+      return next;
+    });
+  }
+
+  function handleSaveToCrm() {
     setError(null);
     const demoMeta: DemoMeta = {
       name: demo.name,
@@ -943,15 +987,16 @@ function MessageReview({
       genre: demo.genre || null,
       price: demo.price || null,
     };
-    startSend(async () => {
+    startSave(async () => {
       const res = await sendBeatMessage({
         artist,
         subject,
         body,
         demo: demoMeta,
+        channels: Array.from(openedChannels),
       });
       if (res.success) {
-        setSent(true);
+        setSaved(true);
         onSent();
       } else {
         setError(res.error ?? "Не вдалось зберегти");
@@ -959,18 +1004,20 @@ function MessageReview({
     });
   }
 
+  const openedCount = openedChannels.size;
+
   return (
     <div className="rounded-lg border border-gray-200 bg-white">
       <div className="flex items-center justify-between gap-3 px-4 py-3 border-b border-gray-100 bg-gray-50/60">
         <div>
           <p className="text-sm font-semibold text-gray-900">{artist.handle}</p>
           <p className="text-xs text-gray-500">
-            {artist.email
-              ? `Лист на ${artist.email}`
-              : `DM на ${artist.platform}`}
+            {available.length > 0
+              ? `${available.length} каналів зв'язку доступно`
+              : `Нема публічних контактів — потрібен ручний DM на ${artist.platform}`}
           </p>
         </div>
-        {!isSent && (
+        {!isSaved && (
           <button
             type="button"
             onClick={onRemove}
@@ -981,7 +1028,7 @@ function MessageReview({
         )}
       </div>
 
-      {isSent ? (
+      {isSaved ? (
         <div className="flex items-center gap-3 px-4 py-6">
           <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-green-100 text-green-700">
             <CheckIcon className="w-5 h-5" />
@@ -989,7 +1036,17 @@ function MessageReview({
           <div>
             <p className="text-sm font-semibold text-gray-900">Збережено</p>
             <p className="text-xs text-gray-500">
-              Лід додано в історію зі статусом Contacted.
+              Лід додано в CRM зі статусом Contacted
+              {openedCount > 0 && (
+                <>
+                  {" "}
+                  · надіслано через{" "}
+                  {Array.from(openedChannels)
+                    .map((k) => CHANNELS[k].label)
+                    .join(", ")}
+                </>
+              )}
+              .
             </p>
           </div>
         </div>
@@ -1012,11 +1069,12 @@ function MessageReview({
             </label>
             <textarea
               value={body}
-              rows={10}
+              rows={9}
               onChange={(e) => setBody(e.target.value)}
               className="block w-full resize-y rounded-md border border-gray-200 bg-gray-50 px-3 py-2 text-sm leading-relaxed focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
+
           {demo && (
             <div className="flex items-center gap-2 rounded-md border border-violet-200 bg-violet-50 px-3 py-2 text-xs">
               <span className="text-violet-700">♪</span>
@@ -1028,48 +1086,117 @@ function MessageReview({
               </span>
             </div>
           )}
-          <div className="flex flex-wrap items-center justify-between gap-2 pt-1">
-            <div className="flex items-center gap-2">
-              <button
-                type="button"
-                onClick={handleRegenerate}
-                disabled={generating || sending}
-                className="inline-flex items-center gap-1.5 rounded-md bg-gradient-to-r from-violet-600 to-blue-600 px-3 py-1.5 text-xs font-medium text-white shadow-sm hover:from-violet-700 hover:to-blue-700 transition-all disabled:opacity-60 disabled:cursor-wait"
-              >
-                {generating ? (
-                  <Spinner className="w-3 h-3" />
-                ) : (
-                  <SparkleIcon className="w-3 h-3" />
-                )}
-                {generating ? "Генерую…" : "Перегенерувати (AI)"}
-              </button>
-              <button
-                type="button"
-                onClick={handleCopy}
-                className={`inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium ring-1 ring-inset transition-colors ${
-                  copied
-                    ? "bg-green-50 text-green-700 ring-green-200"
-                    : "bg-gray-50 text-gray-700 ring-gray-200 hover:bg-gray-100"
-                }`}
-              >
-                {copied ? (
-                  <CheckIcon className="w-3.5 h-3.5" />
-                ) : (
-                  <ClipboardIcon className="w-3.5 h-3.5" />
-                )}
-                {copied ? "Скопійовано" : "Копіювати"}
-              </button>
-            </div>
+
+          <div className="flex flex-wrap items-center gap-2 pt-1">
             <button
               type="button"
-              onClick={handleSend}
-              disabled={sending || !subject.trim() || !body.trim()}
-              className="inline-flex items-center justify-center gap-2 rounded-lg bg-blue-600 px-6 py-2.5 text-sm font-medium text-white shadow-sm transition-colors hover:bg-blue-700 disabled:bg-blue-300 disabled:cursor-not-allowed"
+              onClick={handleRegenerate}
+              disabled={generating || saving}
+              className="inline-flex items-center gap-1.5 rounded-md bg-gradient-to-r from-violet-600 to-blue-600 px-3 py-1.5 text-xs font-medium text-white shadow-sm hover:from-violet-700 hover:to-blue-700 transition-all disabled:opacity-60 disabled:cursor-wait"
             >
-              {sending && <Spinner className="h-4 w-4" />}
-              <span>{sending ? "Зберігаю…" : "Надіслати"}</span>
+              {generating ? (
+                <Spinner className="w-3 h-3" />
+              ) : (
+                <SparkleIcon className="w-3 h-3" />
+              )}
+              {generating ? "Генерую…" : "Перегенерувати (AI)"}
+            </button>
+            <button
+              type="button"
+              onClick={copyMessageToClipboard}
+              className={`inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium ring-1 ring-inset transition-colors ${
+                copied
+                  ? "bg-green-50 text-green-700 ring-green-200"
+                  : "bg-gray-50 text-gray-700 ring-gray-200 hover:bg-gray-100"
+              }`}
+            >
+              {copied ? (
+                <CheckIcon className="w-3.5 h-3.5" />
+              ) : (
+                <ClipboardIcon className="w-3.5 h-3.5" />
+              )}
+              {copied ? "Скопійовано" : "Копіювати"}
             </button>
           </div>
+
+          {available.length > 0 && (
+            <div className="space-y-2 pt-2 border-t border-gray-100">
+              <div className="flex items-center justify-between">
+                <p className="text-[10px] uppercase tracking-wider text-gray-500">
+                  Канали зв&apos;язку
+                </p>
+                <p className="text-[10px] text-gray-400">
+                  {openedCount > 0
+                    ? `${openedCount} відкрито`
+                    : "Натисніть, щоб відкрити месенджер"}
+                </p>
+              </div>
+              <div className="grid gap-1.5 sm:grid-cols-2">
+                {available.map(({ def, value }) => {
+                  const opened = openedChannels.has(def.key);
+                  return (
+                    <button
+                      key={def.key}
+                      type="button"
+                      onClick={() => handleOpenChannel(def.key, value)}
+                      disabled={!subject.trim() || !body.trim()}
+                      title={`${def.label}: ${value}\n${def.hint}`}
+                      className={`flex items-center justify-between gap-2 rounded-md border px-3 py-2 text-xs transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${
+                        opened
+                          ? "border-green-200 bg-green-50 text-green-800 hover:bg-green-100"
+                          : "border-gray-200 bg-white text-gray-700 hover:border-gray-300 hover:bg-gray-50"
+                      }`}
+                    >
+                      <span className="flex items-center gap-2 min-w-0">
+                        <def.Icon className="w-3.5 h-3.5 flex-shrink-0" />
+                        <span className="font-medium">{def.label}</span>
+                        <span className="text-gray-400 truncate">
+                          {value.length > 24 ? `${value.slice(0, 24)}…` : value}
+                        </span>
+                      </span>
+                      {opened ? (
+                        <CheckIcon className="w-3.5 h-3.5 flex-shrink-0" />
+                      ) : (
+                        <span className="text-[10px] font-medium text-blue-600 whitespace-nowrap">
+                          Відкрити
+                        </span>
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+              <p className="text-[11px] text-gray-400">
+                Платформи без URL-prefill (Instagram, SoundCloud, etc.) —
+                повідомлення скопіюється в буфер автоматично, вставте в
+                месенджері.
+              </p>
+            </div>
+          )}
+
+          <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-gray-100">
+            <p className="text-[11px] text-gray-500">
+              {openedCount === 0
+                ? "Відкрийте хоча б один канал, щоб зберегти лід у CRM."
+                : `Готово — фіксуємо ${openedCount} ${
+                    openedCount === 1 ? "канал" : "канали"
+                  } у CRM.`}
+            </p>
+            <button
+              type="button"
+              onClick={handleSaveToCrm}
+              disabled={
+                saving ||
+                openedCount === 0 ||
+                !subject.trim() ||
+                !body.trim()
+              }
+              className="inline-flex items-center justify-center gap-2 rounded-lg bg-blue-600 px-6 py-2.5 text-sm font-medium text-white shadow-sm transition-colors hover:bg-blue-700 disabled:bg-blue-300 disabled:cursor-not-allowed"
+            >
+              {saving && <Spinner className="h-4 w-4" />}
+              <span>{saving ? "Зберігаю…" : "Зберегти в CRM"}</span>
+            </button>
+          </div>
+
           {error && (
             <p className="text-xs font-medium text-red-600">{error}</p>
           )}

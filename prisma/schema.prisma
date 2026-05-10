@@ -28,6 +28,7 @@ model Lead {
   source          String?  // LOCAL: "Google Maps". BEATS: "SoundCloud" / "YouTube" / "Instagram"
   followers       Int?     // BEATS-only audience size
   lookingForType  Boolean? // BEATS-only — is the artist publicly seeking type beats?
+  socialLinks     Json?    // BEATS-only: { instagram, soundcloud, youtube, tiktok, twitter, spotify, beatstars, discord, telegram, website }
   score           Int      @default(0) // Opportunity Scoring (0-100)
   status          String   @default("New") // New, Qualified, Contacted, Replied, Won, Lost
   notes           String?  @db.Text
@@ -71,6 +72,7 @@ model Message {
   sentAt      DateTime @default(now())
   replyStatus String   @default("No Reply") // No Reply, Replied, Bounced
   attachment  Json?    // BEATS-only: { name, bytes, bpm, keySig, genre, price }
+  channels    Json?    // BEATS-only outreach: ["email", "instagram", "telegram", ...] — channels the user actually opened to send through
 
   // Зв'язки
   lead        Lead     @relation(fields: [leadId], references: [id], onDelete: Cascade)

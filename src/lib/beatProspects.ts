@@ -17,4 +17,33 @@ export interface BeatProspect {
   email: string | null;
   lookingForType: boolean;
   profileUrl: string | null;
+  contacts: ProspectContacts;
+}
+
+/**
+ * All contact channels the model could discover for a single artist.
+ *
+ * Every field is optional and stores either:
+ *   - a full URL (e.g. SoundCloud / YouTube profile),
+ *   - a `@handle` or username (Instagram, TikTok, Twitter, Discord, Telegram),
+ *   - or a raw value (email, phone).
+ *
+ * The `channels` lib normalizes these into clickable deep links at render time.
+ */
+export interface ProspectContacts {
+  email?: string | null;
+  phone?: string | null;
+  website?: string | null;
+
+  instagram?: string | null;
+  soundcloud?: string | null;
+  youtube?: string | null;
+  tiktok?: string | null;
+  twitter?: string | null;
+  spotify?: string | null;
+  beatstars?: string | null;
+
+  telegram?: string | null;
+  discord?: string | null;
+  whatsapp?: string | null;
 }
