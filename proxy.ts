@@ -4,13 +4,15 @@ const SESSION_COOKIE = "neoflux_session";
 const LOGIN_PATH = "/login";
 
 /**
- * Edge-level guard: redirects unauthenticated visitors to /login and bounces
- * already-logged-in users away from /login back to home.
+ * Edge-level guard: visitors without a session cookie are sent to /login.
  *
- * This is a lightweight check — only the cookie's presence is verified here.
- * The DB-backed validity check happens inside server components via
- * `requireUser()` / `getCurrentUser()`. That two-layer approach keeps cold
- * navigation snappy while preventing forged cookies from rendering data.
+ * We intentionally do NOT redirect /login → / when a cookie exists: the
+ * cookie is only a hint here; validity is checked in `getCurrentUser()` via
+ * Prisma. A stale or forged non-empty cookie would otherwise ping-pong with
+ * `requireUser()` redirecting to /login (ERR_TOO_MANY_REDIRECTS).
+ *
+ * Logged-in users on /login are bounced to / by `app/login/page.tsx` after a
+ * real session lookup.
  *
  * `/admin/*` gets the same cookie-presence gate here (so unauthenticated
  * traffic can't even reach the layout), and a real RBAC check runs in
@@ -21,10 +23,6 @@ const LOGIN_PATH = "/login";
 export default function proxy(req: NextRequest) {
   const { pathname } = req.nextUrl;
   const hasSession = !!req.cookies.get(SESSION_COOKIE)?.value;
-
-  if (hasSession && pathname === LOGIN_PATH) {
-    return NextResponse.redirect(new URL("/", req.url));
-  }
 
   if (!hasSession && pathname !== LOGIN_PATH) {
     const loginUrl = new URL(LOGIN_PATH, req.url);
