@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { prisma } from "@/src/lib/prisma";
 import { LeadMode } from "@/src/lib/leadMode";
+import { requireUser } from "@/src/lib/session";
 import AuditButton from "@/src/components/AuditButton";
 import StatusPicker from "@/src/components/StatusPicker";
 import AIProposalGenerator from "@/src/components/AIProposalGenerator";
@@ -47,6 +48,8 @@ export default async function LeadDetailPage({
 }: {
   params: Promise<{ id: string }>;
 }) {
+  await requireUser();
+
   const { id } = await params;
 
   const lead = await prisma.lead.findUnique({

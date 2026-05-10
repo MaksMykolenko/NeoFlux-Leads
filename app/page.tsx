@@ -2,6 +2,7 @@ import { Suspense } from "react";
 import type { Prisma } from "@prisma/client";
 import { prisma } from "@/src/lib/prisma";
 import { LeadMode, modeFromQuery, modeKeyFromMode } from "@/src/lib/leadMode";
+import { requireUser } from "@/src/lib/session";
 import ScraperForm from "@/src/components/ScraperForm";
 import BeatOutreach from "@/src/components/BeatOutreach";
 import BrandMark from "@/src/components/BrandMark";
@@ -17,6 +18,8 @@ export default async function Home({
 }: {
   searchParams: Promise<{ mode?: string | string[] }>;
 }) {
+  await requireUser();
+
   const params = await searchParams;
   const mode = modeFromQuery(params.mode);
   const isBeats = mode === LeadMode.BEATS;

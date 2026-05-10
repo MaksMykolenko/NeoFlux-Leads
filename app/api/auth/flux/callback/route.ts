@@ -13,7 +13,7 @@ export const dynamic = "force-dynamic";
 const STATE_COOKIE = "neoflux_oauth_state";
 
 function errorRedirect(req: NextRequest, code: string, detail?: string): NextResponse {
-  const url = new URL("/", req.url);
+  const url = new URL("/login", req.url);
   url.searchParams.set("auth_error", code);
   if (detail) url.searchParams.set("auth_error_detail", detail);
   const res = NextResponse.redirect(url, 302);

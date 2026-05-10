@@ -1,5 +1,6 @@
 import { createHash, randomBytes } from "node:crypto";
 import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
 import type { User } from "@prisma/client";
 import { prisma } from "@/src/lib/prisma";
 
@@ -42,6 +43,16 @@ export async function createSession({ userId, userAgent, ip }: CreateSessionInpu
 
 export async function destroySessionByToken(token: string): Promise<void> {
   await prisma.session.deleteMany({ where: { tokenHash: hashToken(token) } });
+}
+
+/**
+ * Захищає server-component сторінку: повертає юзера або робить redirect("/login").
+ * Це другий рівень захисту після middleware (на випадок підробленого cookie).
+ */
+export async function requireUser(): Promise<User> {
+  const user = await getCurrentUser();
+  if (!user) redirect("/login");
+  return user;
 }
 
 export async function getCurrentUser(): Promise<User | null> {

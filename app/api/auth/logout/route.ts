@@ -17,8 +17,8 @@ export async function POST(req: NextRequest) {
     }
   }
 
-  const home = new URL("/", req.url);
-  const response = NextResponse.redirect(home, 303);
+  const login = new URL("/login", req.url);
+  const response = NextResponse.redirect(login, 303);
   response.cookies.set(buildClearedSessionCookie());
   return response;
 }
