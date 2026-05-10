@@ -86,6 +86,34 @@ const messages = {
       Lost: "Lost",
     },
   },
+  CsvUploader: {
+    title: "CSV import",
+    subtitle:
+      "Upload your own list — leads land in UNIVERSAL mode without scraping.",
+    dropOrClick: "Drag a CSV here or click to choose a file",
+    expectedColumns: "Expected columns: companyName, website, email, phone, notes",
+    parsing: "Parsing file...",
+    importing: "Importing...",
+    imported: "Imported {imported} (skipped {skipped})",
+    importFailed: "Import failed",
+    parseError: "Parse error",
+    notCsv: "File must be .csv",
+    noRows: "No valid rows in file",
+  },
+  LeadsTableSection: {
+    selected: "Selected: {count}",
+    selectAll: "Select all",
+    clear: "Clear",
+    auditSelected: "Audit selected",
+    changeStatus: "Change status…",
+    delete: "Delete",
+    confirmDelete:
+      "Permanently delete {count} leads? Related audits and messages will also be removed.",
+    auditDone: "Audit done: {ok} of {total}",
+    statusChanged: "Status updated for {count} leads → {status}",
+    deleted: "Deleted {count} leads",
+    genericError: "Operation failed",
+  },
   LeadTableRow: {
     noLink: "None",
     followers: "{count} followers",
@@ -373,6 +401,17 @@ const messages = {
     subjectPlaceholder: "Proposal for {company}",
     generatingShort: "Generating…",
     savedBannerIntro: "Message saved; lead status set to",
+    rewriteLabel: "Rewrite as:",
+    rewrite: {
+      shorter: "Shorter",
+      friendlier: "Friendlier tone",
+      formal: "Formal tone",
+    },
+    rewriteErr: "Failed to rewrite",
+    sequenceCta: "Generate sequence",
+    sequenceTitle:
+      "Create a 3-step sequence: Pitch / Follow-up / Break-up",
+    sequenceErr: "Failed to generate sequence",
   },
   OnboardingTour: {
     progressText: "{{current}} of {{total}}",

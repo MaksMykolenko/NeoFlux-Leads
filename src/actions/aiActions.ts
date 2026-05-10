@@ -371,3 +371,256 @@ export async function generateBeatProposal(
     };
   }
 }
+
+// ─────────────────────────────────────────────────────────────────────────
+// AI Re-writer — швидке редагування тону вже згенерованого листа.
+// ─────────────────────────────────────────────────────────────────────────
+
+export type RewriteInstruction = "shorter" | "friendlier" | "formal";
+
+const REWRITE_RULES: Record<RewriteInstruction, string> = {
+  shorter:
+    "Скороти текст до 3-4 коротких речень. Прибери преамбулу і повтори, залиш тільки суть і call-to-action.",
+  friendlier:
+    "Зроби тон дружнім, по-людськи, на рівні peer-to-peer. Без панібратства й емодзі — просто менш формально.",
+  formal:
+    "Підвищи формальність. Звертайся на «Ви», структуровано, з чіткою діловою лексикою. Без сленгу.",
+};
+
+const REWRITE_SYSTEM = `Ти редактор холодних B2B-листів. Перепиши вхідний текст за заданим правилом.
+ЗБЕРЕЖИ: фактичні згадки про компанію, місто, нішу, конкретні знахідки з аудиту, посилання, ціни.
+ЗМІНИ: тільки тон/довжину/формальність відповідно до інструкції.
+Без емодзі. Без markdown. Без преамбули від себе. Виведи ВИКЛЮЧНО переписаний текст.`;
+
+export async function rewriteProposal(
+  currentText: string,
+  instruction: RewriteInstruction,
+): Promise<ProposalResult> {
+  const apiKey = process.env.GEMINI_API_KEY;
+  if (!apiKey) {
+    return {
+      success: false,
+      error: "GEMINI_API_KEY не налаштовано",
+    };
+  }
+
+  const trimmed = currentText?.trim();
+  if (!trimmed) return { success: false, error: "Текст порожній" };
+
+  const rule = REWRITE_RULES[instruction];
+  if (!rule) {
+    return { success: false, error: `Невалідна інструкція: ${instruction}` };
+  }
+
+  const user = await getCurrentUser();
+  if (!user) return { success: false, error: "Не авторизовано" };
+
+  const userPrompt = `Правило: ${rule}\n\nТекст:\n${trimmed}`;
+
+  try {
+    const ai = new GoogleGenAI({ apiKey });
+    let lastError: unknown;
+    for (const model of MODELS) {
+      try {
+        const response = await ai.models.generateContent({
+          model,
+          contents: userPrompt,
+          config: {
+            systemInstruction: REWRITE_SYSTEM,
+            temperature: 0.6,
+            maxOutputTokens: 800,
+          },
+        });
+        const text = response.text?.trim();
+        if (!text) return { success: false, error: "AI не повернув тексту" };
+        return { success: true, text };
+      } catch (err) {
+        lastError = err;
+        const msg = err instanceof Error ? err.message : String(err);
+        if (
+          !msg.includes("503") &&
+          !msg.includes("UNAVAILABLE") &&
+          !msg.includes("high demand")
+        ) {
+          break;
+        }
+        console.warn(`[AI rewrite] ${model} unavailable, trying next...`);
+      }
+    }
+    return {
+      success: false,
+      error:
+        lastError instanceof Error ? lastError.message : "Failed to rewrite",
+    };
+  } catch (error) {
+    console.error("rewriteProposal error:", error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "Failed to rewrite",
+    };
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────
+// Email sequence — 3-step ланцюжок (Pitch → Follow-up → Break-up)
+// ─────────────────────────────────────────────────────────────────────────
+
+export interface SequenceStep {
+  step: 1 | 2 | 3;
+  label: "Pitch" | "Follow-up" | "Break-up";
+  subject: string;
+  body: string;
+}
+
+export interface SequenceResult {
+  success: boolean;
+  steps?: SequenceStep[];
+  error?: string;
+}
+
+const SEQUENCE_SYSTEM = `Ти B2B-продажник веб-розробки агенції NeoFlux.
+Створюєш ланцюжок із 3 листів українською для холодного outreach.
+
+Лист 1 — Pitch (перший дотик): представляє цінність, згадує конкретну знахідку.
+Лист 2 — Follow-up (через 4 дні після Pitch): нагадування + новий ракурс або кейс.
+Лист 3 — Break-up (через 7 днів): «останній лист», прощання + soft CTA.
+
+Стиль: професійний, дружній, без шаблонів. Без емодзі. Без markdown.
+
+ВАЖЛИВО: виведи ВИКЛЮЧНО валідний JSON-масив, без markdown-блоків, без коментарів.
+Точна структура:
+[
+  { "step": 1, "subject": "...", "body": "..." },
+  { "step": 2, "subject": "...", "body": "..." },
+  { "step": 3, "subject": "...", "body": "..." }
+]`;
+
+const STEP_LABELS = ["Pitch", "Follow-up", "Break-up"] as const;
+
+export async function generateSequence(
+  leadId: string,
+): Promise<SequenceResult> {
+  const apiKey = process.env.GEMINI_API_KEY;
+  if (!apiKey) {
+    return { success: false, error: "GEMINI_API_KEY не налаштовано" };
+  }
+  if (!leadId) return { success: false, error: "Missing lead id" };
+
+  const user = await getCurrentUser();
+  if (!user) return { success: false, error: "Не авторизовано" };
+
+  try {
+    const lead = await prisma.lead.findFirst({
+      where: { id: leadId, userId: user.id },
+      include: { audit: true },
+    });
+    if (!lead) return { success: false, error: "Лід не знайдено" };
+
+    const issues: string[] = [];
+    if (lead.audit) {
+      if (lead.audit.hasSSL === false) issues.push("відсутній SSL");
+      if (lead.audit.mobileFriendly === false)
+        issues.push("сайт не mobile-friendly");
+      for (const i of lead.audit.issues)
+        if (i && !issues.includes(i)) issues.push(i);
+    }
+
+    const userPrompt = [
+      "Контекст ліда:",
+      `- Компанія: ${lead.companyName}`,
+      `- Ніша: ${lead.category ?? "не вказано"}`,
+      `- Місто: ${lead.city ?? "не вказано"}`,
+      `- Сайт: ${lead.website ?? "відсутній"}`,
+      `- Opportunity Score: ${lead.score}/100`,
+      `- Знайдені «болі»: ${issues.length ? issues.join("; ") : "явних не виявлено"}`,
+      "",
+      "Згенеруй 3-step sequence у форматі JSON, як вказано в системному промпті.",
+    ].join("\n");
+
+    const ai = new GoogleGenAI({ apiKey });
+    let lastError: unknown;
+    for (const model of MODELS) {
+      try {
+        const response = await ai.models.generateContent({
+          model,
+          contents: userPrompt,
+          config: {
+            systemInstruction: SEQUENCE_SYSTEM,
+            temperature: 0.7,
+            maxOutputTokens: 2000,
+            responseMimeType: "application/json",
+          },
+        });
+        const raw = response.text?.trim();
+        if (!raw) return { success: false, error: "AI не повернув тексту" };
+        const steps = parseSequence(raw);
+        if (!steps) {
+          return {
+            success: false,
+            error: "AI повернув невалідний JSON. Спробуйте ще раз.",
+          };
+        }
+        return { success: true, steps };
+      } catch (err) {
+        lastError = err;
+        const msg = err instanceof Error ? err.message : String(err);
+        if (
+          !msg.includes("503") &&
+          !msg.includes("UNAVAILABLE") &&
+          !msg.includes("high demand")
+        ) {
+          break;
+        }
+        console.warn(`[AI sequence] ${model} unavailable, trying next...`);
+      }
+    }
+    return {
+      success: false,
+      error:
+        lastError instanceof Error
+          ? lastError.message
+          : "Failed to generate sequence",
+    };
+  } catch (error) {
+    console.error("generateSequence error:", error);
+    return {
+      success: false,
+      error:
+        error instanceof Error
+          ? error.message
+          : "Failed to generate sequence",
+    };
+  }
+}
+
+function parseSequence(raw: string): SequenceStep[] | null {
+  let cleaned = raw
+    .replace(/^﻿/, "")
+    .replace(/^```(?:json)?\s*/i, "")
+    .replace(/```\s*$/, "")
+    .trim();
+  const first = cleaned.indexOf("[");
+  const last = cleaned.lastIndexOf("]");
+  if (first !== -1 && last > first) cleaned = cleaned.slice(first, last + 1);
+
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(cleaned);
+  } catch {
+    return null;
+  }
+  if (!Array.isArray(parsed) || parsed.length === 0) return null;
+
+  const out: SequenceStep[] = [];
+  for (let i = 0; i < Math.min(parsed.length, 3); i++) {
+    const item = parsed[i];
+    if (!item || typeof item !== "object") continue;
+    const obj = item as Record<string, unknown>;
+    const subject = typeof obj.subject === "string" ? obj.subject.trim() : "";
+    const body = typeof obj.body === "string" ? obj.body.trim() : "";
+    if (!subject || !body) continue;
+    const step = (i + 1) as 1 | 2 | 3;
+    out.push({ step, label: STEP_LABELS[i], subject, body });
+  }
+  return out.length === 3 ? out : null;
+}

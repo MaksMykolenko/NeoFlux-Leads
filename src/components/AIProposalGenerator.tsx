@@ -3,7 +3,13 @@
 import { Link } from "@/src/i18n/navigation";
 import { useTranslations } from "next-intl";
 import { useState, useTransition } from "react";
-import { generateProposal } from "@/src/actions/aiActions";
+import {
+  generateProposal,
+  generateSequence,
+  rewriteProposal,
+  type RewriteInstruction,
+  type SequenceStep,
+} from "@/src/actions/aiActions";
 import {
   saveGeneratedMessage,
   sendAndSaveEmail,
@@ -21,6 +27,12 @@ type Toast = {
   cta?: { href: string; label: string };
 };
 
+const REWRITE_OPTIONS: RewriteInstruction[] = [
+  "shorter",
+  "friendlier",
+  "formal",
+];
+
 export default function AIProposalGenerator({
   leadId,
   companyName,
@@ -37,6 +49,11 @@ export default function AIProposalGenerator({
   const [isGenerating, startGenerate] = useTransition();
   const [isSaving, startSave] = useTransition();
   const [isSending, startSend] = useTransition();
+  const [isRewriting, startRewrite] = useTransition();
+  const [pendingTone, setPendingTone] = useState<RewriteInstruction | null>(null);
+  const [sequence, setSequence] = useState<SequenceStep[] | null>(null);
+  const [activeStep, setActiveStep] = useState<1 | 2 | 3>(1);
+  const [isGeneratingSeq, startGenerateSeq] = useTransition();
 
   const hasText = text.trim().length > 0;
   const canSendEmail = !!leadEmail;
@@ -85,6 +102,52 @@ export default function AIProposalGenerator({
     });
   }
 
+  function handleRewrite(instruction: RewriteInstruction) {
+    if (!hasText) return;
+    setError(null);
+    setPendingTone(instruction);
+    startRewrite(async () => {
+      const result = await rewriteProposal(text, instruction);
+      if (result.success && result.text) {
+        setText(result.text);
+        setSavedFor(null);
+      } else {
+        setError(result.error ?? t("rewriteErr"));
+      }
+      setPendingTone(null);
+    });
+  }
+
+  function handleGenerateSequence() {
+    setError(null);
+    startGenerateSeq(async () => {
+      const result = await generateSequence(leadId);
+      if (result.success && result.steps) {
+        setSequence(result.steps);
+        setActiveStep(1);
+        // Підставити перший крок у поля редагування — щоб юзер міг
+        // одразу його зберегти/надіслати, як з звичайним згенерованим листом.
+        setSubject(result.steps[0].subject);
+        setText(result.steps[0].body);
+        setSavedFor(null);
+        setCopied(false);
+      } else {
+        setError(result.error ?? t("sequenceErr"));
+      }
+    });
+  }
+
+  function handlePickStep(step: 1 | 2 | 3) {
+    if (!sequence) return;
+    const found = sequence.find((s) => s.step === step);
+    if (!found) return;
+    setActiveStep(step);
+    setSubject(found.subject);
+    setText(found.body);
+    setSavedFor(null);
+    setCopied(false);
+  }
+
   function handleSendEmail() {
     setError(null);
     setToast(null);
@@ -129,20 +192,55 @@ export default function AIProposalGenerator({
           <p className="mt-1 text-sm text-gray-500">{t("description")}</p>
           <p className="mt-2 text-xs text-gray-500">{t("emailOnlyNote")}</p>
         </div>
-        <button
-          type="button"
-          onClick={handleGenerate}
-          disabled={isGenerating || isSaving}
-          className="inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-violet-600 to-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm transition-all hover:from-violet-700 hover:to-blue-700 hover:shadow disabled:cursor-wait disabled:opacity-60"
-        >
-          <SparkleIcon className="w-4 h-4" />
-          {isGenerating
-            ? t("generatingShort")
-            : hasText
-              ? t("regenerate")
-              : t("generate")}
-        </button>
+        <div className="flex flex-wrap items-center gap-2">
+          <button
+            type="button"
+            onClick={handleGenerateSequence}
+            disabled={
+              isGenerating || isSaving || isGeneratingSeq || isRewriting
+            }
+            title={t("sequenceTitle")}
+            className="inline-flex items-center gap-2 rounded-md bg-zinc-900 px-3 py-2 text-xs font-medium text-zinc-100 transition hover:bg-zinc-800 disabled:opacity-60"
+          >
+            {isGeneratingSeq ? t("generatingShort") : t("sequenceCta")}
+          </button>
+          <button
+            type="button"
+            onClick={handleGenerate}
+            disabled={isGenerating || isSaving}
+            className="inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-violet-600 to-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm transition-all hover:from-violet-700 hover:to-blue-700 hover:shadow disabled:cursor-wait disabled:opacity-60"
+          >
+            <SparkleIcon className="w-4 h-4" />
+            {isGenerating
+              ? t("generatingShort")
+              : hasText
+                ? t("regenerate")
+                : t("generate")}
+          </button>
+        </div>
       </div>
+
+      {sequence && (
+        <div className="mt-5 rounded-md border border-zinc-800 bg-[#1a1a1a] p-1">
+          <div role="tablist" className="flex gap-1">
+            {sequence.map((s) => (
+              <button
+                key={s.step}
+                role="tab"
+                aria-selected={activeStep === s.step}
+                onClick={() => handlePickStep(s.step)}
+                className={`flex-1 rounded px-3 py-2 text-xs font-medium transition ${
+                  activeStep === s.step
+                    ? "bg-purple-600 text-white"
+                    : "text-zinc-400 hover:bg-zinc-800 hover:text-zinc-100"
+                }`}
+              >
+                <span className="opacity-60">{s.step}.</span> {s.label}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
 
       <div className="mt-5">
         {isGenerating ? (
@@ -180,6 +278,29 @@ export default function AIProposalGenerator({
                 rows={Math.min(Math.max(text.split("\n").length + 1, 8), 18)}
                 className="block w-full resize-y rounded-lg border border-gray-200 bg-gray-50 px-4 py-3 text-sm leading-relaxed text-gray-900 shadow-inner focus:border-blue-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-100"
               />
+            </div>
+
+            {/* Re-writer: 3 строгі пласкі кнопки в кіберпанк-палітрі */}
+            <div className="flex flex-wrap items-center gap-2 pt-1">
+              <span className="text-[10px] font-semibold uppercase tracking-wider text-gray-400">
+                {t("rewriteLabel")}
+              </span>
+              {REWRITE_OPTIONS.map((opt) => (
+                <button
+                  key={opt}
+                  type="button"
+                  onClick={() => handleRewrite(opt)}
+                  disabled={isRewriting || isGenerating || isSaving}
+                  className={`inline-flex items-center gap-1.5 rounded-md border border-purple-700 bg-purple-700 px-2.5 py-1 text-[11px] font-medium text-white transition hover:bg-purple-800 hover:border-purple-800 disabled:opacity-60 ${
+                    pendingTone === opt && isRewriting ? "opacity-70" : ""
+                  }`}
+                >
+                  {pendingTone === opt && isRewriting && (
+                    <SpinnerIcon className="h-3 w-3 animate-spin" />
+                  )}
+                  {t(`rewrite.${opt}`)}
+                </button>
+              ))}
             </div>
 
             <div className="flex flex-wrap items-center justify-between gap-3 pt-1">

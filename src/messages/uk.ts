@@ -86,6 +86,34 @@ const messages = {
       Lost: "Втрачено",
     },
   },
+  CsvUploader: {
+    title: "Імпорт з CSV",
+    subtitle:
+      "Завантажте власну базу — ліди потраплять у режим UNIVERSAL без скрапінгу.",
+    dropOrClick: "Перетягніть CSV або клікніть, щоб вибрати файл",
+    expectedColumns: "Очікувані колонки: companyName, website, email, phone, notes",
+    parsing: "Парсинг файлу...",
+    importing: "Імпортую...",
+    imported: "Імпортовано: {imported} (пропущено {skipped})",
+    importFailed: "Не вдалося імпортувати",
+    parseError: "Помилка парсингу",
+    notCsv: "Файл має бути .csv",
+    noRows: "У файлі не знайдено валідних рядків",
+  },
+  LeadsTableSection: {
+    selected: "Вибрано: {count}",
+    selectAll: "Вибрати все",
+    clear: "Скинути",
+    auditSelected: "Аудит вибраних",
+    changeStatus: "Змінити статус…",
+    delete: "Видалити",
+    confirmDelete:
+      "Видалити {count} лідів безповоротно? Прив’язані аудити та повідомлення також зникнуть.",
+    auditDone: "Аудит завершено: {ok} з {total}",
+    statusChanged: "Статус оновлено для {count} лідів → {status}",
+    deleted: "Видалено {count} лідів",
+    genericError: "Не вдалося виконати дію",
+  },
   LeadTableRow: {
     noLink: "Немає",
     followers: "{count} фоловерів",
@@ -373,6 +401,17 @@ const messages = {
     subjectPlaceholder: "Пропозиція для {company}",
     generatingShort: "Генерую…",
     savedBannerIntro: "Повідомлення збережено, статус ліда змінено на",
+    rewriteLabel: "Переписати:",
+    rewrite: {
+      shorter: "Коротше",
+      friendlier: "Дружній тон",
+      formal: "Офіційний тон",
+    },
+    rewriteErr: "Не вдалось переписати",
+    sequenceCta: "Згенерувати sequence",
+    sequenceTitle:
+      "Створити ланцюг із 3 листів: Pitch / Follow-up / Break-up",
+    sequenceErr: "Не вдалось згенерувати ланцюжок",
   },
   OnboardingTour: {
     progressText: "{{current}} з {{total}}",

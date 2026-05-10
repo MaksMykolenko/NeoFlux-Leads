@@ -15,8 +15,9 @@ import {
 import ScraperForm from "@/src/components/ScraperForm";
 import BeatOutreach from "@/src/components/BeatOutreach";
 import UniversalOutreach from "@/src/components/UniversalOutreach";
+import CsvUploader from "@/src/components/CsvUploader";
 import BrandMark from "@/src/components/BrandMark";
-import LeadTableRow from "@/src/components/LeadTableRow";
+import LeadsTableSection from "@/src/components/LeadsTableSection";
 import LeadKanbanBoard, {
   type KanbanLead,
 } from "@/src/components/LeadKanbanBoard";
@@ -154,7 +155,7 @@ export default async function Home({
         </div>
 
         {!isBoard && (
-          <div className="mt-6">
+          <div className="mt-6 space-y-4">
             {isBeats ? (
               <BeatOutreach />
             ) : isUniversal ? (
@@ -162,6 +163,7 @@ export default async function Home({
             ) : (
               <ScraperForm />
             )}
+            {!isBeats && <CsvUploader />}
           </div>
         )}
 
@@ -177,105 +179,32 @@ export default async function Home({
               <LeadKanbanBoard leads={kanbanLeads} />
             </div>
           ) : (
-          <div className="bg-white shadow-sm rounded-lg border border-gray-200 overflow-hidden">
-            <div className="px-6 py-4 border-b border-gray-200 flex items-center justify-between gap-3">
-              <h2 className="text-base font-medium text-gray-900">
-                {isBeats
+            <LeadsTableSection
+              leads={leads.map((lead) => ({
+                id: lead.id,
+                mode: lead.mode,
+                companyName: lead.companyName,
+                category: lead.category,
+                city: lead.city,
+                website: lead.website,
+                socialLinks: lead.socialLinks,
+                status: lead.status,
+                source: lead.source,
+                followers: lead.followers,
+                lookingForType: lead.lookingForType,
+                notes: lead.notes,
+                audit: lead.audit ? { issues: lead.audit.issues } : null,
+              }))}
+              isBeats={isBeats}
+              isUniversal={isUniversal}
+              title={
+                isBeats
                   ? t("tableTitleBeats")
                   : isUniversal
                     ? t("tableTitleUniversal")
-                    : t("tableTitleLocal")}
-              </h2>
-              <div className="flex items-center gap-3">
-                {leads.length > 0 && (
-                  <span className="inline-flex items-center rounded-full bg-gray-100 px-2.5 py-0.5 text-xs font-medium text-gray-600">
-                    {leads.length}
-                  </span>
-                )}
-                <LeadViewToggle active="table" />
-              </div>
-            </div>
-
-            {leads.length === 0 ? (
-              <div className="flex flex-col items-center justify-center py-16 text-center">
-                <svg
-                  className="h-12 w-12 text-gray-300"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={1.5}
-                    d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"
-                  />
-                </svg>
-                <p className="mt-3 text-sm font-medium text-gray-500">
-                  {isBeats ? t("emptyTitleBeats") : t("emptyTitleOther")}
-                </p>
-                <p className="mt-1 text-sm text-gray-400">
-                  {t("emptyHint")}
-                </p>
-              </div>
-            ) : (
-              <div className="overflow-x-auto">
-                <table className="w-full">
-                  <thead>
-                    <tr className="border-b border-gray-100">
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        {isBeats
-                          ? t("colArtist")
-                          : isUniversal
-                            ? t("colName")
-                            : t("colCompany")}
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        {isBeats
-                          ? t("colGenre")
-                          : isUniversal
-                            ? t("colDesc")
-                            : t("colCategory")}
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        {isBeats ? t("colProfile") : t("colSite")}
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        {t("colStatus")}
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        {isBeats ? t("colAudience") : t("colAudit")}
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-gray-100">
-                    {leads.map((lead) => (
-                      <LeadTableRow
-                        key={lead.id}
-                        lead={{
-                          id: lead.id,
-                          mode: lead.mode,
-                          companyName: lead.companyName,
-                          category: lead.category,
-                          city: lead.city,
-                          website: lead.website,
-                          socialLinks: lead.socialLinks,
-                          status: lead.status,
-                          source: lead.source,
-                          followers: lead.followers,
-                          lookingForType: lead.lookingForType,
-                          notes: lead.notes,
-                          audit: lead.audit
-                            ? { issues: lead.audit.issues }
-                            : null,
-                        }}
-                      />
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
-          </div>
+                    : t("tableTitleLocal")
+              }
+            />
           )}
         </div>
 

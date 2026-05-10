@@ -27,6 +27,11 @@ interface LeadRowProps {
     notes?: string | null;
     audit: { issues: string[] } | null;
   };
+  /** Bulk-selection mode. When defined, the row renders a checkbox cell. */
+  selection?: {
+    selected: boolean;
+    onToggle: (id: string, next: boolean) => void;
+  };
 }
 
 function stopPropagation(e: React.MouseEvent | React.KeyboardEvent) {
@@ -38,7 +43,7 @@ function fmtFollowers(n: number): string {
   return `${n}`;
 }
 
-export default function LeadTableRow({ lead }: LeadRowProps) {
+export default function LeadTableRow({ lead, selection }: LeadRowProps) {
   const router = useRouter();
   const t = useTranslations("LeadTableRow");
   const isBeats = lead.mode === LeadMode.BEATS;
@@ -72,8 +77,24 @@ export default function LeadTableRow({ lead }: LeadRowProps) {
   return (
     <tr
       onClick={() => router.push(`/leads/${lead.id}`)}
-      className="hover:bg-gray-50 transition-colors cursor-pointer"
+      className={`hover:bg-gray-50 transition-colors cursor-pointer ${
+        selection?.selected ? "bg-purple-50/50" : ""
+      }`}
     >
+      {selection && (
+        <td
+          className="px-4 py-4 align-middle"
+          onClick={stopPropagation}
+        >
+          <input
+            type="checkbox"
+            checked={selection.selected}
+            onChange={(e) => selection.onToggle(lead.id, e.target.checked)}
+            aria-label={`Select ${lead.companyName}`}
+            className="h-4 w-4 cursor-pointer rounded border-gray-300 text-purple-600 focus:ring-purple-500"
+          />
+        </td>
+      )}
       <td className="px-6 py-4 text-sm font-medium whitespace-nowrap">
         <Link
           href={`/leads/${lead.id}`}
