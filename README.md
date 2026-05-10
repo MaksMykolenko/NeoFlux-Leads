@@ -52,8 +52,8 @@ cd NeoFlux-Leads
 npm install
 ```
 
-The `postinstall` step pulls Playwright browser binaries. If it doesn't,
-run it manually:
+After install, Prisma generates the client (`postinstall`). For the **Google
+Maps scraper** locally you also need Chromium:
 
 ```bash
 npx playwright install chromium
@@ -93,6 +93,32 @@ npm run dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000).
+
+### Deploying to Vercel
+
+The home page loads leads from PostgreSQL **on every request**. If the app
+shows “server error” on your `.vercel.app` URL, almost always one of these is
+missing in **Project → Settings → Environment Variables** (apply to
+*Production*, *Preview*, *Development* as needed):
+
+| Variable         | Required | Notes |
+| ---------------- | -------- | ----- |
+| `DATABASE_URL`   | **Yes**  | Supabase pooler or direct Postgres URL (same DB you use locally). |
+| `DIRECT_URL`     | **Yes**  | Prisma uses this for migrations / introspection; can match `DATABASE_URL` for Supabase `5432`. |
+| `GEMINI_API_KEY` | **Yes**  | Needed for AI flows; omit only if you accept failures on those actions. |
+
+Then **Redeploy** (Deployments → … → Redeploy) so the new env vars are picked up.
+
+Apply your schema to the hosted database once (from your machine with `DATABASE_URL`
+pointing at prod, or via Supabase SQL editor after `prisma migrate diff`):
+
+```bash
+npx prisma db push
+# or: npx prisma migrate deploy
+```
+
+If errors persist, open **Deployments → your deployment → Runtime Logs** and look
+for Prisma or connection errors.
 
 ## Usage
 
@@ -139,12 +165,14 @@ src/
 
 ## Scripts
 
-| Script           | What it does                |
-| ---------------- | --------------------------- |
-| `npm run dev`    | Start the Next.js dev server |
-| `npm run build`  | Production build             |
-| `npm run start`  | Start the production server  |
-| `npm run lint`   | Run ESLint                   |
+| Script            | What it does |
+| ----------------- | -------------------------- |
+| `npm run dev`     | Start the Next.js dev server |
+| `npm run build`   | `prisma generate` then production build |
+| `npm run start`   | Start the production server |
+| `npm run lint`    | Run ESLint |
+
+`postinstall` runs `prisma generate` after `npm install` (needed on Vercel).
 
 ## License
 
