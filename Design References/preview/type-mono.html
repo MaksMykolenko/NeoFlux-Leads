@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>NeoFlux • Mono + tabular</title>
+<link rel="stylesheet" href="../colors_and_type.css">
+<style>
+  body { margin: 0; padding: 24px; background: #fff; }
+  .row { display: grid; grid-template-columns: 90px 1fr; gap: 14px 24px; align-items: center; }
+  .label { font-family: var(--font-mono); font-size: 11px; color: var(--fg-3); letter-spacing: .05em; text-transform: uppercase; }
+  .mono { font-family: var(--font-mono); font-size: 14px; color: var(--fg-1); }
+  .nums { font-variant-numeric: tabular-nums; font-size: 24px; font-weight: 600; color: var(--fg-1); letter-spacing: -.01em; }
+</style>
+</head>
+<body>
+  <div class="row">
+    <div class="label">Geist Mono</div>
+    <div class="mono">npx prisma migrate dev — створює 4 таблиці</div>
+    <div class="label">Tabular</div>
+    <div class="nums">02 / 47 / 100 / 1 234</div>
+    <div class="label">Code inline</div>
+    <div class="mono">DATABASE_URL=postgresql://…</div>
+  </div>
+</body>
+</html>

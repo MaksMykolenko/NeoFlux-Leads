@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>NeoFlux • Radii + shadows</title>
+<link rel="stylesheet" href="../colors_and_type.css">
+<style>
+  body { margin: 0; padding: 22px; background: var(--bg-page); font-family: var(--font-sans);}
+  .row { display:flex; gap: 14px; align-items:flex-end;}
+  .demo { background: white; border: 1px solid var(--border-1); padding: 14px 16px; min-width: 130px;}
+  .lbl { font-family: var(--font-mono); font-size: 10px; color: var(--fg-3); letter-spacing:.04em; margin-top: 8px;}
+  .name { font-size: 13px; font-weight: 600; color: var(--fg-1);}
+</style>
+</head>
+<body>
+  <div class="row">
+    <div class="demo" style="border-radius: 6px;">
+      <div class="name">md · 6px</div><div class="lbl">small inline btn</div>
+    </div>
+    <div class="demo" style="border-radius: 8px;">
+      <div class="name">lg · 8px</div><div class="lbl">buttons, inputs</div>
+    </div>
+    <div class="demo" style="border-radius: 12px; box-shadow: 0 1px 2px rgba(0,0,0,.05);">
+      <div class="name">xl · 12px ★</div><div class="lbl">card (canonical)</div>
+    </div>
+    <div class="demo" style="border-radius: 999px; padding: 6px 18px;">
+      <div class="name">full</div><div class="lbl">pills</div>
+    </div>
+  </div>
+</body>
+</html>

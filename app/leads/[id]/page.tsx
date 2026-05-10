@@ -328,7 +328,7 @@ function AuditCard({ audit, leadId, hasWebsite }: AuditCardProps) {
               : "У ліда відсутній сайт — аудит неможливий."}
           </p>
           {hasWebsite && (
-            <div className="mt-4">
+            <div className="mt-4 flex justify-center">
               <AuditButton leadId={leadId} hasAudit={false} />
             </div>
           )}

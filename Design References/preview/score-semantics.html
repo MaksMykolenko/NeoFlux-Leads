@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>NeoFlux • Score semantics</title>
+<link rel="stylesheet" href="../colors_and_type.css">
+<style>
+  body { margin: 0; padding: 18px; background: #fff; font-family: var(--font-sans); display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px;}
+  .cell { border: 1px solid var(--border-1); border-radius: 12px; padding: 16px;}
+  .num { font-size: 56px; font-weight: 600; line-height: 1; letter-spacing: -.025em; font-variant-numeric: tabular-nums;}
+  .lbl { font-size: 12px; font-weight: 500; margin-top: 6px;}
+  .bar { height: 6px; border-radius: 999px; background: var(--color-gray-100); overflow: hidden; margin-top: 12px;}
+  .bar > i { display:block; height: 100%; border-radius: 999px;}
+  .pill { display:inline-block; padding: 3px 10px; border-radius: 999px; font-size: 11px; font-weight: 500; box-shadow: inset 0 0 0 1px var(--ring); margin-bottom: 8px;}
+</style>
+</head>
+<body>
+  <div class="cell">
+    <span class="pill" style="--ring:#bbf7d0; background:#f0fdf4; color:#15803d">Високий</span>
+    <div class="num" style="color:#16a34a">82</div>
+    <div class="lbl" style="color:#16a34a">Високий потенціал для продажу послуг</div>
+    <div class="bar"><i style="width:82%; background:#22c55e"></i></div>
+  </div>
+  <div class="cell">
+    <span class="pill" style="--ring:#fde68a; background:#fffbeb; color:#b45309">Середній</span>
+    <div class="num" style="color:#d97706">54</div>
+    <div class="lbl" style="color:#d97706">Помірний потенціал — варто перевірити</div>
+    <div class="bar"><i style="width:54%; background:#f59e0b"></i></div>
+  </div>
+  <div class="cell">
+    <span class="pill" style="--ring:#fecaca; background:#fef2f2; color:#b91c1c">Низький</span>
+    <div class="num" style="color:#dc2626">28</div>
+    <div class="lbl" style="color:#dc2626">Низький пріоритет</div>
+    <div class="bar"><i style="width:28%; background:#ef4444"></i></div>
+  </div>
+</body>
+</html>

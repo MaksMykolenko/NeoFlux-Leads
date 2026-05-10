@@ -1,7 +1,7 @@
-import Link from "next/link";
 import { prisma } from "@/src/lib/prisma";
 import ScraperForm from "@/src/components/ScraperForm";
-import AuditButton from "@/src/components/AuditButton";
+import BrandMark from "@/src/components/BrandMark";
+import LeadTableRow from "@/src/components/LeadTableRow";
 
 export const dynamic = "force-dynamic";
 
@@ -15,12 +15,17 @@ export default async function Home() {
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="mx-auto max-w-4xl px-4 py-12 sm:px-6 lg:px-8">
-        <h1 className="text-2xl font-semibold text-gray-900 tracking-tight">
-          NeoFlux Lead Engine
-        </h1>
-        <p className="mt-1 text-sm text-gray-500">
-          Автоматичний збір лідів з Google Maps
-        </p>
+        <div className="flex items-center gap-3">
+          <BrandMark className="h-9 w-9 flex-shrink-0" />
+          <div className="min-w-0">
+            <h1 className="text-2xl font-semibold text-gray-900 tracking-tight">
+              NeoFlux Lead Engine
+            </h1>
+            <p className="mt-1 text-sm text-gray-500">
+              Автоматичний збір лідів з Google Maps
+            </p>
+          </div>
+        </div>
 
         <div className="mt-8">
           <ScraperForm />
@@ -28,10 +33,15 @@ export default async function Home() {
 
         <div className="mt-10">
           <div className="bg-white shadow-sm rounded-lg border border-gray-200 overflow-hidden">
-            <div className="px-6 py-4 border-b border-gray-200">
+            <div className="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
               <h2 className="text-base font-medium text-gray-900">
                 Останні ліди
               </h2>
+              {leads.length > 0 && (
+                <span className="inline-flex items-center rounded-full bg-gray-100 px-2.5 py-0.5 text-xs font-medium text-gray-600">
+                  {leads.length}
+                </span>
+              )}
             </div>
 
             {leads.length === 0 ? (
@@ -80,54 +90,20 @@ export default async function Home() {
                   </thead>
                   <tbody className="divide-y divide-gray-100">
                     {leads.map((lead) => (
-                      <tr key={lead.id} className="hover:bg-gray-50 transition-colors">
-                        <td className="px-6 py-4 text-sm font-medium whitespace-nowrap">
-                          <Link
-                            href={`/leads/${lead.id}`}
-                            className="text-gray-900 hover:text-blue-600 hover:underline transition-colors"
-                          >
-                            {lead.companyName}
-                          </Link>
-                        </td>
-                        <td className="px-6 py-4 text-sm text-gray-500 whitespace-nowrap">
-                          {lead.category}
-                          {lead.city && (
-                            <span className="text-gray-400"> · {lead.city}</span>
-                          )}
-                        </td>
-                        <td className="px-6 py-4 text-sm whitespace-nowrap">
-                          {lead.website ? (
-                            <a
-                              href={lead.website}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="text-blue-600 hover:text-blue-800 hover:underline transition-colors"
-                            >
-                              {lead.website.replace(/^https?:\/\//, "").replace(/\/$/, "")}
-                            </a>
-                          ) : (
-                            <span className="inline-flex items-center rounded-full bg-gray-100 px-2.5 py-0.5 text-xs font-medium text-gray-500">
-                              Немає
-                            </span>
-                          )}
-                        </td>
-                        <td className="px-6 py-4 text-sm whitespace-nowrap">
-                          <span className="inline-flex items-center rounded-full bg-blue-50 px-2.5 py-0.5 text-xs font-medium text-blue-700">
-                            {lead.status}
-                          </span>
-                        </td>
-                        <td className="px-6 py-4 text-sm whitespace-nowrap">
-                          {lead.website ? (
-                            <AuditButton
-                              leadId={lead.id}
-                              hasAudit={!!lead.audit}
-                              issuesCount={lead.audit?.issues.length}
-                            />
-                          ) : (
-                            <span className="text-xs text-gray-400">—</span>
-                          )}
-                        </td>
-                      </tr>
+                      <LeadTableRow
+                        key={lead.id}
+                        lead={{
+                          id: lead.id,
+                          companyName: lead.companyName,
+                          category: lead.category,
+                          city: lead.city,
+                          website: lead.website,
+                          status: lead.status,
+                          audit: lead.audit
+                            ? { issues: lead.audit.issues }
+                            : null,
+                        }}
+                      />
                     ))}
                   </tbody>
                 </table>

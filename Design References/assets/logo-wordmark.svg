@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 64" role="img" aria-label="NeoFlux">
+  <defs>
+    <linearGradient id="nf-mark" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#7c3aed"></stop>
+      <stop offset="1" stop-color="#2563eb"></stop>
+    </linearGradient>
+  </defs>
+  <g>
+    
+    <rect x="4" y="8" width="48" height="48" rx="12" fill="url(#nf-mark)"></rect>
+    <path d="M16 44V20h5l11 14V20h5v24h-5L21 30v14z" fill="#ffffff"></path>
+    
+    <text x="64" y="42" font-family="Geist, ui-sans-serif, system-ui, sans-serif" font-size="28" font-weight="600" letter-spacing="-0.5" fill="#111827">NeoFlux</text>
+  </g>
+</svg>

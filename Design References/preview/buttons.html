@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>NeoFlux • Buttons</title>
+<link rel="stylesheet" href="../colors_and_type.css">
+<style>
+  body { margin: 0; padding: 22px; background: white; font-family: var(--font-sans); display:flex; flex-wrap: wrap; gap: 12px; align-items: center;}
+  .btn { font: inherit; cursor: pointer; border: none; display:inline-flex; align-items:center; gap: 6px; transition: all .12s;}
+  .pri { background: #2563eb; color: white; padding: 10px 24px; border-radius: 8px; font-size: 14px; font-weight: 500; box-shadow: 0 1px 2px rgba(0,0,0,.05);}
+  .pri:hover { background: #1d4ed8;}
+  .ai { background: linear-gradient(90deg,#7c3aed,#2563eb); color:white; padding: 10px 16px; border-radius: 8px; font-size: 14px; font-weight: 500;}
+  .ter { background: #eff6ff; color:#1d4ed8; padding: 6px 12px; border-radius: 6px; font-size: 12px; font-weight: 500;}
+  .ter:hover { background:#dbeafe;}
+  .sec { background: #f9fafb; color: #374151; padding: 6px 12px; border-radius: 6px; font-size: 12px; font-weight: 500; box-shadow: inset 0 0 0 1px #e5e7eb;}
+  .dis { background: #93c5fd; color:white; padding: 10px 24px; border-radius: 8px; font-size: 14px; font-weight: 500; cursor: not-allowed; opacity: .9;}
+</style>
+</head>
+<body>
+  <button class="btn pri">Пошук</button>
+  <button class="btn ai">
+    <svg width="14" height="14" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M9 4.5a.75.75 0 0 1 .721.544l.813 2.846a3.75 3.75 0 0 0 2.576 2.576l2.846.813a.75.75 0 0 1 0 1.442l-2.846.813a3.75 3.75 0 0 0-2.576 2.576l-.813 2.846a.75.75 0 0 1-1.442 0l-.813-2.846a3.75 3.75 0 0 0-2.576-2.576l-2.846-.813a.75.75 0 0 1 0-1.442l2.846-.813A3.75 3.75 0 0 0 7.466 7.89l.813-2.846A.75.75 0 0 1 9 4.5Z" clip-rule="evenodd"/></svg>
+    AI Proposal
+  </button>
+  <button class="btn ter">Зробити аудит</button>
+  <button class="btn sec">Копіювати</button>
+  <button class="btn dis">Сканування...</button>
+</body>
+</html>
