@@ -66,6 +66,25 @@ const messages = {
     colStatus: "Статус",
     colAudience: "Аудиторія",
     colAudit: "Аудит",
+    boardTitle: "Воронка лідів",
+  },
+  LeadViewToggle: {
+    ariaLabel: "Спосіб перегляду лідів",
+    table: "Таблиця",
+    board: "Дошка",
+  },
+  Kanban: {
+    empty: "Лідів ще немає — створіть або імпортуйте.",
+    dropHere: "Перетягніть сюди",
+    updateFailed: "Не вдалося оновити статус. Спробуйте ще раз.",
+    status: {
+      New: "Нові",
+      Qualified: "Кваліфіковані",
+      Contacted: "На звʼязку",
+      Replied: "Відповіли",
+      Won: "Закрито",
+      Lost: "Втрачено",
+    },
   },
   LeadTableRow: {
     noLink: "Немає",

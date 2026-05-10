@@ -17,6 +17,12 @@ import BeatOutreach from "@/src/components/BeatOutreach";
 import UniversalOutreach from "@/src/components/UniversalOutreach";
 import BrandMark from "@/src/components/BrandMark";
 import LeadTableRow from "@/src/components/LeadTableRow";
+import LeadKanbanBoard, {
+  type KanbanLead,
+} from "@/src/components/LeadKanbanBoard";
+import LeadViewToggle, {
+  type LeadView,
+} from "@/src/components/LeadViewToggle";
 import ModeTabs from "@/src/components/ModeTabs";
 import OnboardingTour from "@/src/components/OnboardingTour";
 import DatabaseConfigBanner from "@/src/components/DatabaseConfigBanner";
@@ -24,12 +30,20 @@ import UsageMeter from "@/src/components/UsageMeter";
 
 export const dynamic = "force-dynamic";
 
+function viewFromQuery(value: string | string[] | undefined): LeadView {
+  const v = Array.isArray(value) ? value[0] : value;
+  return v === "board" ? "board" : "table";
+}
+
 export default async function Home({
   params,
   searchParams,
 }: {
   params: Promise<{ locale: string }>;
-  searchParams: Promise<{ mode?: string | string[] }>;
+  searchParams: Promise<{
+    mode?: string | string[];
+    view?: string | string[];
+  }>;
 }) {
   const { locale } = await params;
   setRequestLocale(locale);
@@ -41,8 +55,10 @@ export default async function Home({
 
   const query = await searchParams;
   const mode = modeFromQuery(query.mode);
+  const view = viewFromQuery(query.view);
   const isBeats = mode === LeadMode.BEATS;
   const isUniversal = mode === LeadMode.UNIVERSAL;
+  const isBoard = view === "board";
 
   const missingDbEnv =
     !process.env.DATABASE_URL?.trim() ||
@@ -53,17 +69,38 @@ export default async function Home({
   }>;
 
   let leads: LeadWithAudit[] = [];
+  let kanbanLeads: KanbanLead[] = [];
   let dbQueryFailed = false;
   let dbQueryError: string | null = null;
 
   if (!missingDbEnv) {
     try {
-      leads = await prisma.lead.findMany({
-        where: { mode, userId: user.id },
-        orderBy: { createdAt: "desc" },
-        take: 10,
-        include: { audit: true },
-      });
+      if (isBoard) {
+        // Дошка — універсальний вид: ВСІ ліди юзера незалежно від mode,
+        // обмежено 200 (досить для огляду воронки в межах одного юзера).
+        const all = await prisma.lead.findMany({
+          where: { userId: user.id },
+          orderBy: { createdAt: "desc" },
+          take: 200,
+          select: {
+            id: true,
+            companyName: true,
+            status: true,
+            score: true,
+            mode: true,
+            category: true,
+            city: true,
+          },
+        });
+        kanbanLeads = all;
+      } else {
+        leads = await prisma.lead.findMany({
+          where: { mode, userId: user.id },
+          orderBy: { createdAt: "desc" },
+          take: 10,
+          include: { audit: true },
+        });
+      }
     } catch (err) {
       dbQueryFailed = true;
       console.error("[home] prisma.lead.findMany", err);
@@ -106,27 +143,42 @@ export default async function Home({
           </div>
         </div>
 
-        <div className="mt-6">
-          <ModeTabs active={modeKeyFromMode(mode)} />
-        </div>
+        {!isBoard && (
+          <div className="mt-6">
+            <ModeTabs active={modeKeyFromMode(mode)} />
+          </div>
+        )}
 
         <div className="mt-6">
           <UsageMeter status={limitStatus} plan={plan} />
         </div>
 
-        <div className="mt-6">
-          {isBeats ? (
-            <BeatOutreach />
-          ) : isUniversal ? (
-            <UniversalOutreach />
-          ) : (
-            <ScraperForm />
-          )}
-        </div>
+        {!isBoard && (
+          <div className="mt-6">
+            {isBeats ? (
+              <BeatOutreach />
+            ) : isUniversal ? (
+              <UniversalOutreach />
+            ) : (
+              <ScraperForm />
+            )}
+          </div>
+        )}
 
         <div className="mt-10" id="tour-leads-table">
+          {isBoard ? (
+            <div>
+              <div className="mb-4 flex items-center justify-between gap-3">
+                <h2 className="text-base font-medium text-gray-900">
+                  {t("boardTitle")}
+                </h2>
+                <LeadViewToggle active="board" />
+              </div>
+              <LeadKanbanBoard leads={kanbanLeads} />
+            </div>
+          ) : (
           <div className="bg-white shadow-sm rounded-lg border border-gray-200 overflow-hidden">
-            <div className="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
+            <div className="px-6 py-4 border-b border-gray-200 flex items-center justify-between gap-3">
               <h2 className="text-base font-medium text-gray-900">
                 {isBeats
                   ? t("tableTitleBeats")
@@ -134,11 +186,14 @@ export default async function Home({
                     ? t("tableTitleUniversal")
                     : t("tableTitleLocal")}
               </h2>
-              {leads.length > 0 && (
-                <span className="inline-flex items-center rounded-full bg-gray-100 px-2.5 py-0.5 text-xs font-medium text-gray-600">
-                  {leads.length}
-                </span>
-              )}
+              <div className="flex items-center gap-3">
+                {leads.length > 0 && (
+                  <span className="inline-flex items-center rounded-full bg-gray-100 px-2.5 py-0.5 text-xs font-medium text-gray-600">
+                    {leads.length}
+                  </span>
+                )}
+                <LeadViewToggle active="table" />
+              </div>
             </div>
 
             {leads.length === 0 ? (
@@ -221,6 +276,7 @@ export default async function Home({
               </div>
             )}
           </div>
+          )}
         </div>
 
         <Suspense fallback={null}>

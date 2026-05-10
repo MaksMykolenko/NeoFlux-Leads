@@ -66,6 +66,25 @@ const messages = {
     colStatus: "Status",
     colAudience: "Audience",
     colAudit: "Audit",
+    boardTitle: "Lead pipeline",
+  },
+  LeadViewToggle: {
+    ariaLabel: "Lead view mode",
+    table: "Table",
+    board: "Board",
+  },
+  Kanban: {
+    empty: "No leads yet — create or import some.",
+    dropHere: "Drop here",
+    updateFailed: "Failed to update status. Try again.",
+    status: {
+      New: "New",
+      Qualified: "Qualified",
+      Contacted: "Contacted",
+      Replied: "Replied",
+      Won: "Won",
+      Lost: "Lost",
+    },
   },
   LeadTableRow: {
     noLink: "None",
