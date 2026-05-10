@@ -208,7 +208,7 @@ export default function AIProposalGenerator({
             type="button"
             onClick={handleGenerate}
             disabled={isGenerating || isSaving}
-            className="inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-violet-600 to-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm transition-all hover:from-violet-700 hover:to-blue-700 hover:shadow disabled:cursor-wait disabled:opacity-60"
+            className="inline-flex items-center gap-2 rounded-lg bg-purple-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-purple-700 disabled:cursor-wait disabled:opacity-60 focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-500 focus-visible:ring-offset-2"
           >
             <SparkleIcon className="w-4 h-4" />
             {isGenerating
@@ -260,7 +260,7 @@ export default function AIProposalGenerator({
                 value={subject}
                 onChange={(event) => setSubject(event.target.value)}
                 placeholder={t("subjectPlaceholder", { company: companyName })}
-                className="block w-full rounded-lg border border-gray-200 bg-gray-50 px-4 py-2.5 text-sm text-gray-900 focus:border-blue-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-100"
+                className="block w-full rounded-lg border border-gray-200 bg-gray-50 px-4 py-2.5 text-sm text-gray-900 focus:border-purple-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-purple-100"
               />
             </div>
 
@@ -276,7 +276,7 @@ export default function AIProposalGenerator({
                 value={text}
                 onChange={(event) => setText(event.target.value)}
                 rows={Math.min(Math.max(text.split("\n").length + 1, 8), 18)}
-                className="block w-full resize-y rounded-lg border border-gray-200 bg-gray-50 px-4 py-3 text-sm leading-relaxed text-gray-900 shadow-inner focus:border-blue-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-100"
+                className="block w-full resize-y rounded-lg border border-gray-200 bg-gray-50 px-4 py-3 text-sm leading-relaxed text-gray-900 shadow-inner focus:border-purple-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-purple-100"
               />
             </div>
 
@@ -351,7 +351,7 @@ export default function AIProposalGenerator({
                     !subject.trim()
                   }
                   title={!canSendEmail ? t("noEmailHint") : undefined}
-                  className="inline-flex items-center gap-1.5 rounded-md bg-blue-600 px-3 py-1.5 text-xs font-medium text-white shadow-sm transition-colors hover:bg-blue-700 disabled:bg-blue-300 disabled:cursor-not-allowed"
+                  className="inline-flex items-center gap-1.5 rounded-md bg-purple-600 px-3 py-1.5 text-xs font-medium text-white shadow-sm transition hover:bg-purple-700 disabled:cursor-not-allowed disabled:bg-purple-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-500"
                 >
                   {isSending ? (
                     <>
@@ -426,7 +426,7 @@ function SkeletonLoader({ label }: { label: string }) {
     <div className="rounded-lg border border-gray-200 bg-gray-50 p-4">
       <div className="flex items-center gap-2 text-sm text-gray-500">
         <svg
-          className="h-4 w-4 animate-spin text-violet-600"
+          className="h-4 w-4 animate-spin text-purple-600"
           xmlns="http://www.w3.org/2000/svg"
           fill="none"
           viewBox="0 0 24 24"

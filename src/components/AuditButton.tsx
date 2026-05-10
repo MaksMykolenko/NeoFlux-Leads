@@ -47,12 +47,12 @@ export default function AuditButton({
     <button
       onClick={handleClick}
       disabled={loading}
-      className="inline-flex items-center gap-1.5 rounded-md bg-blue-50 px-2.5 py-1 text-xs font-medium text-blue-700 hover:bg-blue-100 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+      className="inline-flex items-center gap-1.5 rounded-md bg-purple-50 px-2.5 py-1 text-xs font-medium text-purple-700 transition hover:bg-purple-100 disabled:cursor-not-allowed disabled:opacity-60 focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-500"
     >
       {loading ? (
         <>
           <svg
-            className="animate-spin h-3 w-3 text-blue-700"
+            className="animate-spin h-3 w-3 text-purple-700"
             xmlns="http://www.w3.org/2000/svg"
             fill="none"
             viewBox="0 0 24 24"

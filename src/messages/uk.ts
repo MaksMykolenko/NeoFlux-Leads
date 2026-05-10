@@ -19,6 +19,7 @@ const messages = {
     settings: "Налаштування",
     signOut: "Вийти",
     fallbackUser: "Користувач",
+    openProfile: "Профіль і налаштування",
   },
   DatabaseConfigBanner: {
     missing_env:

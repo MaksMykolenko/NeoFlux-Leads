@@ -841,7 +841,7 @@ function MessageHistoryFeed({
         {messages.map((msg) => (
           <details
             key={msg.id}
-            className="group rounded-lg border border-gray-200 transition-colors hover:border-gray-300 open:border-blue-200 open:bg-blue-50/30"
+            className="group rounded-lg border border-gray-200 transition-colors hover:border-gray-300 open:border-purple-200 open:bg-purple-50/40"
           >
             <summary className="flex cursor-pointer list-none items-start justify-between gap-3 px-4 py-3">
               <div className="min-w-0 flex-1">
@@ -930,7 +930,7 @@ function MessageChannelsBadge({
         return (
           <span
             key={key}
-            className="inline-flex items-center gap-1 rounded-md bg-blue-50 px-1.5 py-0.5 text-[10px] font-medium text-blue-700 ring-1 ring-inset ring-blue-200"
+            className="inline-flex items-center gap-1 rounded-md bg-purple-50 px-1.5 py-0.5 text-[10px] font-medium text-purple-700 ring-1 ring-inset ring-purple-200"
           >
             <def.Icon className="w-3 h-3" />
             {ui.label}

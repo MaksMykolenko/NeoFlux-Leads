@@ -29,12 +29,12 @@ export default function UsageMeter({ status, plan }: UsageMeterProps) {
   const danger = percent >= 95;
   const warn = !danger && percent >= 75;
 
-  const barColor = danger ? "bg-red-500" : warn ? "bg-amber-500" : "bg-indigo-500";
+  const barColor = danger ? "bg-red-500" : warn ? "bg-amber-500" : "bg-purple-500";
   const trackColor = danger
     ? "border-red-200 bg-red-50/60"
     : warn
-    ? "border-amber-200 bg-amber-50/60"
-    : "border-gray-200 bg-white";
+      ? "border-amber-200 bg-amber-50/60"
+      : "border-gray-200 bg-white";
 
   return (
     <div className={`rounded-lg border px-4 py-2.5 ${trackColor}`}>
@@ -53,7 +53,7 @@ export default function UsageMeter({ status, plan }: UsageMeterProps) {
         </div>
         <Link
           href="/pricing"
-          className="text-xs font-medium text-indigo-600 hover:text-indigo-700"
+          className="text-xs font-medium text-purple-700 hover:text-purple-900 hover:underline"
         >
           {t("upgradeCta")} →
         </Link>

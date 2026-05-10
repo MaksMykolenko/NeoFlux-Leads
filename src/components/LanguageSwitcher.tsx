@@ -1,9 +1,13 @@
 "use client";
 
-import { useLocale } from "next-intl";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { Link, usePathname } from "@/src/i18n/navigation";
 
+/**
+ * Компактний segmented control UK / EN. Без декорацій, узгоджується по
+ * висоті з іншими хедер-кнопками (h-8). Активний сегмент — pill з
+ * фіолетовим текстом і білим фоном.
+ */
 export default function LanguageSwitcher() {
   const locale = useLocale();
   const pathname = usePathname();
@@ -11,32 +15,48 @@ export default function LanguageSwitcher() {
 
   return (
     <div
-      className="flex items-center gap-1 rounded-md border border-gray-200 bg-gray-50 px-1 py-0.5 text-[11px]"
-      title={t("label")}
+      role="group"
+      aria-label={t("label")}
+      className="inline-flex h-8 items-center gap-0.5 rounded-md border border-gray-200 bg-gray-50 p-0.5"
     >
-      <Link
+      <LangLink
         href={pathname}
         locale="uk"
-        className={`rounded px-1.5 py-0.5 transition ${
-          locale === "uk"
-            ? "bg-white font-semibold text-gray-900 shadow-sm"
-            : "text-gray-500 hover:text-gray-800"
-        }`}
-      >
-        {t("uk")}
-      </Link>
-      <span className="text-gray-300 select-none">|</span>
-      <Link
+        active={locale === "uk"}
+        label={t("uk")}
+      />
+      <LangLink
         href={pathname}
         locale="en"
-        className={`rounded px-1.5 py-0.5 transition ${
-          locale === "en"
-            ? "bg-white font-semibold text-gray-900 shadow-sm"
-            : "text-gray-500 hover:text-gray-800"
-        }`}
-      >
-        {t("en")}
-      </Link>
+        active={locale === "en"}
+        label={t("en")}
+      />
     </div>
+  );
+}
+
+function LangLink({
+  href,
+  locale,
+  active,
+  label,
+}: {
+  href: string;
+  locale: "uk" | "en";
+  active: boolean;
+  label: string;
+}) {
+  return (
+    <Link
+      href={href}
+      locale={locale}
+      className={`inline-flex h-7 min-w-[28px] items-center justify-center rounded px-2 text-[11px] font-medium uppercase tracking-wider transition ${
+        active
+          ? "bg-white text-gray-900 shadow-sm"
+          : "text-gray-500 hover:text-gray-900"
+      }`}
+    >
+      {label}
+    </Link>
   );
 }

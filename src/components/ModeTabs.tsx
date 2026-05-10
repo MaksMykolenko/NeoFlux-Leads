@@ -58,18 +58,18 @@ export default function ModeTabs({ active }: ModeTabsProps) {
           <Link
             key={tab.id}
             href={tab.href}
-            className={`relative px-4 py-3 text-sm font-medium transition-colors ${
+            className={`relative px-4 py-3 text-sm font-medium transition-colors focus:outline-none focus-visible:bg-gray-50 ${
               isActive
-                ? "text-blue-700"
+                ? "text-purple-700"
                 : "text-gray-500 hover:text-gray-900"
             }`}
           >
             <div>{t(tab.labelKey)}</div>
-            <div className="text-[10px] font-normal text-gray-400 uppercase tracking-wider mt-0.5">
+            <div className="mt-0.5 text-[10px] font-normal uppercase tracking-wider text-gray-400">
               {t(tab.hintKey)}
             </div>
             {isActive && (
-              <span className="absolute -bottom-px left-0 right-0 h-0.5 bg-blue-600" />
+              <span className="absolute -bottom-px left-0 right-0 h-0.5 bg-purple-600" />
             )}
           </Link>
         );

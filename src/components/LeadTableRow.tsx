@@ -99,7 +99,7 @@ export default function LeadTableRow({ lead, selection }: LeadRowProps) {
         <Link
           href={`/leads/${lead.id}`}
           onClick={stopPropagation}
-          className="text-gray-900 hover:text-blue-600 hover:underline transition-colors"
+          className="text-gray-900 hover:text-purple-700 hover:underline transition-colors"
         >
           {lead.companyName}
         </Link>
