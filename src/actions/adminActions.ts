@@ -199,6 +199,10 @@ export interface PlatformStats {
   planDistribution: Record<PlanId, number>;
   /** Симульований MRR — сума цін планів з ненульовою ціною. */
   monthlyRevenueUsd: number;
+  /** Нові реєстрації (User.createdAt) за ковзні вікна часу. */
+  newUsers24h: number;
+  newUsers7d: number;
+  newUsers30d: number;
 }
 
 export interface PlatformStatsResult {
@@ -212,9 +216,21 @@ export async function getPlatformStats(): Promise<PlatformStatsResult> {
   if (!access.ok) return { success: false, error: access.error };
 
   try {
-    const since = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+    const dayMs = 24 * 60 * 60 * 1000;
+    const since30dSessions = new Date(Date.now() - 30 * dayMs);
+    const since24h = new Date(Date.now() - dayMs);
+    const since7d = new Date(Date.now() - 7 * dayMs);
+    const since30dNew = new Date(Date.now() - 30 * dayMs);
 
-    const [totalUsers, totalLeads, planRows, activeUsers] = await Promise.all([
+    const [
+      totalUsers,
+      totalLeads,
+      planRows,
+      activeUsers,
+      newUsers24h,
+      newUsers7d,
+      newUsers30d,
+    ] = await Promise.all([
       prisma.user.count(),
       prisma.lead.count({ where: { userId: { not: null } } }),
       prisma.user.groupBy({
@@ -223,11 +239,14 @@ export async function getPlatformStats(): Promise<PlatformStatsResult> {
       }),
       prisma.session
         .findMany({
-          where: { createdAt: { gte: since } },
+          where: { createdAt: { gte: since30dSessions } },
           distinct: ["userId"],
           select: { userId: true },
         })
         .then((rows) => rows.length),
+      prisma.user.count({ where: { createdAt: { gte: since24h } } }),
+      prisma.user.count({ where: { createdAt: { gte: since7d } } }),
+      prisma.user.count({ where: { createdAt: { gte: since30dNew } } }),
     ]);
 
     const planDistribution: Record<PlanId, number> = {
@@ -252,6 +271,9 @@ export async function getPlatformStats(): Promise<PlatformStatsResult> {
         totalLeads,
         planDistribution,
         monthlyRevenueUsd,
+        newUsers24h,
+        newUsers7d,
+        newUsers30d,
       },
     };
   } catch (error) {

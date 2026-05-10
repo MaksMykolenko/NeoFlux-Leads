@@ -59,6 +59,26 @@ export default async function AdminUsersPage() {
       )}
 
       {stats && (
+        <div className="mt-4 grid gap-4 sm:grid-cols-3">
+          <StatCard
+            label="Нові акаунти за 24 год"
+            value={stats.newUsers24h.toLocaleString()}
+            hint="за датою створення запису User (Flux ID)"
+          />
+          <StatCard
+            label="Нові за 7 днів"
+            value={stats.newUsers7d.toLocaleString()}
+            hint="останні 7 діб"
+          />
+          <StatCard
+            label="Нові за 30 днів"
+            value={stats.newUsers30d.toLocaleString()}
+            hint="останні 30 діб"
+          />
+        </div>
+      )}
+
+      {stats && (
         <div className="mt-4 grid gap-3 sm:grid-cols-3">
           {(Object.keys(stats.planDistribution) as PlanId[]).map((id) => (
             <PlanDistributionCard
