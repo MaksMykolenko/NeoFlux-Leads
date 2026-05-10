@@ -103,50 +103,53 @@ export default function BeatOutreach() {
 
   return (
     <div className="space-y-6">
-      <StepCard n={1} title="Знайдіть потенційних покупців" active>
-        <ArtistSearch
-          query={query}
-          setQuery={setQuery}
-          onResults={(r) => {
-            setResults(r);
-            setSearched(true);
-            setSearchError(null);
-            setSelected([]);
-          }}
-          onError={(err) => {
-            setResults([]);
-            setSearched(true);
-            setSearchError(err);
-            setSelected([]);
-          }}
-        />
+      <div id="tour-search-form">
+        <StepCard n={1} title="Знайдіть потенційних покупців" active>
+          <ArtistSearch
+            query={query}
+            setQuery={setQuery}
+            onResults={(r) => {
+              setResults(r);
+              setSearched(true);
+              setSearchError(null);
+              setSelected([]);
+            }}
+            onError={(err) => {
+              setResults([]);
+              setSearched(true);
+              setSearchError(err);
+              setSelected([]);
+            }}
+          />
 
-        <SearchResults
-          searched={searched}
-          results={results}
-          error={searchError}
-          selectedHandles={selected}
-          onToggle={toggleSelect}
-        />
+          <SearchResults
+            searched={searched}
+            results={results}
+            error={searchError}
+            selectedHandles={selected}
+            onToggle={toggleSelect}
+          />
 
-        {results.length > 0 && (
-          <p
-            className={`mt-3 text-xs ${
-              selectedProspects.length ? "text-gray-600" : "text-gray-400"
-            }`}
-          >
-            {selectedProspects.length
-              ? `Вибрано: ${selectedProspects.length}`
-              : "Виберіть одного або декількох артистів, кому надішлемо біт."}
-          </p>
-        )}
-      </StepCard>
+          {results.length > 0 && (
+            <p
+              className={`mt-3 text-xs ${
+                selectedProspects.length ? "text-gray-600" : "text-gray-400"
+              }`}
+            >
+              {selectedProspects.length
+                ? `Вибрано: ${selectedProspects.length}`
+                : "Виберіть одного або декількох артистів, кому надішлемо біт."}
+            </p>
+          )}
+        </StepCard>
+      </div>
 
-      <StepCard
-        n={2}
-        title="Завантажте демку біта"
-        active={selectedProspects.length > 0}
-      >
+      <div id="tour-beats-step-demo">
+        <StepCard
+          n={2}
+          title="Завантажте демку біта"
+          active={selectedProspects.length > 0}
+        >
         {selectedProspects.length === 0 ? (
           <p className="text-sm text-gray-400">Спочатку виберіть артиста.</p>
         ) : (
@@ -157,22 +160,26 @@ export default function BeatOutreach() {
             onWatermarkChange={setWatermark}
           />
         )}
-      </StepCard>
+        </StepCard>
+      </div>
 
-      <StepCard n="✉" title="Акаунт для надсилання" active={!!demo}>
+      <div id="tour-beats-smtp">
+        <StepCard n="✉" title="Акаунт для надсилання" active={!!demo}>
         <SmtpConfig value={smtp} onChange={persistSmtp} />
         <p className="mt-3 text-[11px] text-gray-400">
           Реальна відправка через SMTP додасться у наступних релізах. Зараз
           натискання «Надіслати» зберігає лід у CRM зі статусом{" "}
           <span className="font-semibold text-gray-600">Contacted</span>.
         </p>
-      </StepCard>
+        </StepCard>
+      </div>
 
-      <StepCard
-        n={3}
-        title="Перегляньте та надішліть повідомлення"
-        active={!!(selectedProspects.length && demo)}
-      >
+      <div id="tour-beats-messages">
+        <StepCard
+          n={3}
+          title="Перегляньте та надішліть повідомлення"
+          active={!!(selectedProspects.length && demo)}
+        >
         {!demo || !selectedProspects.length ? (
           <p className="text-sm text-gray-400">
             Виберіть артиста і завантажте біт — згенеруємо лист під кожного.
@@ -200,7 +207,8 @@ export default function BeatOutreach() {
             </div>
           </div>
         )}
-      </StepCard>
+        </StepCard>
+      </div>
     </div>
   );
 }

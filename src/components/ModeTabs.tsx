@@ -29,7 +29,10 @@ const TABS: TabDef[] = [
 
 export default function ModeTabs({ active }: ModeTabsProps) {
   return (
-    <div className="flex flex-wrap gap-2 border-b border-gray-200">
+    <div
+      id="tour-mode-tabs"
+      className="flex flex-wrap gap-2 border-b border-gray-200"
+    >
       {TABS.map((tab) => {
         const isActive = active === tab.id;
         return (

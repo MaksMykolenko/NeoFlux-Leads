@@ -38,7 +38,10 @@ export default function ScraperForm() {
   };
 
   return (
-    <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200 mb-8">
+    <div
+      id="tour-search-form"
+      className="bg-white p-6 rounded-xl shadow-sm border border-gray-200 mb-8"
+    >
       <h2 className="text-lg font-semibold text-gray-900 mb-4">Пошук нових лідів</h2>
       
       <form onSubmit={handleScrape} className="flex flex-col md:flex-row gap-4">

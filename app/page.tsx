@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import { prisma } from "@/src/lib/prisma";
 import { LeadMode, modeFromQuery, modeKeyFromMode } from "@/src/lib/leadMode";
 import ScraperForm from "@/src/components/ScraperForm";
@@ -5,6 +6,7 @@ import BeatOutreach from "@/src/components/BeatOutreach";
 import BrandMark from "@/src/components/BrandMark";
 import LeadTableRow from "@/src/components/LeadTableRow";
 import ModeTabs from "@/src/components/ModeTabs";
+import OnboardingTour from "@/src/components/OnboardingTour";
 
 export const dynamic = "force-dynamic";
 
@@ -27,7 +29,7 @@ export default async function Home({
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="mx-auto max-w-4xl px-4 py-12 sm:px-6 lg:px-8">
-        <div className="flex items-center gap-3">
+        <div id="tour-page-header" className="flex items-center gap-3">
           <BrandMark className="h-9 w-9 flex-shrink-0" />
           <div className="min-w-0">
             <h1 className="text-2xl font-semibold text-gray-900 tracking-tight">
@@ -49,7 +51,7 @@ export default async function Home({
           {isBeats ? <BeatOutreach /> : <ScraperForm />}
         </div>
 
-        <div className="mt-10">
+        <div className="mt-10" id="tour-leads-table">
           <div className="bg-white shadow-sm rounded-lg border border-gray-200 overflow-hidden">
             <div className="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
               <h2 className="text-base font-medium text-gray-900">
@@ -133,6 +135,10 @@ export default async function Home({
             )}
           </div>
         </div>
+
+        <Suspense fallback={null}>
+          <OnboardingTour />
+        </Suspense>
       </div>
     </div>
   );
