@@ -38,6 +38,17 @@ export type ChannelKey =
   | "discord"
   | "whatsapp";
 
+/** UI copy for a channel — pass `getTranslations("Channels")`. */
+export function channelTranslated(
+  key: ChannelKey,
+  tc: (key: string, values?: Record<string, string | number>) => string
+) {
+  return {
+    label: tc(`labels.${key}`),
+    hint: tc(`hints.${key}`),
+  };
+}
+
 type ChannelIcon = (props: { className?: string }) => ReactElement;
 
 // ---------- helpers ----------
@@ -185,23 +196,23 @@ export const CHANNELS: Record<ChannelKey, ChannelDef> = {
   email: {
     key: "email",
     label: "Email",
-    hint: "mailto: відкриває поштовий клієнт із заповненою темою та текстом",
+    hint: "Opens your mail client with subject and body prefilled (mailto:)",
     prefillsMessage: true,
     buildHref: (value, message) => asMailto(value, message),
     Icon: EmailIcon,
   },
   phone: {
     key: "phone",
-    label: "Телефон",
-    hint: "tel: для дзвінка",
+    label: "Phone",
+    hint: "Opens the dialer (tel:)",
     prefillsMessage: false,
     buildHref: (value) => `tel:${digitsOnly(value)}`,
     Icon: PhoneIcon,
   },
   website: {
     key: "website",
-    label: "Сайт",
-    hint: "Відкриває особистий сайт артиста",
+    label: "Website",
+    hint: "Opens the artist website",
     prefillsMessage: false,
     buildHref: (value) => (/^https?:\/\//i.test(value) ? value : `https://${value}`),
     Icon: WebsiteIcon,
@@ -209,7 +220,7 @@ export const CHANNELS: Record<ChannelKey, ChannelDef> = {
   instagram: {
     key: "instagram",
     label: "Instagram",
-    hint: "Відкриває профіль (DM-prefill не підтримується — текст у буфері)",
+    hint: "Opens the profile (no DM prefill — copy message to clipboard)",
     prefillsMessage: false,
     buildHref: (value) =>
       /^https?:\/\//i.test(value)
@@ -220,7 +231,7 @@ export const CHANNELS: Record<ChannelKey, ChannelDef> = {
   soundcloud: {
     key: "soundcloud",
     label: "SoundCloud",
-    hint: "Відкриває профіль (DM через клік на «Message» там)",
+    hint: "Opens the profile (tap Message there)",
     prefillsMessage: false,
     buildHref: (value) => ensureUrl(value, "soundcloud.com"),
     Icon: SoundCloudIcon,
@@ -228,7 +239,7 @@ export const CHANNELS: Record<ChannelKey, ChannelDef> = {
   youtube: {
     key: "youtube",
     label: "YouTube",
-    hint: "Відкриває канал (контакт через email на About)",
+    hint: "Opens the channel (contact via email on About)",
     prefillsMessage: false,
     buildHref: (value) => {
       const v = value.trim();
@@ -241,7 +252,7 @@ export const CHANNELS: Record<ChannelKey, ChannelDef> = {
   tiktok: {
     key: "tiktok",
     label: "TikTok",
-    hint: "Відкриває профіль",
+    hint: "Opens the profile",
     prefillsMessage: false,
     buildHref: (value) => {
       const v = value.trim();
@@ -253,7 +264,7 @@ export const CHANNELS: Record<ChannelKey, ChannelDef> = {
   twitter: {
     key: "twitter",
     label: "X / Twitter",
-    hint: "Відкриває профіль або compose-DM, якщо знаємо ID",
+    hint: "Opens the profile or compose DM when possible",
     prefillsMessage: false,
     buildHref: (value) => {
       const v = value.trim();
@@ -265,7 +276,7 @@ export const CHANNELS: Record<ChannelKey, ChannelDef> = {
   spotify: {
     key: "spotify",
     label: "Spotify",
-    hint: "Сторінка артиста (без DM)",
+    hint: "Artist page (no DMs)",
     prefillsMessage: false,
     buildHref: (value) => {
       const v = value.trim();
@@ -277,7 +288,7 @@ export const CHANNELS: Record<ChannelKey, ChannelDef> = {
   beatstars: {
     key: "beatstars",
     label: "BeatStars",
-    hint: "Профіль артиста на BeatStars",
+    hint: "Artist profile on BeatStars",
     prefillsMessage: false,
     buildHref: (value) => ensureUrl(value, "beatstars.com"),
     Icon: BeatStarsIcon,
@@ -285,7 +296,7 @@ export const CHANNELS: Record<ChannelKey, ChannelDef> = {
   telegram: {
     key: "telegram",
     label: "Telegram",
-    hint: "Відкриває чат через t.me/<handle>",
+    hint: "Opens chat via t.me/<handle>",
     prefillsMessage: false,
     buildHref: (value) => {
       const v = value.trim();
@@ -297,7 +308,7 @@ export const CHANNELS: Record<ChannelKey, ChannelDef> = {
   discord: {
     key: "discord",
     label: "Discord",
-    hint: "Юзернейм для пошуку у Discord (DM-deep-link не підтримується)",
+    hint: "Discord username lookup (no reliable DM deep link)",
     prefillsMessage: false,
     buildHref: (value) => `https://discord.com/users/${trimAt(value)}`,
     Icon: DiscordIcon,
@@ -305,7 +316,7 @@ export const CHANNELS: Record<ChannelKey, ChannelDef> = {
   whatsapp: {
     key: "whatsapp",
     label: "WhatsApp",
-    hint: "wa.me з prefill повідомлення",
+    hint: "Opens WhatsApp with prefilled text",
     prefillsMessage: true,
     buildHref: (value, message) => {
       const phone = digitsOnly(value).replace(/^\+/, "");
@@ -337,6 +348,128 @@ export const CHANNEL_ORDER: ChannelKey[] = [
  * Walk a `ProspectContacts` blob and return only the channels that have a
  * truthy value, in canonical display order.
  */
+
+/** Builds a safe https URL for display/open — used for AI `profileUrl` and top-level `Lead.website`. */
+export function normalizeExternalHref(
+  raw: string | null | undefined
+): string | null {
+  if (typeof raw !== "string") return null;
+  const t = raw.trim();
+  if (!t) return null;
+  if (/^https?:\/\//i.test(t)) return t;
+  if (/^\/\//.test(t)) return `https:${t}`;
+  return `https://${t.replace(/^\/+/, "")}`;
+}
+
+/**
+ * Primary URL for beats: saved `website` / AI `profileUrl`, else first
+ * non-email/non-phone contact that maps to a web profile (same order as CRM).
+ */
+export function resolveBeatsProfileHref(
+  primaryUrl: string | null | undefined,
+  contacts: ProspectContacts | null | undefined
+): string | null {
+  const direct = normalizeExternalHref(primaryUrl ?? null);
+  if (direct) return direct;
+  if (!contacts) return null;
+  for (const key of CHANNEL_ORDER) {
+    if (key === "email" || key === "phone") continue;
+    const raw = contacts[key];
+    if (typeof raw === "string" && raw.trim()) {
+      return CHANNELS[key].buildHref(raw.trim());
+    }
+  }
+  return null;
+}
+
+/** Keys commonly returned by universal AI search (OSINT-style blob). */
+const UNIVERSAL_SOCIAL_KEYS = [
+  "linkedin",
+  "twitter",
+  "x",
+  "instagram",
+  "facebook",
+  "youtube",
+  "tiktok",
+  "telegram",
+] as const;
+
+function universalHrefForKey(key: string, raw: string): string {
+  const v = raw.trim();
+  if (/^https?:\/\//i.test(v)) return v;
+  const h = trimAt(v);
+  const k = key.toLowerCase();
+  if (k === "linkedin") {
+    if (/linkedin\.com/i.test(v)) return ensureUrl(v, "linkedin.com");
+    return `https://www.linkedin.com/in/${h}`;
+  }
+  if (k === "twitter" || k === "x") return `https://twitter.com/${h}`;
+  if (k === "instagram") return `https://instagram.com/${h}`;
+  if (k === "facebook") return `https://facebook.com/${h}`;
+  if (k === "youtube") {
+    const handle = h.startsWith("@") ? h : `@${h}`;
+    return `https://youtube.com/${handle}`;
+  }
+  if (k === "tiktok") return `https://tiktok.com/@${h}`;
+  if (k === "telegram") return `https://t.me/${h}`;
+  return normalizeExternalHref(v) ?? `https://${h}`;
+}
+
+/**
+ * Primary URL for universal leads: `website`, else first known social field
+ * or any raw https URL in the blob.
+ */
+export function resolveUniversalSiteHref(
+  website: string | null | undefined,
+  socialLinks: unknown,
+): string | null {
+  const direct = normalizeExternalHref(website ?? null);
+  if (direct) return direct;
+  if (!socialLinks || typeof socialLinks !== "object" || Array.isArray(socialLinks)) {
+    return null;
+  }
+  const o = socialLinks as Record<string, unknown>;
+  for (const key of UNIVERSAL_SOCIAL_KEYS) {
+    const raw = o[key];
+    if (typeof raw === "string" && raw.trim()) {
+      return universalHrefForKey(key, raw);
+    }
+  }
+  for (const val of Object.values(o)) {
+    if (typeof val === "string" && /^https?:\/\//i.test(val.trim())) {
+      return val.trim();
+    }
+  }
+  return null;
+}
+
+/**
+ * Flat list of social entries for universal `socialLinks` JSON (any keys).
+ */
+export function universalSocialLinkRows(
+  socialLinks: unknown,
+): { label: string; href: string; display: string }[] {
+  if (!socialLinks || typeof socialLinks !== "object" || Array.isArray(socialLinks)) {
+    return [];
+  }
+  const o = socialLinks as Record<string, unknown>;
+  const rows: { label: string; href: string; display: string }[] = [];
+  const seen = new Set<string>();
+  for (const [key, val] of Object.entries(o)) {
+    if (typeof val !== "string" || !val.trim()) continue;
+    const display = val.trim();
+    const href = universalHrefForKey(key, display);
+    if (!href || seen.has(href)) continue;
+    seen.add(href);
+    rows.push({
+      label: key.charAt(0).toUpperCase() + key.slice(1),
+      href,
+      display: display.length > 56 ? `${display.slice(0, 56)}…` : display,
+    });
+  }
+  return rows;
+}
+
 export function getAvailableChannels(
   contacts: ProspectContacts | null | undefined
 ): { def: ChannelDef; value: string }[] {

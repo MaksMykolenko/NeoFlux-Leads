@@ -1,25 +1,38 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import { useSearchParams } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { driver } from "driver.js";
 import type { DriveStep } from "driver.js";
 import "driver.js/dist/driver.css";
 
 const STORAGE_KEY = "nf.leadEngine.hasSeenTour";
 
-/**
- * Повний тур: залежить від режиму (локальний бізнес vs біти),
- * бо кроки для BeatOutreach існують лише на `?mode=beats`.
- */
-function buildTourSteps(isBeats: boolean): DriveStep[] {
+export type TourMode = "local" | "beats" | "universal";
+
+function buildTourSteps(
+  tourMode: TourMode,
+  ts: (key: string) => string,
+): DriveStep[] {
+  const isBeats = tourMode === "beats";
+  const isUniversal = tourMode === "universal";
+
   const commonHead: DriveStep[] = [
     {
-      element: "#tour-page-header",
+      element: "#tour-brand-mark",
       popover: {
-        title: "NeoFlux Lead Engine",
-        description:
-          "Головний екран: логотип NeoFlux і заголовок. Тут ви керуєте пошуком лідів і збереженими контактами.",
+        title: ts("brandTitle"),
+        description: ts("brandBody"),
+        side: "bottom",
+        align: "start",
+      },
+    },
+    {
+      element: "#tour-page-title",
+      popover: {
+        title: ts("headerTitle"),
+        description: ts("headerBody"),
         side: "bottom",
         align: "start",
       },
@@ -27,20 +40,25 @@ function buildTourSteps(isBeats: boolean): DriveStep[] {
     {
       element: "#tour-mode-tabs",
       popover: {
-        title: "Режими роботи",
-        description:
-          "Перемикайте «Локальний бізнес» (Google Maps, аудит сайтів) та «Виконавці для бітів» (AI-пошук артистів, демо, розсилка по каналах).",
+        title: ts("modesTitle"),
+        description: ts("modesBody"),
         side: "bottom",
         align: "start",
       },
     },
     {
-      element: "#tour-search-form",
+      element: isUniversal ? "#tour-universal-search" : "#tour-search-form",
       popover: {
-        title: isBeats ? "Пошук артистів (AI)" : "Пошук локальних лідів",
+        title: isBeats
+          ? ts("searchTitleBeats")
+          : isUniversal
+            ? ts("searchTitleUniversal")
+            : ts("searchTitleLocal"),
         description: isBeats
-          ? "Введіть жанр, платформу або @нік. Gemini з пошуком Google знайде реальних артистів; оберіть картки та продовжіть до демо й повідомлень."
-          : "Введіть нішу та місто і натисніть «Пошук». Система збере компанії з карт і додасть їх у таблицю нижче.",
+          ? ts("searchDescBeats")
+          : isUniversal
+            ? ts("searchDescUniversal")
+            : ts("searchDescLocal"),
         side: "bottom",
         align: "start",
       },
@@ -51,19 +69,8 @@ function buildTourSteps(isBeats: boolean): DriveStep[] {
     {
       element: "#tour-beats-step-demo",
       popover: {
-        title: "Демо біта",
-        description:
-          "Після вибору артистів завантажте трек: превʼю, водяний знак (у браузері), метадані для AI-листа (BPM, тональність, ціна).",
-        side: "bottom",
-        align: "start",
-      },
-    },
-    {
-      element: "#tour-beats-smtp",
-      popover: {
-        title: "Налаштування надсилання",
-        description:
-          "Чернетка SMTP для майбутньої відправки. Зараз лист не йде по пошті автоматично — «Зберегти в CRM» фіксує контакт і повідомлення в базі.",
+        title: ts("demoTitle"),
+        description: ts("demoBody"),
         side: "bottom",
         align: "start",
       },
@@ -71,9 +78,8 @@ function buildTourSteps(isBeats: boolean): DriveStep[] {
     {
       element: "#tour-beats-messages",
       popover: {
-        title: "Повідомлення та канали",
-        description:
-          "AI згенерує текст під кожного артиста. Відкрийте Email, Telegram, Instagram тощо — текст скопіюється там, де треба; потім збережіть outreach у CRM.",
+        title: ts("msgTitle"),
+        description: ts("msgBody"),
         side: "top",
         align: "start",
       },
@@ -83,10 +89,12 @@ function buildTourSteps(isBeats: boolean): DriveStep[] {
   const tableStep: DriveStep = {
     element: "#tour-leads-table",
     popover: {
-      title: "Таблиця лідів",
+      title: ts("leadTableTitle"),
       description: isBeats
-        ? "Останні збережені артисти з CRM. Клік по рядку відкриє картку: соцмережі, фоловери, історія повідомлень і демо."
-        : "Останні додані компанії. Відкрийте лід для аудиту сайту, контактів і AI-листа.",
+        ? ts("tableDescBeats")
+        : isUniversal
+          ? ts("tableDescUniversal")
+          : ts("tableDescLocal"),
       side: "top",
       align: "start",
     },
@@ -95,9 +103,8 @@ function buildTourSteps(isBeats: boolean): DriveStep[] {
   const helpStep: DriveStep = {
     element: "#tour-help-button",
     popover: {
-      title: "Підказки завжди поруч",
-      description:
-        "Натисніть «Як це працює» у будь-який момент, щоб пройти тур знову (після першого візиту тур не стартує автоматично).",
+      title: ts("replayTitle"),
+      description: ts("replayBody"),
       side: "left",
       align: "end",
     },
@@ -110,28 +117,42 @@ function buildTourSteps(isBeats: boolean): DriveStep[] {
   return [...commonHead, tableStep, helpStep];
 }
 
+function tourModeFromSearch(mode: string | null): TourMode {
+  if (mode === "beats") return "beats";
+  if (mode === "universal") return "universal";
+  return "local";
+}
+
 export default function OnboardingTour() {
   const searchParams = useSearchParams();
-  const isBeats = searchParams.get("mode") === "beats";
+  const tourMode = tourModeFromSearch(searchParams.get("mode"));
+
+  const t = useTranslations("OnboardingTour");
+  const ts = useTranslations("OnboardingTour.steps");
+
+  const stepsForMode = useMemo(
+    () => buildTourSteps(tourMode, ts),
+    [tourMode, ts],
+  );
 
   const driverRef = useRef<ReturnType<typeof driver> | null>(null);
   const tourWasStartedRef = useRef(false);
-  const isBeatsRef = useRef(isBeats);
+  const tourModeRef = useRef(tourMode);
 
   useEffect(() => {
-    isBeatsRef.current = isBeats;
-  }, [isBeats]);
+    tourModeRef.current = tourMode;
+  }, [tourMode]);
 
   useEffect(() => {
     const driverObj = driver({
       showProgress: true,
-      progressText: "{{current}} з {{total}}",
-      nextBtnText: "Далі",
-      prevBtnText: "Назад",
-      doneBtnText: "Готово",
+      progressText: t("progressText"),
+      nextBtnText: t("next"),
+      prevBtnText: t("back"),
+      doneBtnText: t("done"),
       smoothScroll: true,
       animate: true,
-      steps: buildTourSteps(isBeatsRef.current),
+      steps: buildTourSteps(tourModeRef.current, ts),
       onDestroyed: () => {
         if (!tourWasStartedRef.current) return;
         try {
@@ -149,7 +170,7 @@ export default function OnboardingTour() {
       const hasSeen = localStorage.getItem(STORAGE_KEY);
       if (!hasSeen) {
         autoTimer = setTimeout(() => {
-          driverObj.setSteps(buildTourSteps(isBeatsRef.current));
+          driverObj.setSteps(buildTourSteps(tourModeRef.current, ts));
           tourWasStartedRef.current = true;
           driverObj.drive();
         }, 500);
@@ -163,14 +184,14 @@ export default function OnboardingTour() {
       driverObj.destroy();
       driverRef.current = null;
     };
-  }, []);
+  }, [t, ts]);
 
   useEffect(() => {
-    driverRef.current?.setSteps(buildTourSteps(isBeats));
-  }, [isBeats]);
+    driverRef.current?.setSteps(stepsForMode);
+  }, [stepsForMode]);
 
   function startTour() {
-    driverRef.current?.setSteps(buildTourSteps(isBeats));
+    driverRef.current?.setSteps(buildTourSteps(tourMode, ts));
     tourWasStartedRef.current = true;
     driverRef.current?.drive();
   }
@@ -181,13 +202,13 @@ export default function OnboardingTour() {
       id="tour-help-button"
       onClick={startTour}
       className="fixed bottom-6 right-6 z-50 inline-flex items-center gap-1.5 rounded-full border border-gray-200 bg-white px-3 py-2 text-xs font-medium text-gray-700 shadow-md transition-colors hover:border-gray-300 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-      title="Показати огляд інтерфейсу"
-      aria-label="Як це працює — короткий тур"
+      title={t("helpTitle")}
+      aria-label={t("helpAria")}
     >
       <span className="flex h-6 w-6 items-center justify-center rounded-full bg-blue-600 text-sm font-semibold text-white">
         ?
       </span>
-      <span className="hidden sm:inline">Як це працює</span>
+      <span className="hidden sm:inline">{t("helpButton")}</span>
     </button>
   );
 }

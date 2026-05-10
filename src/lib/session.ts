@@ -1,7 +1,8 @@
 import { createHash, randomBytes } from "node:crypto";
 import { cookies } from "next/headers";
-import { redirect } from "next/navigation";
+import { getLocale } from "next-intl/server";
 import type { User } from "@prisma/client";
+import { redirect } from "@/src/i18n/navigation";
 import { prisma } from "@/src/lib/prisma";
 
 export const SESSION_COOKIE = "neoflux_session";
@@ -46,13 +47,15 @@ export async function destroySessionByToken(token: string): Promise<void> {
 }
 
 /**
- * Захищає server-component сторінку: повертає юзера або робить redirect("/login").
+ * Захищає server-component сторінку: повертає юзера або робить redirect на локалізований /login.
  * Це другий рівень захисту після middleware (на випадок підробленого cookie).
  */
 export async function requireUser(): Promise<User> {
   const user = await getCurrentUser();
-  if (!user) redirect("/login");
-  return user;
+  if (!user) {
+    redirect({ href: "/login", locale: await getLocale() });
+  }
+  return user!;
 }
 
 /**
@@ -65,21 +68,34 @@ export async function getRequestUserId(): Promise<string | null> {
 }
 
 export async function getCurrentUser(): Promise<User | null> {
-  const jar = await cookies();
-  const token = jar.get(SESSION_COOKIE)?.value;
-  if (!token) return null;
+  try {
+    const jar = await cookies();
+    const token = jar.get(SESSION_COOKIE)?.value;
+    if (!token) return null;
 
-  const session = await prisma.session.findUnique({
-    where: { tokenHash: hashToken(token) },
-    include: { user: true },
-  });
+    const session = await prisma.session.findUnique({
+      where: { tokenHash: hashToken(token) },
+      include: { user: true },
+    });
 
-  if (!session) return null;
-  if (session.expiresAt.getTime() < Date.now()) {
-    await prisma.session.delete({ where: { id: session.id } }).catch(() => {});
+    if (!session) return null;
+    if (session.expiresAt.getTime() < Date.now()) {
+      await prisma.session.delete({ where: { id: session.id } }).catch(() => {});
+      return null;
+    }
+    return session.user;
+  } catch (err) {
+    if (
+      typeof err === "object" &&
+      err !== null &&
+      "digest" in err &&
+      (err as { digest?: string }).digest === "DYNAMIC_SERVER_USAGE"
+    ) {
+      throw err;
+    }
+    console.error("[session] getCurrentUser", err);
     return null;
   }
-  return session.user;
 }
 
 export type CookieAttrs = {

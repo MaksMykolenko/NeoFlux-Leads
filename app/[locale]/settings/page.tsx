@@ -1,16 +1,22 @@
-import Link from "next/link";
+import { getTranslations, setRequestLocale } from "next-intl/server";
+import { Link } from "@/src/i18n/navigation";
 import { requireUser } from "@/src/lib/session";
 import { prisma } from "@/src/lib/prisma";
 import SmtpSettingsForm from "@/src/components/SmtpSettingsForm";
 
 export const dynamic = "force-dynamic";
 
-export default async function SettingsPage() {
+export default async function SettingsPage({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}) {
+  const { locale } = await params;
+  setRequestLocale(locale);
+  const t = await getTranslations("Settings");
+
   const user = await requireUser();
 
-  // Тягнемо повний профіль — `requireUser()` повертає типізований `User`,
-  // але ми не хочемо віддавати клієнту `smtpPass`. Замість цього передаємо
-  // лише прапор `hasSmtpPass`, а у формі показуємо placeholder.
   const fresh = await prisma.user.findUnique({
     where: { id: user.id },
     select: {
@@ -42,28 +48,22 @@ export default async function SettingsPage() {
               clipRule="evenodd"
             />
           </svg>
-          Назад до робочого простору
+          {t("back")}
         </Link>
 
         <header className="mt-6">
           <h1 className="text-2xl font-semibold tracking-tight text-gray-900">
-            Налаштування
+            {t("title")}
           </h1>
-          <p className="mt-1 text-sm text-gray-500">
-            Підключи власний SMTP-сервер, щоб NeoFlux відправляв листи від
-            твого імені.
-          </p>
+          <p className="mt-1 text-sm text-gray-500">{t("subtitle")}</p>
         </header>
 
         <section className="mt-8">
           <div className="mb-4">
             <h2 className="text-base font-semibold text-gray-900">
-              SMTP / Bring Your Own Email
+              {t("smtpSectionTitle")}
             </h2>
-            <p className="mt-1 text-sm text-gray-500">
-              Підтримує будь-який SMTP — Gmail (App Password), Hostinger,
-              SendGrid, Mailgun, AWS SES.
-            </p>
+            <p className="mt-1 text-sm text-gray-500">{t("smtpSectionSubtitle")}</p>
           </div>
           <SmtpSettingsForm
             user={{

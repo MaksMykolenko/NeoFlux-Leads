@@ -4,6 +4,7 @@ import {
   buildClearedSessionCookie,
   destroySessionByToken,
 } from "@/src/lib/session";
+import { routing } from "@/src/i18n/routing";
 
 export const dynamic = "force-dynamic";
 
@@ -17,7 +18,7 @@ export async function POST(req: NextRequest) {
     }
   }
 
-  const login = new URL("/login", req.url);
+  const login = new URL(`/${routing.defaultLocale}/login`, req.url);
   const response = NextResponse.redirect(login, 303);
   response.cookies.set(buildClearedSessionCookie());
   return response;

@@ -1,6 +1,6 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { revalidateLocalizedPath } from "@/src/i18n/revalidateLocalized";
 import { prisma } from "@/src/lib/prisma";
 import { getRequestUserId } from "@/src/lib/session";
 import { sendUserEmail } from "@/src/lib/mailer";
@@ -63,7 +63,7 @@ export async function saveGeneratedMessage(
       return created;
     });
 
-    revalidatePath(`/leads/${leadId}`);
+    await revalidateLocalizedPath(`/leads/${leadId}`);
     return { success: true, messageId: message.id };
   } catch (error) {
     console.error("saveGeneratedMessage error:", error);
@@ -147,7 +147,7 @@ export async function sendAndSaveEmail(
       return created;
     });
 
-    revalidatePath(`/leads/${leadId}`);
+    await revalidateLocalizedPath(`/leads/${leadId}`);
 
     if (sendResult.success) {
       return { success: true, messageId: message.id };

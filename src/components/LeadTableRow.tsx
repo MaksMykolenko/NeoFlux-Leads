@@ -1,8 +1,13 @@
 "use client";
 
-import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { Link, useRouter } from "@/src/i18n/navigation";
+import { useTranslations } from "next-intl";
 import { LeadMode } from "@/src/lib/leadMode";
+import {
+  parseContacts,
+  resolveBeatsProfileHref,
+  resolveUniversalSiteHref,
+} from "@/src/lib/channels";
 import AuditButton from "@/src/components/AuditButton";
 import StatusPill from "@/src/components/StatusPill";
 
@@ -14,10 +19,12 @@ interface LeadRowProps {
     category: string | null;
     city: string | null;
     website: string | null;
+    socialLinks?: unknown;
     status: string;
     source: string | null;
     followers: number | null;
     lookingForType: boolean | null;
+    notes?: string | null;
     audit: { issues: string[] } | null;
   };
 }
@@ -33,11 +40,34 @@ function fmtFollowers(n: number): string {
 
 export default function LeadTableRow({ lead }: LeadRowProps) {
   const router = useRouter();
+  const t = useTranslations("LeadTableRow");
   const isBeats = lead.mode === LeadMode.BEATS;
+  const isUniversal = lead.mode === LeadMode.UNIVERSAL;
+
+  const profileHref = isBeats
+    ? resolveBeatsProfileHref(
+        lead.website,
+        parseContacts(lead.socialLinks ?? null) ?? undefined
+      )
+    : null;
+
+  const universalHref = isUniversal
+    ? resolveUniversalSiteHref(lead.website, lead.socialLinks)
+    : null;
+
+  const siteHref = isBeats
+    ? profileHref
+    : isUniversal
+      ? universalHref
+      : lead.website
+        ? lead.website.trim() || null
+        : null;
 
   const subtitle = isBeats
     ? lead.source ?? null
-    : lead.city ?? null;
+    : isUniversal
+      ? null
+      : lead.city ?? null;
 
   return (
     <tr
@@ -53,26 +83,41 @@ export default function LeadTableRow({ lead }: LeadRowProps) {
           {lead.companyName}
         </Link>
       </td>
-      <td className="px-6 py-4 text-sm text-gray-500 whitespace-nowrap">
-        {lead.category}
-        {subtitle && (
-          <span className="text-gray-400"> · {subtitle}</span>
+      <td className="px-6 py-4 text-sm text-gray-500 max-w-md">
+        {isUniversal ? (
+          lead.notes ? (
+            <span
+              className="line-clamp-2 break-words"
+              title={lead.notes}
+            >
+              {lead.notes}
+            </span>
+          ) : (
+            <span className="text-gray-400">—</span>
+          )
+        ) : (
+          <span className="whitespace-nowrap">
+            {lead.category}
+            {subtitle && (
+              <span className="text-gray-400"> · {subtitle}</span>
+            )}
+          </span>
         )}
       </td>
       <td className="px-6 py-4 text-sm whitespace-nowrap">
-        {lead.website ? (
+        {siteHref ? (
           <a
-            href={lead.website}
+            href={siteHref}
             onClick={stopPropagation}
             target="_blank"
             rel="noopener noreferrer"
             className="text-blue-600 hover:text-blue-800 hover:underline transition-colors"
           >
-            {lead.website.replace(/^https?:\/\//, "").replace(/\/$/, "")}
+            {siteHref.replace(/^https?:\/\//, "").replace(/\/$/, "")}
           </a>
         ) : (
           <span className="inline-flex items-center rounded-full bg-gray-100 px-2.5 py-0.5 text-xs font-medium text-gray-500">
-            Немає
+            {t("noLink")}
           </span>
         )}
       </td>
@@ -87,6 +132,14 @@ export default function LeadTableRow({ lead }: LeadRowProps) {
           <BeatsLastCell
             followers={lead.followers}
             lookingForType={lead.lookingForType}
+            followersLabel={
+              lead.followers != null
+                ? t("followers", {
+                    count: fmtFollowers(lead.followers),
+                  })
+                : ""
+            }
+            seekingLabel={t("seekingType")}
           />
         ) : lead.website ? (
           <AuditButton
@@ -105,9 +158,13 @@ export default function LeadTableRow({ lead }: LeadRowProps) {
 function BeatsLastCell({
   followers,
   lookingForType,
+  followersLabel,
+  seekingLabel,
 }: {
   followers: number | null;
   lookingForType: boolean | null;
+  followersLabel: string;
+  seekingLabel: string;
 }) {
   if (followers == null && !lookingForType) {
     return <span className="text-xs text-gray-400">—</span>;
@@ -116,12 +173,12 @@ function BeatsLastCell({
     <div className="flex flex-col items-start gap-0.5">
       {followers != null && (
         <span className="text-xs font-medium text-gray-700 tabular-nums">
-          {fmtFollowers(followers)}
+          {followersLabel}
         </span>
       )}
       {lookingForType && (
         <span className="inline-flex items-center rounded-full bg-violet-50 px-1.5 py-0.5 text-[10px] font-medium text-violet-700 ring-1 ring-inset ring-violet-200 whitespace-nowrap">
-          шукає type beats
+          {seekingLabel}
         </span>
       )}
     </div>

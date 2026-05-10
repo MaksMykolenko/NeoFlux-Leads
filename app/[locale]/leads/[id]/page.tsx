@@ -1,4 +1,5 @@
-import Link from "next/link";
+import { getTranslations, setRequestLocale } from "next-intl/server";
+import { Link } from "@/src/i18n/navigation";
 import { notFound } from "next/navigation";
 import { prisma } from "@/src/lib/prisma";
 import { LeadMode } from "@/src/lib/leadMode";
@@ -13,25 +14,14 @@ import {
 } from "@/src/lib/scoring";
 import {
   CHANNELS,
+  channelTranslated,
   getAvailableChannels,
   parseContacts,
+  universalSocialLinkRows,
   type ChannelKey,
 } from "@/src/lib/channels";
 
 export const dynamic = "force-dynamic";
-
-const DATE_FORMATTER = new Intl.DateTimeFormat("uk-UA", {
-  day: "2-digit",
-  month: "long",
-  year: "numeric",
-  hour: "2-digit",
-  minute: "2-digit",
-  timeZone: "Europe/Kyiv",
-});
-
-function formatDate(date: Date): string {
-  return DATE_FORMATTER.format(date);
-}
 
 function getPerformanceScoreColor(score: number): string {
   if (score > 80) return "text-green-600";
@@ -46,11 +36,25 @@ function stripProtocol(url: string): string {
 export default async function LeadDetailPage({
   params,
 }: {
-  params: Promise<{ id: string }>;
+  params: Promise<{ locale: string; id: string }>;
 }) {
-  const user = await requireUser();
+  const { id, locale } = await params;
+  setRequestLocale(locale);
+  const t = await getTranslations("LeadDetail");
+  const tc = await getTranslations("Channels");
 
-  const { id } = await params;
+  const dateLocale = locale === "en" ? "en-US" : "uk-UA";
+  const dateFormatter = new Intl.DateTimeFormat(dateLocale, {
+    day: "2-digit",
+    month: "long",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+    timeZone: "Europe/Kyiv",
+  });
+  const formatDateLocalized = (date: Date) => dateFormatter.format(date);
+
+  const user = await requireUser();
 
   // findFirst з userId-фільтром: чужий лід виглядатиме як 404, не як 403.
   // Це безпечніше з UX-боку — не розкриваємо існування чужих ID.
@@ -67,6 +71,14 @@ export default async function LeadDetailPage({
   }
 
   const isBeats = lead.mode === LeadMode.BEATS;
+  const isUniversal = lead.mode === LeadMode.UNIVERSAL;
+
+  const backHref =
+    lead.mode === LeadMode.BEATS
+      ? "/?mode=beats"
+      : lead.mode === LeadMode.UNIVERSAL
+        ? "/?mode=universal"
+        : "/";
 
   // Compute the score live for display so the UI stays accurate even if the
   // persisted `lead.score` lags (e.g. before the first audit run, or after a
@@ -88,11 +100,32 @@ export default async function LeadDetailPage({
           : null
       );
 
+  const scoreCtx = getScoreContext(opportunityScore);
+  const levelPillLabel =
+    scoreCtx.level === "high"
+      ? t("scoreBadgeHigh")
+      : scoreCtx.level === "medium"
+        ? t("scoreBadgeMedium")
+        : t("scoreBadgeLow");
+  const scoreDescription =
+    scoreCtx.labelKey === "high"
+      ? t("scoreLabel.high")
+      : scoreCtx.labelKey === "medium"
+        ? t("scoreLabel.medium")
+        : t("scoreLabel.low");
+  const scoreFootnote = isBeats
+    ? t("scoreHintBeats")
+    : !isUniversal && !lead.audit
+      ? t("scoreHintLocalNoAudit")
+      : isUniversal && !lead.audit
+        ? t("scoreHintUniversalNoAudit")
+        : null;
+
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="mx-auto max-w-5xl px-4 py-10 sm:px-6 lg:px-8">
         <Link
-          href="/"
+          href={backHref}
           className="inline-flex items-center gap-1.5 text-sm font-medium text-gray-500 hover:text-gray-900 transition-colors"
         >
           <svg
@@ -107,7 +140,7 @@ export default async function LeadDetailPage({
               clipRule="evenodd"
             />
           </svg>
-          Назад до списку
+          {t("back")}
         </Link>
 
         <header className="mt-5 flex flex-wrap items-start justify-between gap-4">
@@ -121,6 +154,12 @@ export default async function LeadDetailPage({
                   {[lead.realName, lead.category, lead.source]
                     .filter(Boolean)
                     .join(" · ")}
+                </p>
+              )
+            ) : isUniversal ? (
+              lead.notes && (
+                <p className="mt-1.5 text-sm text-gray-500 line-clamp-3">
+                  {lead.notes}
                 </p>
               )
             ) : (
@@ -141,8 +180,12 @@ export default async function LeadDetailPage({
         <div className="mt-6">
           <OpportunityScoreCard
             score={opportunityScore}
-            hasAudit={!!lead.audit}
-            isBeats={isBeats}
+            styles={scoreCtx}
+            levelPillLabel={levelPillLabel}
+            scoreDescription={scoreDescription}
+            footnote={scoreFootnote}
+            scoreHeading={t("scoreHeading")}
+            scoreTitle={t("scoreTitle")}
           />
         </div>
 
@@ -159,12 +202,19 @@ export default async function LeadDetailPage({
             isBeats ? "" : "lg:grid-cols-2"
           }`}
         >
-          <ContactsCard lead={lead} isBeats={isBeats} />
+          <ContactsCard
+            lead={lead}
+            isBeats={isBeats}
+            isUniversal={isUniversal}
+            t={t}
+            tc={tc}
+          />
           {!isBeats && (
             <AuditCard
               audit={lead.audit}
               leadId={lead.id}
               hasWebsite={!!lead.website}
+              t={t}
             />
           )}
 
@@ -174,27 +224,33 @@ export default async function LeadDetailPage({
             }`}
           >
             <h2 className="text-base font-semibold text-gray-900">
-              Системна інформація
+              {t("systemInfoTitle")}
             </h2>
             <dl className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-3">
               <SystemField
-                label={isBeats ? "Платформа" : "Джерело"}
+                label={isBeats ? t("systemPlatform") : t("systemSource")}
                 value={lead.source ?? null}
+                emptyLabel={t("notProvided")}
               />
               <SystemField
-                label="Створено"
-                value={formatDate(lead.createdAt)}
+                label={t("created")}
+                value={formatDateLocalized(lead.createdAt)}
               />
               <SystemField
-                label="Оновлено"
-                value={formatDate(lead.updatedAt)}
+                label={t("updated")}
+                value={formatDateLocalized(lead.updatedAt)}
               />
             </dl>
           </section>
         </div>
 
         <div className="mt-6">
-          <MessageHistoryFeed messages={lead.messages} />
+          <MessageHistoryFeed
+            messages={lead.messages}
+            formatDate={formatDateLocalized}
+            t={t}
+            tc={tc}
+          />
         </div>
       </div>
     </div>
@@ -203,34 +259,36 @@ export default async function LeadDetailPage({
 
 function OpportunityScoreCard({
   score,
-  hasAudit,
-  isBeats,
+  styles: ctx,
+  levelPillLabel,
+  scoreDescription,
+  footnote,
+  scoreHeading,
+  scoreTitle,
 }: {
   score: number;
-  hasAudit: boolean;
-  isBeats: boolean;
+  styles: ReturnType<typeof getScoreContext>;
+  levelPillLabel: string;
+  scoreDescription: string;
+  footnote: string | null;
+  scoreHeading: string;
+  scoreTitle: string;
 }) {
-  const ctx = getScoreContext(score);
-
   return (
     <section className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
       <div className="flex items-start justify-between gap-4">
         <div>
           <p className="text-xs font-semibold uppercase tracking-wider text-gray-500">
-            Opportunity Score
+            {scoreHeading}
           </p>
           <h2 className="mt-1 text-base font-semibold text-gray-900">
-            Пріоритет ліда для продажу
+            {scoreTitle}
           </h2>
         </div>
         <span
           className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-medium ring-1 ring-inset ${ctx.bgColor} ${ctx.textColor} ${ctx.ringColor}`}
         >
-          {ctx.level === "high"
-            ? "Високий"
-            : ctx.level === "medium"
-            ? "Середній"
-            : "Низький"}
+          {levelPillLabel}
         </span>
       </div>
 
@@ -243,7 +301,7 @@ function OpportunityScoreCard({
           </span>
           <span className="text-base text-gray-400">/ 100</span>
         </div>
-        <p className={`text-sm font-medium ${ctx.textColor}`}>{ctx.label}</p>
+        <p className={`text-sm font-medium ${ctx.textColor}`}>{scoreDescription}</p>
       </div>
 
       <div className="mt-6">
@@ -253,19 +311,9 @@ function OpportunityScoreCard({
             style={{ width: `${score}%` }}
           />
         </div>
-        {isBeats ? (
-          <p className="mt-3 text-xs text-gray-500">
-            Бал враховує сигнал «шукає type beats», наявність email і розмір
-            аудиторії на платформі.
-          </p>
-        ) : (
-          !hasAudit && (
-            <p className="mt-3 text-xs text-gray-500">
-              Бал розрахований із наявних даних. Запустіть аудит сайту, щоб
-              врахувати SSL та mobile-friendly чинники.
-            </p>
-          )
-        )}
+        {footnote ? (
+          <p className="mt-3 text-xs text-gray-500">{footnote}</p>
+        ) : null}
       </div>
     </section>
   );
@@ -283,8 +331,12 @@ interface ContactsCardProps {
     followers: number | null;
     lookingForType: boolean | null;
     socialLinks: unknown;
+    notes: string | null;
   };
   isBeats: boolean;
+  isUniversal: boolean;
+  t: (key: string, values?: Record<string, string | number>) => string;
+  tc: (key: string, values?: Record<string, string | number>) => string;
 }
 
 function fmtFollowers(n: number): string {
@@ -292,7 +344,13 @@ function fmtFollowers(n: number): string {
   return `${n}`;
 }
 
-function ContactsCard({ lead, isBeats }: ContactsCardProps) {
+function ContactsCard({
+  lead,
+  isBeats,
+  isUniversal,
+  t,
+  tc,
+}: ContactsCardProps) {
   if (isBeats) {
     // Unify any legacy top-level email into the social-links blob so
     // `getAvailableChannels` returns it alongside Instagram/Telegram/etc.
@@ -304,38 +362,41 @@ function ContactsCard({ lead, isBeats }: ContactsCardProps) {
     return (
       <section className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
         <div className="flex items-start justify-between gap-3">
-          <h2 className="text-base font-semibold text-gray-900">Контакти</h2>
+          <h2 className="text-base font-semibold text-gray-900">{t("contactsTitle")}</h2>
           {channels.length > 0 && (
             <span className="inline-flex items-center rounded-full bg-gray-100 px-2.5 py-0.5 text-xs font-medium text-gray-600">
-              {channels.length} {channels.length === 1 ? "канал" : "канали"}
+              {channels.length}{" "}
+              {channels.length === 1 ? t("channelsOne") : t("channelsMany")}
             </span>
           )}
         </div>
 
         <dl className="mt-4 divide-y divide-gray-100 text-sm">
-          <ContactRow label="Реальне імʼя" value={lead.realName} />
-          <ContactRow label="Жанр" value={lead.category} />
-          <ContactRow label="Платформа" value={lead.source} />
+          <ContactRow label={t("realName")} value={lead.realName} emptyLabel={t("notProvided")} />
+          <ContactRow label={t("genre")} value={lead.category} emptyLabel={t("notProvided")} />
+          <ContactRow label={t("platform")} value={lead.source} emptyLabel={t("notProvided")} />
           <ContactRow
-            label="Аудиторія"
+            label={t("audience")}
             value={lead.followers != null ? `${lead.followers}` : null}
+            emptyLabel={t("notProvided")}
           >
             {lead.followers != null && (
               <span className="text-gray-900 tabular-nums">
-                {fmtFollowers(lead.followers)} фоловерів
+                {t("followersFmt", { count: fmtFollowers(lead.followers) })}
               </span>
             )}
           </ContactRow>
           <ContactRow
-            label="Type beats"
-            value={lead.lookingForType ? "Так" : "Ні"}
+            label={t("typeBeats")}
+            value={lead.lookingForType ? t("typeYes") : t("typeNo")}
+            emptyLabel={t("notProvided")}
           >
             {lead.lookingForType ? (
               <span className="inline-flex items-center rounded-full bg-violet-50 px-2 py-0.5 text-xs font-medium text-violet-700 ring-1 ring-inset ring-violet-200">
-                Шукає type beats
+                {t("seekingBadge")}
               </span>
             ) : (
-              <span className="text-gray-500">Не шукає публічно</span>
+              <span className="text-gray-500">{t("notSeekingPublic")}</span>
             )}
           </ContactRow>
         </dl>
@@ -343,29 +404,108 @@ function ContactsCard({ lead, isBeats }: ContactsCardProps) {
         {channels.length > 0 ? (
           <div className="mt-5 border-t border-gray-100 pt-5">
             <h3 className="text-xs font-semibold uppercase tracking-wider text-gray-500 mb-3">
-              Канали зв&apos;язку
+              {t("channelsHeading")}
             </h3>
             <div className="grid gap-2 sm:grid-cols-2">
-              {channels.map(({ def, value }) => (
+              {channels.map(({ def, value }) => {
+                const ui = channelTranslated(def.key, tc);
+                return (
+                  <a
+                    key={def.key}
+                    href={def.buildHref(value)}
+                    target={def.key === "phone" || def.key === "email" ? undefined : "_blank"}
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-2 rounded-md border border-gray-200 bg-white px-3 py-2 text-xs transition-colors hover:border-gray-300 hover:bg-gray-50"
+                  >
+                    <def.Icon className="w-3.5 h-3.5 flex-shrink-0 text-gray-500" />
+                    <span className="font-medium text-gray-900 flex-shrink-0">
+                      {ui.label}
+                    </span>
+                    <span className="text-gray-500 truncate">{value}</span>
+                  </a>
+                );
+              })}
+            </div>
+          </div>
+        ) : (
+          <p className="mt-5 border-t border-gray-100 pt-5 text-sm text-gray-400">
+            {t("noChannels")}
+          </p>
+        )}
+      </section>
+    );
+  }
+
+  if (isUniversal) {
+    const socialRows = universalSocialLinkRows(lead.socialLinks);
+    return (
+      <section className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+        <h2 className="text-base font-semibold text-gray-900">{t("contactsTitle")}</h2>
+        <dl className="mt-4 divide-y divide-gray-100 text-sm">
+          <ContactRow label={t("universalDesc")} value={lead.notes} emptyLabel={t("notProvided")}>
+            {lead.notes ? (
+              <span className="text-gray-900 whitespace-pre-wrap text-right text-xs max-w-[70%]">
+                {lead.notes}
+              </span>
+            ) : undefined}
+          </ContactRow>
+          <ContactRow label={t("site")} value={lead.website} emptyLabel={t("notProvided")}>
+            {lead.website && (
+              <a
+                href={lead.website}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-blue-600 hover:text-blue-800 hover:underline transition-colors"
+              >
+                {stripProtocol(lead.website)}
+              </a>
+            )}
+          </ContactRow>
+          <ContactRow label={t("email")} value={lead.email} emptyLabel={t("notProvided")}>
+            {lead.email && (
+              <a
+                href={`mailto:${lead.email}`}
+                className="text-blue-600 hover:text-blue-800 hover:underline transition-colors"
+              >
+                {lead.email}
+              </a>
+            )}
+          </ContactRow>
+          <ContactRow label={t("phone")} value={lead.phone} emptyLabel={t("notProvided")}>
+            {lead.phone && (
+              <a
+                href={`tel:${lead.phone.replace(/\s+/g, "")}`}
+                className="text-gray-900 hover:text-blue-600 transition-colors"
+              >
+                {lead.phone}
+              </a>
+            )}
+          </ContactRow>
+        </dl>
+
+        {socialRows.length > 0 ? (
+          <div className="mt-5 border-t border-gray-100 pt-5">
+            <h3 className="text-xs font-semibold uppercase tracking-wider text-gray-500 mb-3">
+              {t("socialHeading")}
+            </h3>
+            <div className="grid gap-2 sm:grid-cols-2">
+              {socialRows.map((row) => (
                 <a
-                  key={def.key}
-                  href={def.buildHref(value)}
-                  target={def.key === "phone" || def.key === "email" ? undefined : "_blank"}
+                  key={`${row.label}-${row.href}`}
+                  href={row.href}
+                  target="_blank"
                   rel="noopener noreferrer"
                   className="flex items-center gap-2 rounded-md border border-gray-200 bg-white px-3 py-2 text-xs transition-colors hover:border-gray-300 hover:bg-gray-50"
                 >
-                  <def.Icon className="w-3.5 h-3.5 flex-shrink-0 text-gray-500" />
-                  <span className="font-medium text-gray-900 flex-shrink-0">
-                    {def.label}
-                  </span>
-                  <span className="text-gray-500 truncate">{value}</span>
+                  <span className="font-medium text-gray-900">{row.label}</span>
+                  <span className="text-gray-500 truncate">{row.display}</span>
                 </a>
               ))}
             </div>
           </div>
         ) : (
           <p className="mt-5 border-t border-gray-100 pt-5 text-sm text-gray-400">
-            Каналів зв&apos;язку не знайдено.
+            {t("noSocialExtra")}
           </p>
         )}
       </section>
@@ -374,11 +514,11 @@ function ContactsCard({ lead, isBeats }: ContactsCardProps) {
 
   return (
     <section className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-      <h2 className="text-base font-semibold text-gray-900">Контакти</h2>
+      <h2 className="text-base font-semibold text-gray-900">{t("contactsTitle")}</h2>
       <dl className="mt-4 divide-y divide-gray-100 text-sm">
-        <ContactRow label="Категорія" value={lead.category} />
-        <ContactRow label="Місто" value={lead.city} />
-        <ContactRow label="Телефон" value={lead.phone}>
+        <ContactRow label={t("category")} value={lead.category} emptyLabel={t("notProvided")} />
+        <ContactRow label={t("city")} value={lead.city} emptyLabel={t("notProvided")} />
+        <ContactRow label={t("phone")} value={lead.phone} emptyLabel={t("notProvided")}>
           {lead.phone && (
             <a
               href={`tel:${lead.phone.replace(/\s+/g, "")}`}
@@ -388,7 +528,7 @@ function ContactsCard({ lead, isBeats }: ContactsCardProps) {
             </a>
           )}
         </ContactRow>
-        <ContactRow label="Сайт" value={lead.website}>
+        <ContactRow label={t("site")} value={lead.website} emptyLabel={t("notProvided")}>
           {lead.website && (
             <a
               href={lead.website}
@@ -400,7 +540,7 @@ function ContactsCard({ lead, isBeats }: ContactsCardProps) {
             </a>
           )}
         </ContactRow>
-        <ContactRow label="Email" value={lead.email}>
+        <ContactRow label={t("email")} value={lead.email} emptyLabel={t("notProvided")}>
           {lead.email && (
             <a
               href={`mailto:${lead.email}`}
@@ -419,14 +559,16 @@ function ContactRow({
   label,
   value,
   children,
+  emptyLabel,
 }: {
   label: string;
   value: string | null;
   children?: React.ReactNode;
+  emptyLabel: string;
 }) {
   const display = value
     ? children ?? <span className="text-gray-900">{value}</span>
-    : <span className="text-gray-400">Не вказано</span>;
+    : <span className="text-gray-400">{emptyLabel}</span>;
 
   return (
     <div className="flex items-center justify-between gap-4 py-3 first:pt-0 last:pb-0">
@@ -445,12 +587,13 @@ interface AuditCardProps {
   } | null;
   leadId: string;
   hasWebsite: boolean;
+  t: (key: string, values?: Record<string, string | number>) => string;
 }
 
-function AuditCard({ audit, leadId, hasWebsite }: AuditCardProps) {
+function AuditCard({ audit, leadId, hasWebsite, t }: AuditCardProps) {
   return (
     <section className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-      <h2 className="text-base font-semibold text-gray-900">Аудит сайту</h2>
+      <h2 className="text-base font-semibold text-gray-900">{t("auditTitle")}</h2>
 
       {!audit ? (
         <div className="mt-4 flex flex-col items-center justify-center text-center py-8">
@@ -471,12 +614,10 @@ function AuditCard({ audit, leadId, hasWebsite }: AuditCardProps) {
             </svg>
           </div>
           <p className="mt-3 text-sm font-medium text-gray-700">
-            Аудит ще не проводився
+            {t("auditEmptyTitle")}
           </p>
           <p className="mt-1 text-xs text-gray-500">
-            {hasWebsite
-              ? "Запустіть аналіз сайту, щоб побачити Performance Score."
-              : "У ліда відсутній сайт — аудит неможливий."}
+            {hasWebsite ? t("auditEmptyHintWeb") : t("auditEmptyHintNoSite")}
           </p>
           {hasWebsite && (
             <div className="mt-4 flex justify-center">
@@ -498,16 +639,16 @@ function AuditCard({ audit, leadId, hasWebsite }: AuditCardProps) {
           </div>
 
           <div className="mt-5 grid grid-cols-2 gap-3">
-            <CheckBadge label="SSL" ok={audit.hasSSL} />
-            <CheckBadge label="Mobile-friendly" ok={audit.mobileFriendly} />
+            <CheckBadge label={t("ssl")} ok={audit.hasSSL} />
+            <CheckBadge label={t("mobile")} ok={audit.mobileFriendly} />
           </div>
 
           <div className="mt-6">
             <h3 className="text-xs font-semibold uppercase tracking-wider text-gray-500 mb-2">
-              Знайдені проблеми
+              {t("issuesHeading")}
             </h3>
             {audit.issues.length === 0 ? (
-              <p className="text-sm text-gray-500">Проблем не знайдено</p>
+              <p className="text-sm text-gray-500">{t("issuesNone")}</p>
             ) : (
               <ul className="space-y-2">
                 {audit.issues.map((issue, i) => (
@@ -576,17 +717,20 @@ function CheckBadge({ label, ok }: { label: string; ok: boolean }) {
 function SystemField({
   label,
   value,
+  emptyLabel,
 }: {
   label: string;
   value: string | null;
+  emptyLabel?: string;
 }) {
+  const fallback = emptyLabel ?? "—";
   return (
     <div>
       <dt className="text-xs font-semibold uppercase tracking-wider text-gray-500">
         {label}
       </dt>
       <dd className="mt-1.5 text-sm text-gray-900">
-        {value ?? <span className="text-gray-400">Не вказано</span>}
+        {value ?? <span className="text-gray-400">{fallback}</span>}
       </dd>
     </div>
   );
@@ -637,12 +781,22 @@ function asAttachment(value: unknown): MessageAttachment | null {
   };
 }
 
-function MessageHistoryFeed({ messages }: { messages: MessageItem[] }) {
+function MessageHistoryFeed({
+  messages,
+  formatDate,
+  t,
+  tc,
+}: {
+  messages: MessageItem[];
+  formatDate: (d: Date) => string;
+  t: (key: string, values?: Record<string, string | number>) => string;
+  tc: (key: string, values?: Record<string, string | number>) => string;
+}) {
   if (messages.length === 0) {
     return (
       <section className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
         <h2 className="text-base font-semibold text-gray-900">
-          Історія повідомлень
+          {t("messagesTitle")}
         </h2>
         <div className="flex flex-col items-center justify-center text-center py-8">
           <div className="flex h-12 w-12 items-center justify-center rounded-full bg-gray-100">
@@ -662,10 +816,10 @@ function MessageHistoryFeed({ messages }: { messages: MessageItem[] }) {
             </svg>
           </div>
           <p className="mt-3 text-sm font-medium text-gray-700">
-            Поки що немає надісланих листів
+            {t("messagesEmptyTitle")}
           </p>
           <p className="mt-1 text-xs text-gray-500">
-            Згенеруйте та збережіть AI-пропозицію вище, щоб почати історію.
+            {t("messagesEmptyHint")}
           </p>
         </div>
       </section>
@@ -676,7 +830,7 @@ function MessageHistoryFeed({ messages }: { messages: MessageItem[] }) {
     <section className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
       <div className="flex items-center justify-between gap-3">
         <h2 className="text-base font-semibold text-gray-900">
-          Історія повідомлень
+          {t("messagesTitle")}
         </h2>
         <span className="inline-flex items-center rounded-full bg-gray-100 px-2.5 py-0.5 text-xs font-medium text-gray-600">
           {messages.length}
@@ -696,7 +850,7 @@ function MessageHistoryFeed({ messages }: { messages: MessageItem[] }) {
                     {formatDate(msg.sentAt)}
                   </time>
                   <span className="text-gray-300">·</span>
-                  <ReplyStatusBadge status={msg.replyStatus} />
+                  <ReplyStatusBadge status={msg.replyStatus} t={t} />
                 </div>
                 <h3 className="mt-1 text-sm font-medium text-gray-900 truncate">
                   {msg.subject}
@@ -719,7 +873,7 @@ function MessageHistoryFeed({ messages }: { messages: MessageItem[] }) {
             <div className="border-t border-gray-100 bg-gray-50 px-4 py-3 text-sm leading-relaxed text-gray-700 whitespace-pre-wrap">
               {msg.body}
               <MessageAttachmentBadge attachment={asAttachment(msg.attachment)} />
-              <MessageChannelsBadge channels={asChannels(msg.channels)} />
+              <MessageChannelsBadge channels={asChannels(msg.channels)} tc={tc} t={t} />
             </div>
           </details>
         ))}
@@ -755,22 +909,31 @@ function MessageAttachmentBadge({
   );
 }
 
-function MessageChannelsBadge({ channels }: { channels: ChannelKey[] }) {
+function MessageChannelsBadge({
+  channels,
+  tc,
+  t,
+}: {
+  channels: ChannelKey[];
+  tc: (key: string, values?: Record<string, string | number>) => string;
+  t: (key: string, values?: Record<string, string | number>) => string;
+}) {
   if (channels.length === 0) return null;
   return (
     <div className="mt-3 flex flex-wrap items-center gap-1.5 not-prose">
       <span className="text-[10px] uppercase tracking-wider text-gray-500">
-        Надіслано через:
+        {t("sentVia")}
       </span>
       {channels.map((key) => {
         const def = CHANNELS[key];
+        const ui = channelTranslated(key, tc);
         return (
           <span
             key={key}
             className="inline-flex items-center gap-1 rounded-md bg-blue-50 px-1.5 py-0.5 text-[10px] font-medium text-blue-700 ring-1 ring-inset ring-blue-200"
           >
             <def.Icon className="w-3 h-3" />
-            {def.label}
+            {ui.label}
           </span>
         );
       })}
@@ -784,13 +947,27 @@ const REPLY_STATUS_STYLES: Record<string, string> = {
   Bounced: "bg-red-100 text-red-700",
 };
 
-function ReplyStatusBadge({ status }: { status: string }) {
+function ReplyStatusBadge({
+  status,
+  t,
+}: {
+  status: string;
+  t: (key: string, values?: Record<string, string | number>) => string;
+}) {
   const cls = REPLY_STATUS_STYLES[status] ?? "bg-gray-100 text-gray-600";
+  const label =
+    status === "No Reply"
+      ? t("replyNoReply")
+      : status === "Replied"
+        ? t("replyReplied")
+        : status === "Bounced"
+          ? t("replyBounced")
+          : status;
   return (
     <span
       className={`inline-flex items-center rounded-full px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wider ${cls}`}
     >
-      {status}
+      {label}
     </span>
   );
 }

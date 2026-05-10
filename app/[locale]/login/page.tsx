@@ -1,48 +1,43 @@
-import { redirect } from "next/navigation";
+import { getTranslations } from "next-intl/server";
+import { redirect } from "@/src/i18n/navigation";
 import BrandMark from "@/src/components/BrandMark";
+import LanguageSwitcher from "@/src/components/LanguageSwitcher";
 import { getCurrentUser } from "@/src/lib/session";
 
 export const dynamic = "force-dynamic";
 
-const ERROR_MESSAGES: Record<string, string> = {
-  not_configured: "Flux ID не налаштований на сервері. Адміністратор має задати змінні FLUX_*.",
-  state_mismatch: "Сесія входу застаріла або підроблена. Спробуйте ще раз.",
-  missing_code_or_state: "Flux ID не повернув потрібних параметрів. Спробуйте знову.",
-  token_exchange_failed: "Не вдалося обміняти код на токен. Перевірте FLUX_CLIENT_SECRET.",
-  userinfo_failed: "Flux ID повернув помилку при отриманні профілю. Спробуйте пізніше.",
-  invalid_subject: "Flux ID повернув некоректний ідентифікатор користувача.",
-  db_failure: "Не вдалося зберегти користувача в базі. Спробуйте ще раз.",
-  access_denied: "Ви не дали згоду на вхід через Flux ID.",
-};
-
-function describeError(code: string | null, detail: string | null): string | null {
-  if (!code) return null;
-  return ERROR_MESSAGES[code] ?? detail ?? `Помилка входу: ${code}`;
-}
-
 export default async function LoginPage({
+  params,
   searchParams,
 }: {
+  params: Promise<{ locale: string }>;
   searchParams: Promise<{ auth_error?: string; auth_error_detail?: string }>;
 }) {
+  const { locale } = await params;
   const user = await getCurrentUser();
-  if (user) redirect("/");
+  if (user) redirect({ href: "/", locale });
 
-  const params = await searchParams;
-  const errorMessage = describeError(params.auth_error ?? null, params.auth_error_detail ?? null);
+  const t = await getTranslations({ locale, namespace: "Login" });
+  const paramsSearch = await searchParams;
+  const code = paramsSearch.auth_error ?? null;
+  const detail = paramsSearch.auth_error_detail ?? null;
+
+  const errorMessage = formatLoginError(t, code, detail);
 
   return (
     <main className="flex min-h-screen items-center justify-center bg-gradient-to-br from-gray-50 via-white to-indigo-50 px-4 py-12 sm:px-6 lg:px-8">
       <div className="w-full max-w-md">
         <div className="rounded-2xl bg-white p-8 shadow-lg ring-1 ring-gray-200/70 sm:p-10">
           <div className="flex flex-col items-center text-center">
-            <BrandMark className="h-14 w-14" />
+            <BrandMark href="/" className="h-14 w-14" />
             <h1 className="mt-5 text-2xl font-semibold tracking-tight text-gray-900">
-              NeoFlux Lead Engine
+              {t("title")}
             </h1>
-            <p className="mt-2 text-sm text-gray-500">
-              Увійдіть, щоб відкрити панель лідів та інструменти outreach.
-            </p>
+            <p className="mt-2 text-sm text-gray-500">{t("subtitle")}</p>
+          </div>
+
+          <div className="mt-4 flex justify-center">
+            <LanguageSwitcher />
           </div>
 
           {errorMessage && (
@@ -58,10 +53,15 @@ export default async function LoginPage({
                   clipRule="evenodd"
                 />
               </svg>
-              <p className="text-xs leading-relaxed text-red-700">{errorMessage}</p>
+              <p className="whitespace-pre-line text-xs leading-relaxed text-red-700">
+                {errorMessage}
+              </p>
             </div>
           )}
 
+          {/* Link to a Route Handler (not a page) — `next/link` would prefetch
+              and break the OAuth flow. eslint rule doesn't know about that. */}
+          {/* eslint-disable-next-line @next/next/no-html-link-for-pages */}
           <a
             href="/api/auth/flux/login"
             className="mt-8 inline-flex w-full items-center justify-center gap-2 rounded-lg bg-gray-900 px-4 py-3 text-sm font-medium text-white shadow-sm transition hover:bg-gray-800 active:bg-black"
@@ -79,26 +79,67 @@ export default async function LoginPage({
                 d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 003 3h2a3 3 0 003-3V7a3 3 0 00-3-3h-2a3 3 0 00-3 3v1"
               />
             </svg>
-            Увійти через Flux ID
+            {t("fluxCta")}
           </a>
 
-          <p className="mt-6 text-center text-xs text-gray-400">
-            Flux ID — єдиний акаунт для всіх продуктів екосистеми Flux.
-          </p>
+          <p className="mt-6 text-center text-xs text-gray-400">{t("fluxFooter")}</p>
         </div>
 
         <p className="mt-6 text-center text-xs text-gray-400">
-          Немає акаунту?{" "}
+          {t("noAccount")}{" "}
           <a
             href="https://fluxid.fluxmarketplace.store/auth/sign-up.html"
             target="_blank"
             rel="noopener noreferrer"
             className="font-medium text-gray-600 hover:text-gray-900 hover:underline"
           >
-            Зареєструватися
+            {t("register")}
           </a>
         </p>
       </div>
     </main>
   );
+}
+
+type LoginT = Awaited<ReturnType<typeof getTranslations>>;
+
+function formatLoginError(
+  t: LoginT,
+  code: string | null,
+  detail: string | null,
+): string | null {
+  if (!code) return null;
+  let base: string;
+  switch (code) {
+    case "not_configured":
+      base = t("errors.not_configured");
+      break;
+    case "state_mismatch":
+      base = t("errors.state_mismatch");
+      break;
+    case "missing_code_or_state":
+      base = t("errors.missing_code_or_state");
+      break;
+    case "token_exchange_failed":
+      base = t("errors.token_exchange_failed");
+      break;
+    case "userinfo_failed":
+      base = t("errors.userinfo_failed");
+      break;
+    case "invalid_subject":
+      base = t("errors.invalid_subject");
+      break;
+    case "db_failure":
+      base = t("errors.db_failure");
+      break;
+    case "access_denied":
+      base = t("errors.access_denied");
+      break;
+    default:
+      base = t("errors.fallback", { code });
+  }
+  if (detail?.trim()) {
+    return `${base}\n\n${detail.trim()}`;
+  }
+  return base;
 }

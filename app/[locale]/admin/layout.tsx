@@ -1,4 +1,5 @@
-import Link from "next/link";
+import { getTranslations } from "next-intl/server";
+import { Link } from "@/src/i18n/navigation";
 import { requireAdmin, normalizeRole } from "@/src/lib/admin";
 
 export const dynamic = "force-dynamic";
@@ -10,6 +11,7 @@ export default async function AdminLayout({
 }) {
   const user = await requireAdmin();
   const role = normalizeRole(user.role);
+  const t = await getTranslations("AdminLayout");
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -32,11 +34,11 @@ export default async function AdminLayout({
                   clipRule="evenodd"
                 />
               </svg>
-              Робочий простір
+              {t("backToWorkspace")}
             </Link>
             <span className="text-gray-300">|</span>
             <span className="text-sm font-semibold text-gray-900">
-              Intelligence Center
+              {t("centerTitle")}
             </span>
           </div>
           <div className="flex items-center gap-2">
@@ -44,7 +46,7 @@ export default async function AdminLayout({
               href="/admin/users"
               className="rounded-md px-3 py-1.5 text-xs font-medium text-gray-700 transition hover:bg-gray-100"
             >
-              Користувачі
+              {t("navUsers")}
             </Link>
             <span
               className={`rounded-full px-2.5 py-1 text-xs font-semibold ${

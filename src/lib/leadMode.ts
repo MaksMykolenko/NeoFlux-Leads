@@ -15,21 +15,30 @@ import type { LeadMode as PrismaLeadMode } from "@prisma/client";
 export const LeadMode = {
   LOCAL: "LOCAL",
   BEATS: "BEATS",
+  UNIVERSAL: "UNIVERSAL",
 } as const satisfies Record<string, PrismaLeadMode>;
 
 export type LeadMode = PrismaLeadMode;
 
-export type LeadModeKey = "local" | "beats";
+export type LeadModeKey = "local" | "beats" | "universal";
 
 export function modeFromQuery(value: string | string[] | undefined): LeadMode {
   if (Array.isArray(value)) value = value[0];
-  return value === "beats" ? LeadMode.BEATS : LeadMode.LOCAL;
+  if (value === "beats") return LeadMode.BEATS;
+  if (value === "universal") return LeadMode.UNIVERSAL;
+  return LeadMode.LOCAL;
 }
 
 export function modeKeyFromMode(mode: LeadMode): LeadModeKey {
-  return mode === LeadMode.BEATS ? "beats" : "local";
+  if (mode === LeadMode.BEATS) return "beats";
+  if (mode === LeadMode.UNIVERSAL) return "universal";
+  return "local";
 }
 
 export function isBeatsMode(mode: LeadMode): boolean {
   return mode === LeadMode.BEATS;
+}
+
+export function isUniversalMode(mode: LeadMode): boolean {
+  return mode === LeadMode.UNIVERSAL;
 }

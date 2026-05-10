@@ -1,33 +1,52 @@
-import Link from "next/link";
+"use client";
+
+import { useTranslations } from "next-intl";
+import { Link } from "@/src/i18n/navigation";
 import type { LeadModeKey } from "@/src/lib/leadMode";
 
 interface ModeTabsProps {
   active: LeadModeKey;
 }
 
+type ModeTabKey =
+  | "localLabel"
+  | "localHint"
+  | "beatsLabel"
+  | "beatsHint"
+  | "universalLabel"
+  | "universalHint";
+
 interface TabDef {
   id: LeadModeKey;
   href: string;
-  label: string;
-  hint: string;
+  labelKey: ModeTabKey;
+  hintKey: ModeTabKey;
 }
 
 const TABS: TabDef[] = [
   {
     id: "local",
     href: "/",
-    label: "Локальний бізнес",
-    hint: "Google Maps · сайти, телефони",
+    labelKey: "localLabel",
+    hintKey: "localHint",
   },
   {
     id: "beats",
     href: "/?mode=beats",
-    label: "Виконавці для бітів",
-    hint: "SoundCloud · YouTube · Instagram",
+    labelKey: "beatsLabel",
+    hintKey: "beatsHint",
+  },
+  {
+    id: "universal",
+    href: "/?mode=universal",
+    labelKey: "universalLabel",
+    hintKey: "universalHint",
   },
 ];
 
 export default function ModeTabs({ active }: ModeTabsProps) {
+  const t = useTranslations("ModeTabs");
+
   return (
     <div
       id="tour-mode-tabs"
@@ -45,9 +64,9 @@ export default function ModeTabs({ active }: ModeTabsProps) {
                 : "text-gray-500 hover:text-gray-900"
             }`}
           >
-            <div>{tab.label}</div>
+            <div>{t(tab.labelKey)}</div>
             <div className="text-[10px] font-normal text-gray-400 uppercase tracking-wider mt-0.5">
-              {tab.hint}
+              {t(tab.hintKey)}
             </div>
             {isActive && (
               <span className="absolute -bottom-px left-0 right-0 h-0.5 bg-blue-600" />

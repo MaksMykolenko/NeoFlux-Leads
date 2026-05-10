@@ -1,6 +1,6 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { revalidateLocalizedPath } from "@/src/i18n/revalidateLocalized";
 import { prisma } from "@/src/lib/prisma";
 import { isLeadStatus } from "@/src/lib/leadStatus";
 import { getRequestUserId } from "@/src/lib/session";
@@ -37,7 +37,7 @@ export async function updateLeadStatus(
       return { success: false, error: "Лід не знайдено" };
     }
 
-    revalidatePath(`/leads/${leadId}`);
+    await revalidateLocalizedPath(`/leads/${leadId}`);
     return { success: true };
   } catch (error) {
     console.error("updateLeadStatus error:", error);

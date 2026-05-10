@@ -1,8 +1,10 @@
-import Link from "next/link";
+import { getTranslations } from "next-intl/server";
+import { Link } from "@/src/i18n/navigation";
 import { getCurrentUser } from "@/src/lib/session";
 import { getPlanForUser } from "@/src/lib/subscription";
 import { isAdmin } from "@/src/lib/admin";
 import BrandMark from "@/src/components/BrandMark";
+import LanguageSwitcher from "@/src/components/LanguageSwitcher";
 
 function initials(value: string): string {
   return value
@@ -21,9 +23,10 @@ export default async function AuthHeader() {
   // тут був би дублюванням і ламав би UX логін-сторінки.
   if (!user) return null;
 
+  const t = await getTranslations("AuthHeader");
   const plan = getPlanForUser(user);
   const userIsAdmin = isAdmin(user);
-  const displayName = user.displayName || user.username || "Користувач";
+  const displayName = user.displayName || user.username || t("fallbackUser");
 
   return (
     <header className="sticky top-0 z-30 border-b border-gray-200 bg-white/80 backdrop-blur supports-[backdrop-filter]:bg-white/70">
@@ -34,26 +37,28 @@ export default async function AuthHeader() {
         >
           <BrandMark className="h-7 w-7" />
           <span className="hidden whitespace-nowrap text-sm font-semibold tracking-tight sm:inline">
-            NeoFlux Leads
+            {t("productName")}
           </span>
         </Link>
 
         <div className="flex min-w-0 items-center gap-1">
+          <LanguageSwitcher />
+
           {userIsAdmin && (
             <Link
               href="/admin/users"
-              title="Admin Intelligence Center"
+              title={t("admin")}
               className="inline-flex items-center gap-1.5 rounded-md bg-amber-50 px-2.5 py-1.5 text-xs font-medium text-amber-800 ring-1 ring-inset ring-amber-200 transition hover:bg-amber-100"
             >
               <LockIcon className="h-3.5 w-3.5" />
-              <span className="hidden sm:inline">Admin</span>
+              <span className="hidden sm:inline">{t("admin")}</span>
             </Link>
           )}
 
           <Link
             href="/settings"
-            title="Налаштування"
-            aria-label="Налаштування"
+            title={t("settings")}
+            aria-label={t("settings")}
             className="inline-flex h-8 w-8 items-center justify-center rounded-md text-gray-500 transition hover:bg-gray-100 hover:text-gray-900"
           >
             <GearIcon className="h-4 w-4" />
@@ -61,7 +66,7 @@ export default async function AuthHeader() {
 
           <Link
             href="/pricing"
-            title={`План ${plan.name}`}
+            title={plan.name}
             className="hidden items-center gap-1.5 rounded-full bg-gray-100 px-2.5 py-1 text-xs font-medium text-gray-700 transition hover:bg-gray-200 md:inline-flex"
           >
             <span className="inline-flex h-1.5 w-1.5 rounded-full bg-indigo-500" />
@@ -98,12 +103,12 @@ export default async function AuthHeader() {
           <form action="/api/auth/logout" method="post" className="ml-1">
             <button
               type="submit"
-              title="Вийти"
-              aria-label="Вийти"
+              title={t("signOut")}
+              aria-label={t("signOut")}
               className="inline-flex h-8 w-8 items-center justify-center rounded-md text-gray-400 transition hover:bg-red-50 hover:text-red-600 sm:h-auto sm:w-auto sm:gap-1.5 sm:px-3 sm:py-1.5 sm:text-xs sm:font-medium sm:text-gray-700 sm:hover:bg-gray-50 sm:hover:text-gray-900"
             >
               <LogoutIcon className="h-4 w-4" />
-              <span className="hidden sm:inline">Вийти</span>
+              <span className="hidden sm:inline">{t("signOut")}</span>
             </button>
           </form>
         </div>

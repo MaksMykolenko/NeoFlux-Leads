@@ -1,6 +1,7 @@
 "use client";
 
-import Link from "next/link";
+import { Link } from "@/src/i18n/navigation";
+import { useTranslations } from "next-intl";
 import { useState, useTransition } from "react";
 import { generateProposal } from "@/src/actions/aiActions";
 import {
@@ -25,6 +26,8 @@ export default function AIProposalGenerator({
   companyName,
   leadEmail,
 }: AIProposalGeneratorProps) {
+  const t = useTranslations("AIProposal");
+  const tLead = useTranslations("LeadStatus");
   const [text, setText] = useState<string>("");
   const [subject, setSubject] = useState<string>("");
   const [error, setError] = useState<string | null>(null);
@@ -37,8 +40,6 @@ export default function AIProposalGenerator({
 
   const hasText = text.trim().length > 0;
   const canSendEmail = !!leadEmail;
-  // Disable Save while the textarea matches what we last persisted to avoid
-  // accidentally inserting an identical Message row a second time.
   const isAlreadySaved = savedFor !== null && savedFor === text.trim();
 
   function handleGenerate() {
@@ -51,10 +52,12 @@ export default function AIProposalGenerator({
       if (result.success && result.text) {
         setText(result.text);
         setSubject((current) =>
-          current.trim() ? current : `Пропозиція для ${companyName}`
+          current.trim()
+            ? current
+            : t("subjectPlaceholder", { company: companyName })
         );
       } else {
-        setError(result.error ?? "Не вдалось згенерувати лист");
+        setError(result.error ?? t("generateErr"));
       }
     });
   }
@@ -66,7 +69,7 @@ export default function AIProposalGenerator({
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch {
-      setError("Не вдалось скопіювати в буфер обміну");
+      setError(t("copyErr"));
     }
   }
 
@@ -77,7 +80,7 @@ export default function AIProposalGenerator({
       if (result.success) {
         setSavedFor(text.trim());
       } else {
-        setError(result.error ?? "Не вдалось зберегти повідомлення");
+        setError(result.error ?? t("saveErr"));
       }
     });
   }
@@ -94,7 +97,7 @@ export default function AIProposalGenerator({
         setSavedFor(text.trim());
         setToast({
           type: "success",
-          msg: "Лист надіслано та збережено в історії.",
+          msg: t("toastSent"),
         });
         return;
       }
@@ -102,15 +105,15 @@ export default function AIProposalGenerator({
       if (result.errorCode === "NO_SMTP") {
         setToast({
           type: "warn",
-          msg: "Спершу заповніть SMTP-налаштування у профілі.",
-          cta: { href: "/settings", label: "Відкрити" },
+          msg: t("toastNoSmtp"),
+          cta: { href: "/settings", label: t("openSettings") },
         });
         return;
       }
 
       setToast({
         type: "error",
-        msg: result.error ?? "Помилка SMTP — перевірте налаштування.",
+        msg: result.error ?? t("toastSmtpErr"),
       });
     });
   }
@@ -120,15 +123,11 @@ export default function AIProposalGenerator({
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <p className="text-xs font-semibold uppercase tracking-wider text-gray-500">
-            AI Proposal
+            {t("sectionLabel")}
           </p>
-          <h2 className="mt-1 text-base font-semibold text-gray-900">
-            Холодний лист під цього ліда
-          </h2>
-          <p className="mt-1 text-sm text-gray-500">
-            Gemini 2.5 Flash проаналізує дані ліда та згенерує персоналізований
-            лист на основі знайдених «болей».
-          </p>
+          <h2 className="mt-1 text-base font-semibold text-gray-900">{t("title")}</h2>
+          <p className="mt-1 text-sm text-gray-500">{t("description")}</p>
+          <p className="mt-2 text-xs text-gray-500">{t("emailOnlyNote")}</p>
         </div>
         <button
           type="button"
@@ -138,16 +137,16 @@ export default function AIProposalGenerator({
         >
           <SparkleIcon className="w-4 h-4" />
           {isGenerating
-            ? "Генерую..."
+            ? t("generatingShort")
             : hasText
-            ? "Згенерувати ще раз"
-            : "Згенерувати листа (AI)"}
+              ? t("regenerate")
+              : t("generate")}
         </button>
       </div>
 
       <div className="mt-5">
         {isGenerating ? (
-          <SkeletonLoader />
+          <SkeletonLoader label={t("analyzing")} />
         ) : hasText ? (
           <div className="space-y-3">
             <div>
@@ -155,14 +154,14 @@ export default function AIProposalGenerator({
                 htmlFor="ai-proposal-subject"
                 className="block text-xs font-semibold uppercase tracking-wider text-gray-500 mb-1.5"
               >
-                Тема листа
+                {t("subjectLabel")}
               </label>
               <input
                 id="ai-proposal-subject"
                 type="text"
                 value={subject}
                 onChange={(event) => setSubject(event.target.value)}
-                placeholder={`Пропозиція для ${companyName}`}
+                placeholder={t("subjectPlaceholder", { company: companyName })}
                 className="block w-full rounded-lg border border-gray-200 bg-gray-50 px-4 py-2.5 text-sm text-gray-900 focus:border-blue-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-100"
               />
             </div>
@@ -172,7 +171,7 @@ export default function AIProposalGenerator({
                 htmlFor="ai-proposal-body"
                 className="block text-xs font-semibold uppercase tracking-wider text-gray-500 mb-1.5"
               >
-                Текст листа
+                {t("bodyLabel")}
               </label>
               <textarea
                 id="ai-proposal-body"
@@ -184,9 +183,7 @@ export default function AIProposalGenerator({
             </div>
 
             <div className="flex flex-wrap items-center justify-between gap-3 pt-1">
-              <span className="text-xs text-gray-400">
-                Тему та текст можна редагувати перед збереженням.
-              </span>
+              <span className="text-xs text-gray-400">{t("editHint")}</span>
               <div className="flex items-center gap-2">
                 <button
                   type="button"
@@ -200,12 +197,12 @@ export default function AIProposalGenerator({
                   {copied ? (
                     <>
                       <CheckIcon className="w-3.5 h-3.5" />
-                      Скопійовано
+                      {t("copied")}
                     </>
                   ) : (
                     <>
                       <ClipboardIcon className="w-3.5 h-3.5" />
-                      Копіювати
+                      {t("copy")}
                     </>
                   )}
                 </button>
@@ -217,10 +214,10 @@ export default function AIProposalGenerator({
                 >
                   <SaveIcon className="w-3.5 h-3.5" />
                   {isSaving
-                    ? "Зберігаю..."
+                    ? t("saving")
                     : isAlreadySaved
-                    ? "Збережено"
-                    : "Зберегти в CRM"}
+                      ? t("savedState")
+                      : t("save")}
                 </button>
                 <button
                   type="button"
@@ -232,22 +229,18 @@ export default function AIProposalGenerator({
                     !hasText ||
                     !subject.trim()
                   }
-                  title={
-                    !canSendEmail
-                      ? "У ліда немає email — додайте його перед відправкою"
-                      : undefined
-                  }
+                  title={!canSendEmail ? t("noEmailHint") : undefined}
                   className="inline-flex items-center gap-1.5 rounded-md bg-blue-600 px-3 py-1.5 text-xs font-medium text-white shadow-sm transition-colors hover:bg-blue-700 disabled:bg-blue-300 disabled:cursor-not-allowed"
                 >
                   {isSending ? (
                     <>
                       <SpinnerIcon className="w-3.5 h-3.5 animate-spin" />
-                      Відправляю...
+                      {t("sending")}
                     </>
                   ) : (
                     <>
                       <PaperPlaneIcon className="w-3.5 h-3.5" />
-                      Надіслати на Email
+                      {t("send")}
                     </>
                   )}
                 </button>
@@ -257,9 +250,7 @@ export default function AIProposalGenerator({
         ) : (
           <div className="flex flex-col items-center justify-center text-center py-8">
             <SparkleIcon className="w-8 h-8 text-gray-300" />
-            <p className="mt-3 text-sm text-gray-500">
-              Натисніть кнопку, щоб AI створив персональний холодний лист.
-            </p>
+            <p className="mt-3 text-sm text-gray-500">{t("emptyState")}</p>
           </div>
         )}
       </div>
@@ -268,8 +259,8 @@ export default function AIProposalGenerator({
         <div className="mt-4 flex items-start gap-2 rounded-lg border border-green-200 bg-green-50 px-3 py-2.5 text-sm text-green-800">
           <CheckIcon className="w-4 h-4 mt-0.5 flex-shrink-0 text-green-600" />
           <div>
-            Повідомлення збережено, статус ліда змінено на{" "}
-            <span className="font-semibold">Contacted</span>.
+            {t("savedBannerIntro")}{" "}
+            <span className="font-semibold">{tLead("Contacted")}</span>.
           </div>
         </div>
       )}
@@ -286,8 +277,8 @@ export default function AIProposalGenerator({
             toast.type === "success"
               ? "border-green-200 bg-green-50 text-green-800"
               : toast.type === "warn"
-              ? "border-amber-200 bg-amber-50 text-amber-800"
-              : "border-red-200 bg-red-50 text-red-700"
+                ? "border-amber-200 bg-amber-50 text-amber-800"
+                : "border-red-200 bg-red-50 text-red-700"
           }`}
         >
           <span className="flex-1">{toast.msg}</span>
@@ -303,16 +294,13 @@ export default function AIProposalGenerator({
       )}
 
       {!canSendEmail && hasText && (
-        <p className="mt-3 text-xs text-gray-400">
-          У ліда немає email — кнопку відправки заблоковано. Допишіть адресу,
-          щоб надіслати лист.
-        </p>
+        <p className="mt-3 text-xs text-gray-400">{t("noEmailHint")}</p>
       )}
     </section>
   );
 }
 
-function SkeletonLoader() {
+function SkeletonLoader({ label }: { label: string }) {
   return (
     <div className="rounded-lg border border-gray-200 bg-gray-50 p-4">
       <div className="flex items-center gap-2 text-sm text-gray-500">
@@ -336,7 +324,7 @@ function SkeletonLoader() {
             d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
           />
         </svg>
-        AI аналізує ліда...
+        {label}
       </div>
       <div className="mt-4 space-y-2.5">
         <div className="h-3 w-3/5 animate-pulse rounded bg-gray-200" />

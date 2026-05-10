@@ -1,5 +1,6 @@
-import { redirect } from "next/navigation";
+import { getLocale } from "next-intl/server";
 import type { User } from "@prisma/client";
+import { redirect } from "@/src/i18n/navigation";
 import { getCurrentUser, requireUser } from "@/src/lib/session";
 
 export type Role = "USER" | "ADMIN" | "OWNER";
@@ -33,13 +34,13 @@ export function isOwner(user: { role: string } | null | undefined): boolean {
  */
 export async function requireAdmin(): Promise<User> {
   const user = await requireUser();
-  if (!isAdmin(user)) redirect("/");
+  if (!isAdmin(user)) redirect({ href: "/", locale: await getLocale() });
   return user;
 }
 
 export async function requireOwner(): Promise<User> {
   const user = await requireUser();
-  if (!isOwner(user)) redirect("/");
+  if (!isOwner(user)) redirect({ href: "/", locale: await getLocale() });
   return user;
 }
 
