@@ -1,18 +1,126 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { Prisma } from "@prisma/client";
+import type { User } from "@prisma/client";
 import {
   exchangeCodeForToken,
   fetchUserInfo,
   getFluxConfig,
   verifyState,
+  type FluxUserInfo,
 } from "@/src/lib/fluxAuth";
 import { prisma } from "@/src/lib/prisma";
 import { buildSessionCookie, createSession } from "@/src/lib/session";
-import { inferRoleForEmail, normalizeRole } from "@/src/lib/admin";
+import { inferRoleForEmail, normalizeRole, type Role } from "@/src/lib/admin";
 
 export const dynamic = "force-dynamic";
 
 const STATE_COOKIE = "neoflux_oauth_state";
+
+const TRANSIENT_DB_CODES = new Set([
+  "P1001", // Can't reach database server
+  "P1002", // Connection timeout
+  "P1017", // Server closed the connection
+  "P2024", // Timed out fetching connection from pool
+]);
+
+function isTransientUserDbError(err: unknown): boolean {
+  if (err instanceof Prisma.PrismaClientKnownRequestError) {
+    return TRANSIENT_DB_CODES.has(err.code);
+  }
+  if (err instanceof Error) {
+    const m = err.message.toLowerCase();
+    return (
+      m.includes("max clients") ||
+      m.includes("emaxconnsession") ||
+      m.includes("econnreset")
+    );
+  }
+  return false;
+}
+
+function dbFailureDetail(err: unknown): string | undefined {
+  if (err instanceof Prisma.PrismaClientKnownRequestError) {
+    if (err.code === "P2021") {
+      return "У цій базі ще немає таблиць User/Session. Застосуйте схему Prisma до тієї ж БД, що в DATABASE_URL (локально: npx prisma db push; прод: migrate deploy або db push), потім спробуйте вхід знову.";
+    }
+    if (err.code === "P2002") {
+      return "Конфлікт унікальності (частіше всього email уже прив’язаний до іншого fluxUserId). Перевірте таблицю User у БД або зверніться до адміністратора.";
+    }
+    if (TRANSIENT_DB_CODES.has(err.code)) {
+      return "Тимчасова проблема з’єднання з базою (таймаут або зайнятий пул з’єднань). Спробуйте вхід ще раз за хвилину; якщо повторюється часто — перевірте Supabase pooler / ліміти та DATABASE_URL.";
+    }
+  }
+  if (err instanceof Error) {
+    const m = err.message.toLowerCase();
+    if (m.includes("max clients") || m.includes("emaxconnsession")) {
+      return "База відхилила з’єднання: ліміт клієнтів на pooler (часто Supabase session mode). Спробуйте ще раз; для Prisma migrate використовуйте DIRECT_URL на прямий хост db.*.supabase.co.";
+    }
+  }
+  return undefined;
+}
+
+/**
+ * Upsert користувача з Flux userinfo. Повторює спробу при типових тимчасових
+ * збоях з’єднання з Postgres (pooler Supabase, таймаути).
+ */
+async function upsertUserFromFluxProfile(params: {
+  fluxUserId: number;
+  userInfo: FluxUserInfo;
+  initialRole: Role;
+}): Promise<User> {
+  const { fluxUserId, userInfo, initialRole } = params;
+  const maxAttempts = 3;
+  let lastErr: unknown;
+
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+    try {
+      const existing = await prisma.user.findUnique({
+        where: { fluxUserId },
+        select: { id: true, role: true },
+      });
+
+      if (existing) {
+        const currentRole = normalizeRole(existing.role);
+        const desiredRole =
+          initialRole === "OWNER" ? "OWNER" : currentRole;
+
+        return await prisma.user.update({
+          where: { id: existing.id },
+          data: {
+            email: userInfo.email ?? null,
+            username: userInfo.username ?? null,
+            displayName: userInfo.display_name ?? null,
+            avatarUrl: userInfo.avatar ?? null,
+            role: desiredRole,
+            accountType: userInfo.account_type ?? null,
+          },
+        });
+      }
+
+      return await prisma.user.create({
+        data: {
+          fluxUserId,
+          email: userInfo.email ?? null,
+          username: userInfo.username ?? null,
+          displayName: userInfo.display_name ?? null,
+          avatarUrl: userInfo.avatar ?? null,
+          role: initialRole,
+          accountType: userInfo.account_type ?? null,
+        },
+      });
+    } catch (err) {
+      lastErr = err;
+      const retry = attempt < maxAttempts && isTransientUserDbError(err);
+      if (retry) {
+        await new Promise((r) => setTimeout(r, 200 * attempt));
+        continue;
+      }
+      throw err;
+    }
+  }
+
+  throw lastErr;
+}
 
 function errorRedirect(req: NextRequest, code: string, detail?: string): NextResponse {
   const url = new URL("/login", req.url);
@@ -75,58 +183,16 @@ export async function GET(req: NextRequest) {
   // зроблений у /admin/users, скидався б при кожному логіні.
   const initialRole = inferRoleForEmail(userInfo.email ?? null);
 
-  let user;
+  let user: User;
   try {
-    const existing = await prisma.user.findUnique({
-      where: { fluxUserId },
-      select: { id: true, role: true },
+    user = await upsertUserFromFluxProfile({
+      fluxUserId,
+      userInfo,
+      initialRole,
     });
-
-    if (existing) {
-      const currentRole = normalizeRole(existing.role);
-      // Якщо юзер уже OWNER через email-bootstrap — не лишаємо стару роль.
-      // Винятком — якщо OWNER_EMAIL збігається з email юзера (повторне
-      // підтвердження ownership), форсуємо OWNER на випадок ручної правки.
-      const desiredRole =
-        initialRole === "OWNER" ? "OWNER" : currentRole;
-
-      user = await prisma.user.update({
-        where: { id: existing.id },
-        data: {
-          email: userInfo.email ?? null,
-          username: userInfo.username ?? null,
-          displayName: userInfo.display_name ?? null,
-          avatarUrl: userInfo.avatar ?? null,
-          role: desiredRole,
-          accountType: userInfo.account_type ?? null,
-        },
-      });
-    } else {
-      user = await prisma.user.create({
-        data: {
-          fluxUserId,
-          email: userInfo.email ?? null,
-          username: userInfo.username ?? null,
-          displayName: userInfo.display_name ?? null,
-          avatarUrl: userInfo.avatar ?? null,
-          role: initialRole,
-          accountType: userInfo.account_type ?? null,
-        },
-      });
-    }
   } catch (err) {
     console.error("[flux callback] user upsert", err);
-    let detail: string | undefined;
-    if (err instanceof Prisma.PrismaClientKnownRequestError) {
-      if (err.code === "P2021") {
-        detail =
-          "У цій базі ще немає таблиць User/Session. Застосуйте схему Prisma до тієї ж БД, що в DATABASE_URL (локально: npx prisma db push; прод: migrate deploy або db push), потім спробуйте вхід знову.";
-      } else if (err.code === "P2002") {
-        detail =
-          "Конфлікт унікальності (частіше всього email уже прив’язаний до іншого fluxUserId). Перевірте таблицю User у БД або зверніться до адміністратора.";
-      }
-    }
-    return errorRedirect(req, "db_failure", detail);
+    return errorRedirect(req, "db_failure", dbFailureDetail(err));
   }
 
   const userAgent = req.headers.get("user-agent");
