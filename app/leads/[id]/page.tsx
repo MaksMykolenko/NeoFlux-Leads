@@ -150,6 +150,7 @@ export default async function LeadDetailPage({
           <AIProposalGenerator
             leadId={lead.id}
             companyName={lead.companyName}
+            leadEmail={lead.email}
           />
         </div>
 

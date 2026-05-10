@@ -72,14 +72,19 @@ model Campaign {
 }
 
 model Message {
-  id          String   @id @default(uuid())
-  leadId      String
-  subject     String
-  body        String   @db.Text
-  sentAt      DateTime @default(now())
-  replyStatus String   @default("No Reply") // No Reply, Replied, Bounced
-  attachment  Json?    // BEATS-only: { name, bytes, bpm, keySig, genre, price }
-  channels    Json?    // BEATS-only outreach: ["email", "instagram", "telegram", ...] — channels the user actually opened to send through
+  id             String   @id @default(uuid())
+  leadId         String
+  subject        String
+  body           String   @db.Text
+  sentAt         DateTime @default(now())
+  replyStatus    String   @default("No Reply") // No Reply, Replied, Bounced
+  attachment     Json?    // BEATS-only: { name, bytes, bpm, keySig, genre, price }
+  channels       Json?    // BEATS-only outreach: ["email", "instagram", "telegram", ...] — channels the user actually opened to send through
+  // Стан реальної доставки через BYOSMTP. DRAFT = тільки збережено в CRM,
+  // не відправлено. SENT = успішно відправлено. FAILED = nodemailer повернув
+  // помилку (див. errorLog).
+  deliveryStatus String   @default("DRAFT")    // DRAFT | SENT | FAILED
+  errorLog       String?  @db.Text             // повний текст помилки SMTP
 
   // Зв'язки
   lead        Lead     @relation(fields: [leadId], references: [id], onDelete: Cascade)
@@ -102,6 +107,17 @@ model User {
   plan                String   @default("STARTER") // STARTER | PRO | AGENCY (див. src/lib/subscription.ts)
   leadsProcessedCount Int      @default(0)         // лічильник місячного скрапінгу
   planResetDate       DateTime @default(now())     // коли востаннє скидали лічильник
+
+  // BYOSMTP: користувач підключає власний поштовий сервер для відправки.
+  // smtpPass зберігається у відкритому вигляді — TODO: зашифрувати AES-GCM
+  // ключем з env (FLUX_OAUTH_STATE_SECRET підійде як шарод з тим самим
+  // життєвим циклом).
+  smtpHost  String?
+  smtpPort  Int?
+  smtpUser  String?
+  smtpPass  String?
+  fromEmail String?
+  fromName  String?
 
   sessions     Session[]
   leads        Lead[]
