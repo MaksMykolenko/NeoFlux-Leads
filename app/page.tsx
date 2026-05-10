@@ -1,4 +1,5 @@
 import { Suspense } from "react";
+import type { Prisma } from "@prisma/client";
 import { prisma } from "@/src/lib/prisma";
 import { LeadMode, modeFromQuery, modeKeyFromMode } from "@/src/lib/leadMode";
 import ScraperForm from "@/src/components/ScraperForm";
@@ -7,6 +8,7 @@ import BrandMark from "@/src/components/BrandMark";
 import LeadTableRow from "@/src/components/LeadTableRow";
 import ModeTabs from "@/src/components/ModeTabs";
 import OnboardingTour from "@/src/components/OnboardingTour";
+import DatabaseConfigBanner from "@/src/components/DatabaseConfigBanner";
 
 export const dynamic = "force-dynamic";
 
@@ -19,16 +21,48 @@ export default async function Home({
   const mode = modeFromQuery(params.mode);
   const isBeats = mode === LeadMode.BEATS;
 
-  const leads = await prisma.lead.findMany({
-    where: { mode },
-    orderBy: { createdAt: "desc" },
-    take: 10,
-    include: { audit: true },
-  });
+  const missingDbEnv =
+    !process.env.DATABASE_URL?.trim() ||
+    !process.env.DIRECT_URL?.trim();
+
+  type LeadWithAudit = Prisma.LeadGetPayload<{
+    include: { audit: true };
+  }>;
+
+  let leads: LeadWithAudit[] = [];
+  let dbQueryFailed = false;
+  let dbQueryError: string | null = null;
+
+  if (!missingDbEnv) {
+    try {
+      leads = await prisma.lead.findMany({
+        where: { mode },
+        orderBy: { createdAt: "desc" },
+        take: 10,
+        include: { audit: true },
+      });
+    } catch (err) {
+      dbQueryFailed = true;
+      console.error("[home] prisma.lead.findMany", err);
+      if (
+        process.env.NODE_ENV === "development" &&
+        err instanceof Error
+      ) {
+        dbQueryError = err.message;
+      }
+    }
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="mx-auto max-w-4xl px-4 py-12 sm:px-6 lg:px-8">
+        {missingDbEnv && (
+          <DatabaseConfigBanner variant="missing_env" />
+        )}
+        {!missingDbEnv && dbQueryFailed && (
+          <DatabaseConfigBanner variant="query_failed" detail={dbQueryError} />
+        )}
+
         <div id="tour-page-header" className="flex items-center gap-3">
           <BrandMark className="h-9 w-9 flex-shrink-0" />
           <div className="min-w-0">
