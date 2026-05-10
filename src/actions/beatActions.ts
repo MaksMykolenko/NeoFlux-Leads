@@ -279,8 +279,8 @@ export interface SendBeatMessageResult {
  * a Message with optional demo metadata as JSON attachment, bump status to
  * "Contacted", recompute the artist Opportunity Score.
  *
- * NOTE: this does NOT actually send an email — the SMTP form on the client is
- * UX-only for now. The "send" verb here means "log into CRM as outreach".
+ * NOTE: this persists outreach in CRM (not a full multi-channel auto-send).
+ * Email through BYOSMTP is configured under /settings, not on the beats tab.
  */
 export async function sendBeatMessage(
   input: SendBeatMessageInput

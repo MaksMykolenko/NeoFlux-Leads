@@ -53,17 +53,7 @@ function buildTourSteps(isBeats: boolean): DriveStep[] {
       popover: {
         title: "Демо біта",
         description:
-          "Після вибору артистів завантажте трек: превʼю, водяний знак (у браузері), метадані для AI-листа (BPM, тональність, ціна).",
-        side: "bottom",
-        align: "start",
-      },
-    },
-    {
-      element: "#tour-beats-smtp",
-      popover: {
-        title: "Налаштування надсилання",
-        description:
-          "Чернетка SMTP для майбутньої відправки. Зараз лист не йде по пошті автоматично — «Зберегти в CRM» фіксує контакт і повідомлення в базі.",
+          "Після вибору артистів завантажте трек: превʼю, водяний знак (у браузері), метадані для AI-листа (BPM, тональність, ціна). SMTP для email налаштовується один раз у розділі «Налаштування».",
         side: "bottom",
         align: "start",
       },
@@ -73,7 +63,7 @@ function buildTourSteps(isBeats: boolean): DriveStep[] {
       popover: {
         title: "Повідомлення та канали",
         description:
-          "AI згенерує текст під кожного артиста. Відкрийте Email, Telegram, Instagram тощо — текст скопіюється там, де треба; потім збережіть outreach у CRM.",
+          "AI згенерує текст під кожного артиста. Відкрийте Email, Telegram, Instagram тощо — текст скопіюється там, де треба; для відправки пошти через ваш SMTP використовуйте налаштування акаунту. Потім збережіть outreach у CRM.",
         side: "top",
         align: "start",
       },
