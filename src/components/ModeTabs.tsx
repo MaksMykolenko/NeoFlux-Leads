@@ -25,6 +25,12 @@ const TABS: TabDef[] = [
     label: "Виконавці для бітів",
     hint: "SoundCloud · YouTube · Instagram",
   },
+  {
+    id: "universal",
+    href: "/?mode=universal",
+    label: "Універсальний AI-пошук",
+    hint: "Gemini + Google Search · OSINT",
+  },
 ];
 
 export default function ModeTabs({ active }: ModeTabsProps) {

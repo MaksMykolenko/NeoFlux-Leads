@@ -371,6 +371,94 @@ export function resolveBeatsProfileHref(
   return null;
 }
 
+/** Keys commonly returned by universal AI search (OSINT-style blob). */
+const UNIVERSAL_SOCIAL_KEYS = [
+  "linkedin",
+  "twitter",
+  "x",
+  "instagram",
+  "facebook",
+  "youtube",
+  "tiktok",
+  "telegram",
+] as const;
+
+function universalHrefForKey(key: string, raw: string): string {
+  const v = raw.trim();
+  if (/^https?:\/\//i.test(v)) return v;
+  const h = trimAt(v);
+  const k = key.toLowerCase();
+  if (k === "linkedin") {
+    if (/linkedin\.com/i.test(v)) return ensureUrl(v, "linkedin.com");
+    return `https://www.linkedin.com/in/${h}`;
+  }
+  if (k === "twitter" || k === "x") return `https://twitter.com/${h}`;
+  if (k === "instagram") return `https://instagram.com/${h}`;
+  if (k === "facebook") return `https://facebook.com/${h}`;
+  if (k === "youtube") {
+    const handle = h.startsWith("@") ? h : `@${h}`;
+    return `https://youtube.com/${handle}`;
+  }
+  if (k === "tiktok") return `https://tiktok.com/@${h}`;
+  if (k === "telegram") return `https://t.me/${h}`;
+  return normalizeExternalHref(v) ?? `https://${h}`;
+}
+
+/**
+ * Primary URL for universal leads: `website`, else first known social field
+ * or any raw https URL in the blob.
+ */
+export function resolveUniversalSiteHref(
+  website: string | null | undefined,
+  socialLinks: unknown,
+): string | null {
+  const direct = normalizeExternalHref(website ?? null);
+  if (direct) return direct;
+  if (!socialLinks || typeof socialLinks !== "object" || Array.isArray(socialLinks)) {
+    return null;
+  }
+  const o = socialLinks as Record<string, unknown>;
+  for (const key of UNIVERSAL_SOCIAL_KEYS) {
+    const raw = o[key];
+    if (typeof raw === "string" && raw.trim()) {
+      return universalHrefForKey(key, raw);
+    }
+  }
+  for (const val of Object.values(o)) {
+    if (typeof val === "string" && /^https?:\/\//i.test(val.trim())) {
+      return val.trim();
+    }
+  }
+  return null;
+}
+
+/**
+ * Flat list of social entries for universal `socialLinks` JSON (any keys).
+ */
+export function universalSocialLinkRows(
+  socialLinks: unknown,
+): { label: string; href: string; display: string }[] {
+  if (!socialLinks || typeof socialLinks !== "object" || Array.isArray(socialLinks)) {
+    return [];
+  }
+  const o = socialLinks as Record<string, unknown>;
+  const rows: { label: string; href: string; display: string }[] = [];
+  const seen = new Set<string>();
+  for (const [key, val] of Object.entries(o)) {
+    if (typeof val !== "string" || !val.trim()) continue;
+    const display = val.trim();
+    const href = universalHrefForKey(key, display);
+    if (!href || seen.has(href)) continue;
+    seen.add(href);
+    rows.push({
+      label: key.charAt(0).toUpperCase() + key.slice(1),
+      href,
+      display: display.length > 56 ? `${display.slice(0, 56)}…` : display,
+    });
+  }
+  return rows;
+}
+
 export function getAvailableChannels(
   contacts: ProspectContacts | null | undefined
 ): { def: ChannelDef; value: string }[] {

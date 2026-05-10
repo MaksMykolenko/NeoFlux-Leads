@@ -15,6 +15,7 @@ import {
   CHANNELS,
   getAvailableChannels,
   parseContacts,
+  universalSocialLinkRows,
   type ChannelKey,
 } from "@/src/lib/channels";
 
@@ -67,6 +68,14 @@ export default async function LeadDetailPage({
   }
 
   const isBeats = lead.mode === LeadMode.BEATS;
+  const isUniversal = lead.mode === LeadMode.UNIVERSAL;
+
+  const backHref =
+    lead.mode === LeadMode.BEATS
+      ? "/?mode=beats"
+      : lead.mode === LeadMode.UNIVERSAL
+        ? "/?mode=universal"
+        : "/";
 
   // Compute the score live for display so the UI stays accurate even if the
   // persisted `lead.score` lags (e.g. before the first audit run, or after a
@@ -92,7 +101,7 @@ export default async function LeadDetailPage({
     <div className="min-h-screen bg-gray-50">
       <div className="mx-auto max-w-5xl px-4 py-10 sm:px-6 lg:px-8">
         <Link
-          href="/"
+          href={backHref}
           className="inline-flex items-center gap-1.5 text-sm font-medium text-gray-500 hover:text-gray-900 transition-colors"
         >
           <svg
@@ -123,6 +132,12 @@ export default async function LeadDetailPage({
                     .join(" · ")}
                 </p>
               )
+            ) : isUniversal ? (
+              lead.notes && (
+                <p className="mt-1.5 text-sm text-gray-500 line-clamp-3">
+                  {lead.notes}
+                </p>
+              )
             ) : (
               (lead.category || lead.city) && (
                 <p className="mt-1.5 text-sm text-gray-500">
@@ -143,6 +158,7 @@ export default async function LeadDetailPage({
             score={opportunityScore}
             hasAudit={!!lead.audit}
             isBeats={isBeats}
+            isUniversal={isUniversal}
           />
         </div>
 
@@ -159,7 +175,7 @@ export default async function LeadDetailPage({
             isBeats ? "" : "lg:grid-cols-2"
           }`}
         >
-          <ContactsCard lead={lead} isBeats={isBeats} />
+          <ContactsCard lead={lead} isBeats={isBeats} isUniversal={isUniversal} />
           {!isBeats && (
             <AuditCard
               audit={lead.audit}
@@ -205,10 +221,12 @@ function OpportunityScoreCard({
   score,
   hasAudit,
   isBeats,
+  isUniversal,
 }: {
   score: number;
   hasAudit: boolean;
   isBeats: boolean;
+  isUniversal: boolean;
 }) {
   const ctx = getScoreContext(score);
 
@@ -258,14 +276,17 @@ function OpportunityScoreCard({
             Бал враховує сигнал «шукає type beats», наявність email і розмір
             аудиторії на платформі.
           </p>
-        ) : (
-          !hasAudit && (
-            <p className="mt-3 text-xs text-gray-500">
-              Бал розрахований із наявних даних. Запустіть аудит сайту, щоб
-              врахувати SSL та mobile-friendly чинники.
-            </p>
-          )
-        )}
+        ) : !isUniversal && !hasAudit ? (
+          <p className="mt-3 text-xs text-gray-500">
+            Бал розрахований із наявних даних. Запустіть аудит сайту, щоб
+            врахувати SSL та mobile-friendly чинники.
+          </p>
+        ) : isUniversal && !hasAudit ? (
+          <p className="mt-3 text-xs text-gray-500">
+            Бал з email та наявності сайту. Після аудиту сайту врахуються
+            технічні сигнали.
+          </p>
+        ) : null}
       </div>
     </section>
   );
@@ -283,8 +304,10 @@ interface ContactsCardProps {
     followers: number | null;
     lookingForType: boolean | null;
     socialLinks: unknown;
+    notes: string | null;
   };
   isBeats: boolean;
+  isUniversal: boolean;
 }
 
 function fmtFollowers(n: number): string {
@@ -292,7 +315,7 @@ function fmtFollowers(n: number): string {
   return `${n}`;
 }
 
-function ContactsCard({ lead, isBeats }: ContactsCardProps) {
+function ContactsCard({ lead, isBeats, isUniversal }: ContactsCardProps) {
   if (isBeats) {
     // Unify any legacy top-level email into the social-links blob so
     // `getAvailableChannels` returns it alongside Instagram/Telegram/etc.
@@ -366,6 +389,82 @@ function ContactsCard({ lead, isBeats }: ContactsCardProps) {
         ) : (
           <p className="mt-5 border-t border-gray-100 pt-5 text-sm text-gray-400">
             Каналів зв&apos;язку не знайдено.
+          </p>
+        )}
+      </section>
+    );
+  }
+
+  if (isUniversal) {
+    const socialRows = universalSocialLinkRows(lead.socialLinks);
+    return (
+      <section className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+        <h2 className="text-base font-semibold text-gray-900">Контакти</h2>
+        <dl className="mt-4 divide-y divide-gray-100 text-sm">
+          <ContactRow label="Опис (AI)" value={lead.notes}>
+            {lead.notes ? (
+              <span className="text-gray-900 whitespace-pre-wrap text-right text-xs max-w-[70%]">
+                {lead.notes}
+              </span>
+            ) : undefined}
+          </ContactRow>
+          <ContactRow label="Сайт" value={lead.website}>
+            {lead.website && (
+              <a
+                href={lead.website}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-blue-600 hover:text-blue-800 hover:underline transition-colors"
+              >
+                {stripProtocol(lead.website)}
+              </a>
+            )}
+          </ContactRow>
+          <ContactRow label="Email" value={lead.email}>
+            {lead.email && (
+              <a
+                href={`mailto:${lead.email}`}
+                className="text-blue-600 hover:text-blue-800 hover:underline transition-colors"
+              >
+                {lead.email}
+              </a>
+            )}
+          </ContactRow>
+          <ContactRow label="Телефон" value={lead.phone}>
+            {lead.phone && (
+              <a
+                href={`tel:${lead.phone.replace(/\s+/g, "")}`}
+                className="text-gray-900 hover:text-blue-600 transition-colors"
+              >
+                {lead.phone}
+              </a>
+            )}
+          </ContactRow>
+        </dl>
+
+        {socialRows.length > 0 ? (
+          <div className="mt-5 border-t border-gray-100 pt-5">
+            <h3 className="text-xs font-semibold uppercase tracking-wider text-gray-500 mb-3">
+              Соцмережі та посилання
+            </h3>
+            <div className="grid gap-2 sm:grid-cols-2">
+              {socialRows.map((row) => (
+                <a
+                  key={`${row.label}-${row.href}`}
+                  href={row.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-2 rounded-md border border-gray-200 bg-white px-3 py-2 text-xs transition-colors hover:border-gray-300 hover:bg-gray-50"
+                >
+                  <span className="font-medium text-gray-900">{row.label}</span>
+                  <span className="text-gray-500 truncate">{row.display}</span>
+                </a>
+              ))}
+            </div>
+          </div>
+        ) : (
+          <p className="mt-5 border-t border-gray-100 pt-5 text-sm text-gray-400">
+            Додаткових соцмереж у записі немає.
           </p>
         )}
       </section>

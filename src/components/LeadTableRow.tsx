@@ -6,6 +6,7 @@ import { LeadMode } from "@/src/lib/leadMode";
 import {
   parseContacts,
   resolveBeatsProfileHref,
+  resolveUniversalSiteHref,
 } from "@/src/lib/channels";
 import AuditButton from "@/src/components/AuditButton";
 import StatusPill from "@/src/components/StatusPill";
@@ -23,6 +24,7 @@ interface LeadRowProps {
     source: string | null;
     followers: number | null;
     lookingForType: boolean | null;
+    notes?: string | null;
     audit: { issues: string[] } | null;
   };
 }
@@ -39,6 +41,7 @@ function fmtFollowers(n: number): string {
 export default function LeadTableRow({ lead }: LeadRowProps) {
   const router = useRouter();
   const isBeats = lead.mode === LeadMode.BEATS;
+  const isUniversal = lead.mode === LeadMode.UNIVERSAL;
 
   const profileHref = isBeats
     ? resolveBeatsProfileHref(
@@ -46,12 +49,24 @@ export default function LeadTableRow({ lead }: LeadRowProps) {
         parseContacts(lead.socialLinks ?? null) ?? undefined
       )
     : null;
-  const siteHref =
-    isBeats ? profileHref : lead.website ? lead.website.trim() || null : null;
+
+  const universalHref = isUniversal
+    ? resolveUniversalSiteHref(lead.website, lead.socialLinks)
+    : null;
+
+  const siteHref = isBeats
+    ? profileHref
+    : isUniversal
+      ? universalHref
+      : lead.website
+        ? lead.website.trim() || null
+        : null;
 
   const subtitle = isBeats
     ? lead.source ?? null
-    : lead.city ?? null;
+    : isUniversal
+      ? null
+      : lead.city ?? null;
 
   return (
     <tr
@@ -67,10 +82,25 @@ export default function LeadTableRow({ lead }: LeadRowProps) {
           {lead.companyName}
         </Link>
       </td>
-      <td className="px-6 py-4 text-sm text-gray-500 whitespace-nowrap">
-        {lead.category}
-        {subtitle && (
-          <span className="text-gray-400"> · {subtitle}</span>
+      <td className="px-6 py-4 text-sm text-gray-500 max-w-md">
+        {isUniversal ? (
+          lead.notes ? (
+            <span
+              className="line-clamp-2 break-words"
+              title={lead.notes}
+            >
+              {lead.notes}
+            </span>
+          ) : (
+            <span className="text-gray-400">—</span>
+          )
+        ) : (
+          <span className="whitespace-nowrap">
+            {lead.category}
+            {subtitle && (
+              <span className="text-gray-400"> · {subtitle}</span>
+            )}
+          </span>
         )}
       </td>
       <td className="px-6 py-4 text-sm whitespace-nowrap">

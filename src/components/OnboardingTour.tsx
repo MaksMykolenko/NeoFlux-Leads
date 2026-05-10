@@ -8,11 +8,15 @@ import "driver.js/dist/driver.css";
 
 const STORAGE_KEY = "nf.leadEngine.hasSeenTour";
 
+export type TourMode = "local" | "beats" | "universal";
+
 /**
- * Повний тур: залежить від режиму (локальний бізнес vs біти),
- * бо кроки для BeatOutreach існують лише на `?mode=beats`.
+ * Повний тур: залежить від режиму (локальний бізнес / біти / універсальний AI).
  */
-function buildTourSteps(isBeats: boolean): DriveStep[] {
+function buildTourSteps(tourMode: TourMode): DriveStep[] {
+  const isBeats = tourMode === "beats";
+  const isUniversal = tourMode === "universal";
+
   const commonHead: DriveStep[] = [
     {
       element: "#tour-page-header",
@@ -29,18 +33,24 @@ function buildTourSteps(isBeats: boolean): DriveStep[] {
       popover: {
         title: "Режими роботи",
         description:
-          "Перемикайте «Локальний бізнес» (Google Maps, аудит сайтів) та «Виконавці для бітів» (AI-пошук артистів, демо, розсилка по каналах).",
+          "Три режими: локальний бізнес (Google Maps), виконавці для бітів (AI + демо), універсальний AI-пошук (Gemini + Google для будь-якого OSINT-запиту).",
         side: "bottom",
         align: "start",
       },
     },
     {
-      element: "#tour-search-form",
+      element: isUniversal ? "#tour-universal-search" : "#tour-search-form",
       popover: {
-        title: isBeats ? "Пошук артистів (AI)" : "Пошук локальних лідів",
+        title: isBeats
+          ? "Пошук артистів (AI)"
+          : isUniversal
+            ? "Універсальний AI-пошук"
+            : "Пошук локальних лідів",
         description: isBeats
           ? "Введіть жанр, платформу або @нік. Gemini з пошуком Google знайде реальних артистів; оберіть картки та продовжіть до демо й повідомлень."
-          : "Введіть нішу та місто і натисніть «Пошук». Система збере компанії з карт і додасть їх у таблицю нижче.",
+          : isUniversal
+            ? "Опишіть довільним текстом, кого шукати — AI просканує відкриті джерела й збере лідів у таблицю нижче."
+            : "Введіть нішу та місто і натисніть «Пошук». Система збере компанії з карт і додасть їх у таблицю нижче.",
         side: "bottom",
         align: "start",
       },
@@ -76,7 +86,9 @@ function buildTourSteps(isBeats: boolean): DriveStep[] {
       title: "Таблиця лідів",
       description: isBeats
         ? "Останні збережені артисти з CRM. Клік по рядку відкриє картку: соцмережі, фоловери, історія повідомлень і демо."
-        : "Останні додані компанії. Відкрийте лід для аудиту сайту, контактів і AI-листа.",
+        : isUniversal
+          ? "Універсальні ліди з AI: опис у другій колонці, сайт і соцмережі — у картці ліда."
+          : "Останні додані компанії. Відкрийте лід для аудиту сайту, контактів і AI-листа.",
       side: "top",
       align: "start",
     },
@@ -100,17 +112,23 @@ function buildTourSteps(isBeats: boolean): DriveStep[] {
   return [...commonHead, tableStep, helpStep];
 }
 
+function tourModeFromSearch(mode: string | null): TourMode {
+  if (mode === "beats") return "beats";
+  if (mode === "universal") return "universal";
+  return "local";
+}
+
 export default function OnboardingTour() {
   const searchParams = useSearchParams();
-  const isBeats = searchParams.get("mode") === "beats";
+  const tourMode = tourModeFromSearch(searchParams.get("mode"));
 
   const driverRef = useRef<ReturnType<typeof driver> | null>(null);
   const tourWasStartedRef = useRef(false);
-  const isBeatsRef = useRef(isBeats);
+  const tourModeRef = useRef(tourMode);
 
   useEffect(() => {
-    isBeatsRef.current = isBeats;
-  }, [isBeats]);
+    tourModeRef.current = tourMode;
+  }, [tourMode]);
 
   useEffect(() => {
     const driverObj = driver({
@@ -121,7 +139,7 @@ export default function OnboardingTour() {
       doneBtnText: "Готово",
       smoothScroll: true,
       animate: true,
-      steps: buildTourSteps(isBeatsRef.current),
+      steps: buildTourSteps(tourModeRef.current),
       onDestroyed: () => {
         if (!tourWasStartedRef.current) return;
         try {
@@ -139,7 +157,7 @@ export default function OnboardingTour() {
       const hasSeen = localStorage.getItem(STORAGE_KEY);
       if (!hasSeen) {
         autoTimer = setTimeout(() => {
-          driverObj.setSteps(buildTourSteps(isBeatsRef.current));
+          driverObj.setSteps(buildTourSteps(tourModeRef.current));
           tourWasStartedRef.current = true;
           driverObj.drive();
         }, 500);
@@ -156,11 +174,11 @@ export default function OnboardingTour() {
   }, []);
 
   useEffect(() => {
-    driverRef.current?.setSteps(buildTourSteps(isBeats));
-  }, [isBeats]);
+    driverRef.current?.setSteps(buildTourSteps(tourMode));
+  }, [tourMode]);
 
   function startTour() {
-    driverRef.current?.setSteps(buildTourSteps(isBeats));
+    driverRef.current?.setSteps(buildTourSteps(tourMode));
     tourWasStartedRef.current = true;
     driverRef.current?.drive();
   }

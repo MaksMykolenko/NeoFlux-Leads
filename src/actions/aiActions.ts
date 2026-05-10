@@ -127,6 +127,57 @@ export async function generateProposal(leadId: string): Promise<ProposalResult> 
       });
     }
 
+    if (lead.mode === LeadMode.UNIVERSAL) {
+      const userPrompt = [
+        "Контекст ліда (універсальний AI-пошук):",
+        `- Назва / особа: ${lead.companyName}`,
+        lead.notes ? `- Опис з пошуку: ${lead.notes}` : null,
+        `- Сайт: ${lead.website ?? "не вказано"}`,
+        `- Email: ${lead.email ?? "не вказано"}`,
+        `- Джерело: ${lead.source ?? "Universal AI"}`,
+        "",
+        "Напиши короткий B2B-холодний лист українською: звернись до опису діяльності, запропонуй цінність веб-розробки / digital і запроси на коротку зустріч.",
+      ]
+        .filter(Boolean)
+        .join("\n");
+
+      const ai = new GoogleGenAI({ apiKey });
+      let lastError: unknown;
+      for (const model of MODELS) {
+        try {
+          const response = await ai.models.generateContent({
+            model,
+            contents: userPrompt,
+            config: {
+              systemInstruction: advancedAi
+                ? SYSTEM_INSTRUCTION
+                : SYSTEM_INSTRUCTION_STARTER,
+              temperature: advancedAi ? 0.7 : 0.5,
+              maxOutputTokens: advancedAi ? 800 : 300,
+            },
+          });
+          const text = response.text?.trim();
+          if (!text) return { success: false, error: "AI не повернув тексту" };
+          return { success: true, text };
+        } catch (err) {
+          lastError = err;
+          const msg = err instanceof Error ? err.message : String(err);
+          if (!msg.includes("503") && !msg.includes("UNAVAILABLE") && !msg.includes("high demand")) {
+            break;
+          }
+          console.warn(`[AI] ${model} unavailable, trying next...`);
+        }
+      }
+      console.error("generateProposal universal error:", lastError);
+      return {
+        success: false,
+        error:
+          lastError instanceof Error
+            ? lastError.message
+            : "Помилка генерації для універсального ліда",
+      };
+    }
+
     const issues = buildIssuesList({
       hasAudit: !!lead.audit,
       hasSSL: lead.audit?.hasSSL ?? null,

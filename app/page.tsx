@@ -1,7 +1,11 @@
 import { Suspense } from "react";
 import type { Prisma } from "@prisma/client";
 import { prisma } from "@/src/lib/prisma";
-import { LeadMode, modeFromQuery, modeKeyFromMode } from "@/src/lib/leadMode";
+import {
+  LeadMode,
+  modeFromQuery,
+  modeKeyFromMode,
+} from "@/src/lib/leadMode";
 import { requireUser } from "@/src/lib/session";
 import {
   getLeadLimitStatus,
@@ -9,6 +13,7 @@ import {
 } from "@/src/lib/subscription";
 import ScraperForm from "@/src/components/ScraperForm";
 import BeatOutreach from "@/src/components/BeatOutreach";
+import UniversalOutreach from "@/src/components/UniversalOutreach";
 import BrandMark from "@/src/components/BrandMark";
 import LeadTableRow from "@/src/components/LeadTableRow";
 import ModeTabs from "@/src/components/ModeTabs";
@@ -30,6 +35,7 @@ export default async function Home({
   const params = await searchParams;
   const mode = modeFromQuery(params.mode);
   const isBeats = mode === LeadMode.BEATS;
+  const isUniversal = mode === LeadMode.UNIVERSAL;
 
   const missingDbEnv =
     !process.env.DATABASE_URL?.trim() ||
@@ -82,7 +88,9 @@ export default async function Home({
             <p className="mt-1 text-sm text-gray-500">
               {isBeats
                 ? "AI-пошук артистів, які купують біти"
-                : "Автоматичний збір лідів з Google Maps"}
+                : isUniversal
+                  ? "Універсальний AI-пошук лідів (Gemini + Google Search)"
+                  : "Автоматичний збір лідів з Google Maps"}
             </p>
           </div>
         </div>
@@ -96,14 +104,24 @@ export default async function Home({
         </div>
 
         <div className="mt-6">
-          {isBeats ? <BeatOutreach /> : <ScraperForm />}
+          {isBeats ? (
+            <BeatOutreach />
+          ) : isUniversal ? (
+            <UniversalOutreach />
+          ) : (
+            <ScraperForm />
+          )}
         </div>
 
         <div className="mt-10" id="tour-leads-table">
           <div className="bg-white shadow-sm rounded-lg border border-gray-200 overflow-hidden">
             <div className="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
               <h2 className="text-base font-medium text-gray-900">
-                {isBeats ? "Знайдені виконавці" : "Останні ліди"}
+                {isBeats
+                  ? "Знайдені виконавці"
+                  : isUniversal
+                    ? "Універсальні ліди"
+                    : "Останні ліди"}
               </h2>
               {leads.length > 0 && (
                 <span className="inline-flex items-center rounded-full bg-gray-100 px-2.5 py-0.5 text-xs font-medium text-gray-600">
@@ -140,13 +158,17 @@ export default async function Home({
                   <thead>
                     <tr className="border-b border-gray-100">
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        {isBeats ? "Артист" : "Компанія"}
+                        {isBeats ? "Артист" : isUniversal ? "Назва" : "Компанія"}
                       </th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        {isBeats ? "Жанр / Платформа" : "Категорія / Локація"}
+                        {isBeats
+                          ? "Жанр / Платформа"
+                          : isUniversal
+                            ? "Опис (AI)"
+                            : "Категорія / Локація"}
                       </th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        {isBeats ? "Профіль" : "Сайт"}
+                        {isBeats ? "Профіль" : "Сайт / посилання"}
                       </th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                         Статус
@@ -172,6 +194,7 @@ export default async function Home({
                           source: lead.source,
                           followers: lead.followers,
                           lookingForType: lead.lookingForType,
+                          notes: lead.notes,
                           audit: lead.audit
                             ? { issues: lead.audit.issues }
                             : null,

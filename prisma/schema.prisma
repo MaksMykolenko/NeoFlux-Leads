@@ -11,8 +11,9 @@ datasource db {
 // --- Моделі ---
 
 enum LeadMode {
-  LOCAL  // Local-business leads (Google Maps + website audit pipeline)
-  BEATS  // Music artists (potential beat buyers — handles, platforms, followers)
+  LOCAL      // Local-business leads (Google Maps + website audit pipeline)
+  BEATS      // Music artists (potential beat buyers — handles, platforms, followers)
+  UNIVERSAL  // Free-form OSINT-style leads (Gemini + Google Search grounding)
 }
 
 model Lead {
