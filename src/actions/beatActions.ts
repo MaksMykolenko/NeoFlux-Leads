@@ -11,7 +11,12 @@ import {
 } from "@/src/lib/beatProspects";
 import { CHANNEL_ORDER, type ChannelKey } from "@/src/lib/channels";
 import { calculateArtistScore } from "@/src/lib/scoring";
-import { getRequestUserId } from "@/src/lib/session";
+import { getCurrentUser, getRequestUserId } from "@/src/lib/session";
+import {
+  getLeadLimitStatus,
+  getPlanForUser,
+  incrementLeadsProcessed,
+} from "@/src/lib/subscription";
 
 const SEARCH_MODEL = "gemini-2.5-flash";
 const MAX_RESULTS = 8;
@@ -20,6 +25,7 @@ export interface ArtistSearchResult {
   success: boolean;
   prospects: BeatProspect[];
   error?: string;
+  errorCode?: "LIMIT_REACHED";
 }
 
 /**
@@ -32,9 +38,20 @@ export interface ArtistSearchResult {
 export async function searchBeatProspects(
   query: string
 ): Promise<ArtistSearchResult> {
-  const userId = await getRequestUserId();
-  if (!userId) {
+  const user = await getCurrentUser();
+  if (!user) {
     return { success: false, prospects: [], error: "Не авторизовано" };
+  }
+
+  const limitStatus = getLeadLimitStatus(user);
+  if (!limitStatus.allowed) {
+    const plan = getPlanForUser(user);
+    return {
+      success: false,
+      prospects: [],
+      errorCode: "LIMIT_REACHED",
+      error: `Ліміт плану ${plan.name} вичерпано (${limitStatus.used}/${plan.leadsPerMonth}). Оновіть тариф на /pricing.`,
+    };
   }
 
   const apiKey = process.env.GEMINI_API_KEY;
@@ -254,6 +271,7 @@ export interface SendBeatMessageResult {
   success: boolean;
   leadId?: string;
   error?: string;
+  errorCode?: "LIMIT_REACHED";
 }
 
 /**
@@ -320,6 +338,24 @@ export async function sendBeatMessage(
         select: { id: true },
       });
 
+      // Якщо створюємо НОВИЙ лід — ще раз перевіряємо ліміт у транзакції,
+      // щоб уникнути race condition (юзер міг зробити паралельний запит).
+      if (!existing) {
+        const fresh = await tx.user.findUnique({
+          where: { id: userId },
+          select: { plan: true, leadsProcessedCount: true, planResetDate: true },
+        });
+        if (fresh) {
+          const status = getLeadLimitStatus(fresh);
+          if (!status.allowed) {
+            const plan = getPlanForUser(fresh);
+            throw new Error(
+              `LIMIT_REACHED:Ліміт плану ${plan.name} вичерпано (${status.used}/${plan.leadsPerMonth}).`
+            );
+          }
+        }
+      }
+
       const leadData = {
         status: "Contacted",
         realName: artist.realName,
@@ -362,15 +398,26 @@ export async function sendBeatMessage(
       }
       await tx.message.create({ data: messageData });
 
-      return lead;
+      return { lead, isNew: !existing };
     });
 
-    revalidatePath("/");
-    revalidatePath(`/leads/${result.id}`);
+    if (result.isNew) {
+      await incrementLeadsProcessed(userId, 1);
+    }
 
-    return { success: true, leadId: result.id };
+    revalidatePath("/");
+    revalidatePath(`/leads/${result.lead.id}`);
+
+    return { success: true, leadId: result.lead.id };
   } catch (error) {
     console.error("sendBeatMessage error:", error);
+    if (error instanceof Error && error.message.startsWith("LIMIT_REACHED:")) {
+      return {
+        success: false,
+        errorCode: "LIMIT_REACHED",
+        error: error.message.replace("LIMIT_REACHED:", ""),
+      };
+    }
     return {
       success: false,
       error: error instanceof Error ? error.message : "Не вдалось зберегти лід",

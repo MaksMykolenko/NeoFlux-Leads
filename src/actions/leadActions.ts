@@ -2,13 +2,22 @@
 
 import { prisma } from "@/src/lib/prisma";
 import { calculateLeadScore } from "@/src/lib/scoring";
-import { getRequestUserId } from "@/src/lib/session";
+import { getCurrentUser } from "@/src/lib/session";
+import {
+  getLeadLimitStatus,
+  getPlanForUser,
+  incrementLeadsProcessed,
+} from "@/src/lib/subscription";
 
 export interface LeadActionResult {
   success: boolean;
   count: number;
   skipped?: number;
   error?: string;
+  /** Машиночитаний код помилки, e.g. "LIMIT_REACHED". */
+  errorCode?: "LIMIT_REACHED";
+  limit?: number;
+  used?: number;
 }
 
 export async function searchAndSaveLeads(
@@ -16,8 +25,8 @@ export async function searchAndSaveLeads(
   city: string
 ): Promise<LeadActionResult> {
   try {
-    const userId = await getRequestUserId();
-    if (!userId) {
+    const user = await getCurrentUser();
+    if (!user) {
       return { success: false, count: 0, error: "Не авторизовано" };
     }
 
@@ -26,6 +35,21 @@ export async function searchAndSaveLeads(
         success: false,
         count: 0,
         error: "Query and city are required",
+      };
+    }
+
+    // Перевірка ліміту до запуску дорогого скрапера. Якщо юзер на 20/20 —
+    // навіть не відкриваємо браузер.
+    const limitStatus = getLeadLimitStatus(user);
+    if (!limitStatus.allowed) {
+      const plan = getPlanForUser(user);
+      return {
+        success: false,
+        count: 0,
+        errorCode: "LIMIT_REACHED",
+        limit: plan.leadsPerMonth,
+        used: limitStatus.used,
+        error: `Ліміт плану ${plan.name} вичерпано (${limitStatus.used}/${plan.leadsPerMonth}). Оновіть тариф на /pricing.`,
       };
     }
 
@@ -44,6 +68,9 @@ export async function searchAndSaveLeads(
 
     let savedCount = 0;
     let skippedCount = 0;
+    let remaining = limitStatus.unlimited
+      ? Number.POSITIVE_INFINITY
+      : limitStatus.remaining;
 
     for (const lead of scrapedLeads) {
       try {
@@ -52,7 +79,7 @@ export async function searchAndSaveLeads(
         // межах поточного userId.
         const existing = await prisma.lead.findFirst({
           where: {
-            userId,
+            userId: user.id,
             OR: [
               ...(lead.website ? [{ website: lead.website }] : []),
               { companyName: lead.companyName, city },
@@ -70,6 +97,13 @@ export async function searchAndSaveLeads(
           continue;
         }
 
+        // Якщо ліміт вичерпано в процесі скрапінгу (юзер запустив рівно на
+        // межі) — пропускаємо решту. У відповіді скажемо, скільки збережено.
+        if (remaining <= 0) {
+          skippedCount++;
+          continue;
+        }
+
         // Initial Opportunity Score from data we have at scrape time.
         // No audit yet, so SSL/mobile penalties don't apply; landing-platform
         // bonus does (e.g. Instagram-only listings get an immediate boost).
@@ -80,7 +114,7 @@ export async function searchAndSaveLeads(
 
         await prisma.lead.create({
           data: {
-            userId,
+            userId: user.id,
             companyName: lead.companyName,
             website: lead.website,
             phone: lead.phone,
@@ -91,9 +125,14 @@ export async function searchAndSaveLeads(
           },
         });
         savedCount++;
+        remaining -= 1;
       } catch (dbError) {
         console.error(`Failed to process lead "${lead.companyName}":`, dbError);
       }
+    }
+
+    if (savedCount > 0) {
+      await incrementLeadsProcessed(user.id, savedCount);
     }
 
     return {

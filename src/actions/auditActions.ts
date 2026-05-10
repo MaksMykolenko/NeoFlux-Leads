@@ -2,11 +2,13 @@
 
 import { prisma } from "@/src/lib/prisma";
 import { calculateLeadScore } from "@/src/lib/scoring";
-import { getRequestUserId } from "@/src/lib/session";
+import { getCurrentUser } from "@/src/lib/session";
+import { checkSubscription } from "@/src/lib/subscription";
 
 export interface AuditActionResult {
   success: boolean;
   error?: string;
+  errorCode?: "PLAN_REQUIRED";
   performanceScore?: number;
   issuesCount?: number;
   email?: string | null;
@@ -17,11 +19,19 @@ export async function runAuditForLead(
   leadId: string
 ): Promise<AuditActionResult> {
   try {
-    const userId = await getRequestUserId();
-    if (!userId) return { success: false, error: "Не авторизовано" };
+    const user = await getCurrentUser();
+    if (!user) return { success: false, error: "Не авторизовано" };
+
+    if (!checkSubscription(user, "websiteAudit")) {
+      return {
+        success: false,
+        errorCode: "PLAN_REQUIRED",
+        error: "Аудит сайту доступний на плані Pro і вище. Оновіть тариф на /pricing.",
+      };
+    }
 
     const lead = await prisma.lead.findFirst({
-      where: { id: leadId, userId },
+      where: { id: leadId, userId: user.id },
     });
 
     if (!lead) {

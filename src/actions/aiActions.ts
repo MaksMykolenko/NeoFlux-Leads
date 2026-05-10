@@ -3,7 +3,8 @@
 import { GoogleGenAI } from "@google/genai";
 import { prisma } from "@/src/lib/prisma";
 import { LeadMode } from "@/src/lib/leadMode";
-import { getRequestUserId } from "@/src/lib/session";
+import { getCurrentUser } from "@/src/lib/session";
+import { checkSubscription } from "@/src/lib/subscription";
 
 export interface ProposalResult {
   success: boolean;
@@ -27,6 +28,17 @@ const SYSTEM_INSTRUCTION = `Ти B2B-продажник веб-розробки 
 5) Підпис "З повагою, команда NeoFlux".
 
 Виведи ВИКЛЮЧНО текст листа — без вступу від себе, без "ось ваш лист", без \`\`\` блоків.`;
+
+// Спрощений промпт для безкоштовного плану STARTER. Коротший, без посилань
+// на дані аудиту (бо аудит на STARTER заблокований), без структурованих
+// блоків. Це робить вихід менш персоналізованим, ніж на Pro/Agency.
+const SYSTEM_INSTRUCTION_STARTER = `Ти B2B-продажник веб-розробки в українській digital-агенції NeoFlux.
+Пишеш короткий (3–4 речення) шаблонний холодний лист українською.
+
+Без емодзі. Без markdown. Без preamble. Без "Subject:".
+Згадай назву компанії і запропонуй коротку зустріч. Підпис: "З повагою, NeoFlux".
+
+Виведи ВИКЛЮЧНО текст листа.`;
 
 const BEAT_SYSTEM_INSTRUCTION = `Ти український біт-продюсер під брендом NeoFlux.
 Пишеш короткі (5–8 речень), персоналізовані холодні DM-повідомлення артистам, кому хочеш продати свій біт.
@@ -85,12 +97,13 @@ export async function generateProposal(leadId: string): Promise<ProposalResult> 
     return { success: false, error: "Missing lead id" };
   }
 
-  const userId = await getRequestUserId();
-  if (!userId) return { success: false, error: "Не авторизовано" };
+  const user = await getCurrentUser();
+  if (!user) return { success: false, error: "Не авторизовано" };
+  const advancedAi = checkSubscription(user, "advancedAi");
 
   try {
     const lead = await prisma.lead.findFirst({
-      where: { id: leadId, userId },
+      where: { id: leadId, userId: user.id },
       include: { audit: true },
     });
 
@@ -150,9 +163,11 @@ export async function generateProposal(leadId: string): Promise<ProposalResult> 
           model,
           contents: userPrompt,
           config: {
-            systemInstruction: SYSTEM_INSTRUCTION,
-            temperature: 0.7,
-            maxOutputTokens: 800,
+            systemInstruction: advancedAi
+              ? SYSTEM_INSTRUCTION
+              : SYSTEM_INSTRUCTION_STARTER,
+            temperature: advancedAi ? 0.7 : 0.5,
+            maxOutputTokens: advancedAi ? 800 : 300,
           },
         });
 
@@ -218,6 +233,10 @@ export async function generateBeatProposal(
     };
   }
 
+  const user = await getCurrentUser();
+  if (!user) return { success: false, error: "Не авторизовано" };
+  const advancedAi = checkSubscription(user, "advancedAi");
+
   const { artist, demo } = input;
   if (!artist?.handle) {
     return { success: false, error: "Missing artist data" };
@@ -261,9 +280,11 @@ export async function generateBeatProposal(
           model,
           contents: userPrompt,
           config: {
-            systemInstruction: BEAT_SYSTEM_INSTRUCTION,
-            temperature: 0.85,
-            maxOutputTokens: 600,
+            systemInstruction: advancedAi
+              ? BEAT_SYSTEM_INSTRUCTION
+              : SYSTEM_INSTRUCTION_STARTER,
+            temperature: advancedAi ? 0.85 : 0.5,
+            maxOutputTokens: advancedAi ? 600 : 250,
           },
         });
 

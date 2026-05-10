@@ -3,6 +3,10 @@ import type { Prisma } from "@prisma/client";
 import { prisma } from "@/src/lib/prisma";
 import { LeadMode, modeFromQuery, modeKeyFromMode } from "@/src/lib/leadMode";
 import { requireUser } from "@/src/lib/session";
+import {
+  getLeadLimitStatus,
+  getPlanForUser,
+} from "@/src/lib/subscription";
 import ScraperForm from "@/src/components/ScraperForm";
 import BeatOutreach from "@/src/components/BeatOutreach";
 import BrandMark from "@/src/components/BrandMark";
@@ -10,6 +14,7 @@ import LeadTableRow from "@/src/components/LeadTableRow";
 import ModeTabs from "@/src/components/ModeTabs";
 import OnboardingTour from "@/src/components/OnboardingTour";
 import DatabaseConfigBanner from "@/src/components/DatabaseConfigBanner";
+import UsageMeter from "@/src/components/UsageMeter";
 
 export const dynamic = "force-dynamic";
 
@@ -19,6 +24,8 @@ export default async function Home({
   searchParams: Promise<{ mode?: string | string[] }>;
 }) {
   const user = await requireUser();
+  const plan = getPlanForUser(user);
+  const limitStatus = getLeadLimitStatus(user);
 
   const params = await searchParams;
   const mode = modeFromQuery(params.mode);
@@ -84,7 +91,11 @@ export default async function Home({
           <ModeTabs active={modeKeyFromMode(mode)} />
         </div>
 
-        <div className="mt-8">
+        <div className="mt-6">
+          <UsageMeter status={limitStatus} plan={plan} />
+        </div>
+
+        <div className="mt-6">
           {isBeats ? <BeatOutreach /> : <ScraperForm />}
         </div>
 

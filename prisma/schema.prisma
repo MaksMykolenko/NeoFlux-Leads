@@ -98,6 +98,11 @@ model User {
   createdAt    DateTime  @default(now())
   updatedAt    DateTime  @updatedAt
 
+  // Підписка / тарифний план
+  plan                String   @default("STARTER") // STARTER | PRO | AGENCY (див. src/lib/subscription.ts)
+  leadsProcessedCount Int      @default(0)         // лічильник місячного скрапінгу
+  planResetDate       DateTime @default(now())     // коли востаннє скидали лічильник
+
   sessions     Session[]
   leads        Lead[]
 }
