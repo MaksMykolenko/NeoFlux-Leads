@@ -48,12 +48,14 @@ export default async function LeadDetailPage({
 }: {
   params: Promise<{ id: string }>;
 }) {
-  await requireUser();
+  const user = await requireUser();
 
   const { id } = await params;
 
-  const lead = await prisma.lead.findUnique({
-    where: { id },
+  // findFirst з userId-фільтром: чужий лід виглядатиме як 404, не як 403.
+  // Це безпечніше з UX-боку — не розкриваємо існування чужих ID.
+  const lead = await prisma.lead.findFirst({
+    where: { id, userId: user.id },
     include: {
       audit: true,
       messages: { orderBy: { sentAt: "desc" } },

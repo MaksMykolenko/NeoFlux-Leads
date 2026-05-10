@@ -18,6 +18,10 @@ enum LeadMode {
 model Lead {
   id              String   @id @default(uuid())
   mode            LeadMode @default(LOCAL)
+  // Власник ліда. Кожен юзер бачить тільки СВОЇ ліди — це поле обов'язкове
+  // для всіх лідів, створених після запуску мульти-юзера. Старі (pre-auth)
+  // ліди мають NULL і не з'являються в жодному запиті.
+  userId          String?
   companyName     String   // For BEATS this stores the artist handle, e.g. "@youngluna.beats"
   realName        String?  // BEATS-only: real / stage name behind the handle
   website         String?
@@ -36,8 +40,11 @@ model Lead {
   updatedAt       DateTime @updatedAt
 
   // Зв'язки
+  user        User?     @relation(fields: [userId], references: [id], onDelete: Cascade)
   audit       Audit?
   messages    Message[]
+
+  @@index([userId])
 }
 
 model Audit {
@@ -92,6 +99,7 @@ model User {
   updatedAt    DateTime  @updatedAt
 
   sessions     Session[]
+  leads        Lead[]
 }
 
 model Session {

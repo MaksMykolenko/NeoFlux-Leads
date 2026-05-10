@@ -11,6 +11,7 @@ import {
 } from "@/src/lib/beatProspects";
 import { CHANNEL_ORDER, type ChannelKey } from "@/src/lib/channels";
 import { calculateArtistScore } from "@/src/lib/scoring";
+import { getRequestUserId } from "@/src/lib/session";
 
 const SEARCH_MODEL = "gemini-2.5-flash";
 const MAX_RESULTS = 8;
@@ -31,6 +32,11 @@ export interface ArtistSearchResult {
 export async function searchBeatProspects(
   query: string
 ): Promise<ArtistSearchResult> {
+  const userId = await getRequestUserId();
+  if (!userId) {
+    return { success: false, prospects: [], error: "Не авторизовано" };
+  }
+
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) {
     return {
@@ -275,6 +281,9 @@ export async function sendBeatMessage(
     return { success: false, error: "Текст повідомлення не може бути порожнім" };
   }
 
+  const userId = await getRequestUserId();
+  if (!userId) return { success: false, error: "Не авторизовано" };
+
   try {
     const score = calculateArtistScore({
       email: artist.email,
@@ -307,7 +316,7 @@ export async function sendBeatMessage(
 
     const result = await prisma.$transaction(async (tx) => {
       const existing = await tx.lead.findFirst({
-        where: { mode: LeadMode.BEATS, companyName: artist.handle },
+        where: { userId, mode: LeadMode.BEATS, companyName: artist.handle },
         select: { id: true },
       });
 
@@ -331,6 +340,7 @@ export async function sendBeatMessage(
           })
         : await tx.lead.create({
             data: {
+              userId,
               mode: LeadMode.BEATS,
               companyName: artist.handle,
               ...leadData,

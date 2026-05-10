@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/src/lib/prisma";
 import { isLeadStatus } from "@/src/lib/leadStatus";
+import { getRequestUserId } from "@/src/lib/session";
 
 export interface UpdateStatusResult {
   success: boolean;
@@ -21,11 +22,20 @@ export async function updateLeadStatus(
     return { success: false, error: `Невалідний статус: ${newStatus}` };
   }
 
+  const userId = await getRequestUserId();
+  if (!userId) return { success: false, error: "Не авторизовано" };
+
   try {
-    await prisma.lead.update({
-      where: { id: leadId },
+    // updateMany замість update — щоб where міг включати userId фільтр.
+    // Якщо лід належить іншому юзеру, count=0 → повертаємо not found.
+    const result = await prisma.lead.updateMany({
+      where: { id: leadId, userId },
       data: { status: newStatus },
     });
+
+    if (result.count === 0) {
+      return { success: false, error: "Лід не знайдено" };
+    }
 
     revalidatePath(`/leads/${leadId}`);
     return { success: true };

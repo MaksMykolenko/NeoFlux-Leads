@@ -2,6 +2,7 @@
 
 import { prisma } from "@/src/lib/prisma";
 import { calculateLeadScore } from "@/src/lib/scoring";
+import { getRequestUserId } from "@/src/lib/session";
 
 export interface AuditActionResult {
   success: boolean;
@@ -16,8 +17,11 @@ export async function runAuditForLead(
   leadId: string
 ): Promise<AuditActionResult> {
   try {
-    const lead = await prisma.lead.findUnique({
-      where: { id: leadId },
+    const userId = await getRequestUserId();
+    if (!userId) return { success: false, error: "Не авторизовано" };
+
+    const lead = await prisma.lead.findFirst({
+      where: { id: leadId, userId },
     });
 
     if (!lead) {

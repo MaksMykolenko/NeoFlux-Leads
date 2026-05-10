@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/src/lib/prisma";
+import { getRequestUserId } from "@/src/lib/session";
 
 export interface SaveMessageResult {
   success: boolean;
@@ -18,6 +19,9 @@ export async function saveGeneratedMessage(
     return { success: false, error: "Missing lead id" };
   }
 
+  const userId = await getRequestUserId();
+  if (!userId) return { success: false, error: "Не авторизовано" };
+
   const trimmedSubject = subject?.trim() ?? "";
   const trimmedBody = body?.trim() ?? "";
 
@@ -30,8 +34,8 @@ export async function saveGeneratedMessage(
 
   try {
     const message = await prisma.$transaction(async (tx) => {
-      const lead = await tx.lead.findUnique({
-        where: { id: leadId },
+      const lead = await tx.lead.findFirst({
+        where: { id: leadId, userId },
         select: { id: true },
       });
       if (!lead) {

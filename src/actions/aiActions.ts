@@ -3,6 +3,7 @@
 import { GoogleGenAI } from "@google/genai";
 import { prisma } from "@/src/lib/prisma";
 import { LeadMode } from "@/src/lib/leadMode";
+import { getRequestUserId } from "@/src/lib/session";
 
 export interface ProposalResult {
   success: boolean;
@@ -84,9 +85,12 @@ export async function generateProposal(leadId: string): Promise<ProposalResult> 
     return { success: false, error: "Missing lead id" };
   }
 
+  const userId = await getRequestUserId();
+  if (!userId) return { success: false, error: "Не авторизовано" };
+
   try {
-    const lead = await prisma.lead.findUnique({
-      where: { id: leadId },
+    const lead = await prisma.lead.findFirst({
+      where: { id: leadId, userId },
       include: { audit: true },
     });
 

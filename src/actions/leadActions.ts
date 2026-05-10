@@ -2,6 +2,7 @@
 
 import { prisma } from "@/src/lib/prisma";
 import { calculateLeadScore } from "@/src/lib/scoring";
+import { getRequestUserId } from "@/src/lib/session";
 
 export interface LeadActionResult {
   success: boolean;
@@ -15,6 +16,11 @@ export async function searchAndSaveLeads(
   city: string
 ): Promise<LeadActionResult> {
   try {
+    const userId = await getRequestUserId();
+    if (!userId) {
+      return { success: false, count: 0, error: "Не авторизовано" };
+    }
+
     if (!query.trim() || !city.trim()) {
       return {
         success: false,
@@ -41,11 +47,12 @@ export async function searchAndSaveLeads(
 
     for (const lead of scrapedLeads) {
       try {
-        // Dedup: same website OR same (companyName + city) is treated as the
-        // same lead. We refresh `updatedAt` so re-scraping signals "still alive"
-        // without inflating the table with duplicates.
+        // Dedup is per-user: один і той самий бізнес може існувати в БД у
+        // декількох юзерів незалежно один від одного. Дедуплікуємо лише в
+        // межах поточного userId.
         const existing = await prisma.lead.findFirst({
           where: {
+            userId,
             OR: [
               ...(lead.website ? [{ website: lead.website }] : []),
               { companyName: lead.companyName, city },
@@ -73,6 +80,7 @@ export async function searchAndSaveLeads(
 
         await prisma.lead.create({
           data: {
+            userId,
             companyName: lead.companyName,
             website: lead.website,
             phone: lead.phone,

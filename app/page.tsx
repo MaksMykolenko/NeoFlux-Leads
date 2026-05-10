@@ -18,7 +18,7 @@ export default async function Home({
 }: {
   searchParams: Promise<{ mode?: string | string[] }>;
 }) {
-  await requireUser();
+  const user = await requireUser();
 
   const params = await searchParams;
   const mode = modeFromQuery(params.mode);
@@ -39,7 +39,7 @@ export default async function Home({
   if (!missingDbEnv) {
     try {
       leads = await prisma.lead.findMany({
-        where: { mode },
+        where: { mode, userId: user.id },
         orderBy: { createdAt: "desc" },
         take: 10,
         include: { audit: true },

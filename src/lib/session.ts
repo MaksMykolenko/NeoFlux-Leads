@@ -55,6 +55,15 @@ export async function requireUser(): Promise<User> {
   return user;
 }
 
+/**
+ * Для server actions, що не можуть редиректити (вони повертають JSON-результат).
+ * Повертає id залогіненого юзера або null. Виклик-сайт сам формує помилку.
+ */
+export async function getRequestUserId(): Promise<string | null> {
+  const user = await getCurrentUser();
+  return user?.id ?? null;
+}
+
 export async function getCurrentUser(): Promise<User | null> {
   const jar = await cookies();
   const token = jar.get(SESSION_COOKIE)?.value;
