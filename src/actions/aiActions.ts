@@ -1,8 +1,8 @@
 "use server";
 
 import { GoogleGenAI } from "@google/genai";
-import { LeadMode } from "@prisma/client";
 import { prisma } from "@/src/lib/prisma";
+import { LeadMode } from "@/src/lib/leadMode";
 
 export interface ProposalResult {
   success: boolean;

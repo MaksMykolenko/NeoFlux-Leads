@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { LeadMode } from "@prisma/client";
 import { prisma } from "@/src/lib/prisma";
+import { LeadMode } from "@/src/lib/leadMode";
 import AuditButton from "@/src/components/AuditButton";
 import StatusPicker from "@/src/components/StatusPicker";
 import AIProposalGenerator from "@/src/components/AIProposalGenerator";

@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { LeadMode } from "@prisma/client";
+import { LeadMode } from "@/src/lib/leadMode";
 import AuditButton from "@/src/components/AuditButton";
 import StatusPill from "@/src/components/StatusPill";
 

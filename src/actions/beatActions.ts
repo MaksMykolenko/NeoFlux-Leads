@@ -1,8 +1,9 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { LeadMode, Prisma } from "@prisma/client";
+import { Prisma } from "@prisma/client";
 import { prisma } from "@/src/lib/prisma";
+import { LeadMode } from "@/src/lib/leadMode";
 import {
   BEAT_PROSPECTS,
   searchProspects,
