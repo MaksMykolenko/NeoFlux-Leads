@@ -18,10 +18,6 @@ import {
 } from "@/src/actions/beatActions";
 import type { BeatProspect } from "@/src/lib/beatProspects";
 
-interface BeatOutreachProps {
-  initialProspects: BeatProspect[];
-}
-
 interface DemoState {
   name: string;
   bytes: number;
@@ -44,10 +40,12 @@ interface SmtpDraft {
 
 const SMTP_STORAGE_KEY = "nf.smtp";
 
-export default function BeatOutreach({ initialProspects }: BeatOutreachProps) {
+export default function BeatOutreach() {
   const router = useRouter();
-  const [query, setQuery] = useState("trap");
-  const [results, setResults] = useState<BeatProspect[]>(initialProspects);
+  const [query, setQuery] = useState("");
+  const [results, setResults] = useState<BeatProspect[]>([]);
+  const [searched, setSearched] = useState(false);
+  const [searchError, setSearchError] = useState<string | null>(null);
   const [selected, setSelected] = useState<string[]>([]);
   const [demo, setDemo] = useState<DemoState | null>(null);
   const [watermark, setWatermark] = useState(true);
@@ -104,27 +102,39 @@ export default function BeatOutreach({ initialProspects }: BeatOutreachProps) {
         <ArtistSearch
           query={query}
           setQuery={setQuery}
-          onResults={setResults}
+          onResults={(r) => {
+            setResults(r);
+            setSearched(true);
+            setSearchError(null);
+            setSelected([]);
+          }}
+          onError={(err) => {
+            setResults([]);
+            setSearched(true);
+            setSearchError(err);
+            setSelected([]);
+          }}
         />
-        <div className="mt-4 grid gap-2 sm:grid-cols-2">
-          {results.map((artist) => (
-            <ArtistCard
-              key={artist.handle}
-              artist={artist}
-              selected={selected.includes(artist.handle)}
-              onToggle={() => toggleSelect(artist.handle)}
-            />
-          ))}
-        </div>
-        <p
-          className={`mt-3 text-xs ${
-            selectedProspects.length ? "text-gray-600" : "text-gray-400"
-          }`}
-        >
-          {selectedProspects.length
-            ? `Вибрано: ${selectedProspects.length}`
-            : "Виберіть одного або декількох артистів, кому надішлемо біт."}
-        </p>
+
+        <SearchResults
+          searched={searched}
+          results={results}
+          error={searchError}
+          selectedHandles={selected}
+          onToggle={toggleSelect}
+        />
+
+        {results.length > 0 && (
+          <p
+            className={`mt-3 text-xs ${
+              selectedProspects.length ? "text-gray-600" : "text-gray-400"
+            }`}
+          >
+            {selectedProspects.length
+              ? `Вибрано: ${selectedProspects.length}`
+              : "Виберіть одного або декількох артистів, кому надішлемо біт."}
+          </p>
+        )}
       </StepCard>
 
       <StepCard
@@ -198,41 +208,133 @@ interface ArtistSearchProps {
   query: string;
   setQuery: (v: string) => void;
   onResults: (results: BeatProspect[]) => void;
+  onError: (error: string) => void;
 }
 
-function ArtistSearch({ query, setQuery, onResults }: ArtistSearchProps) {
+function ArtistSearch({
+  query,
+  setQuery,
+  onResults,
+  onError,
+}: ArtistSearchProps) {
   const [pending, startTransition] = useTransition();
 
   function handleSubmit(e: FormEvent) {
     e.preventDefault();
+    if (!query.trim() || pending) return;
     startTransition(async () => {
       const res = await searchBeatProspects(query);
-      if (res.success) onResults(res.prospects);
+      if (res.success) {
+        onResults(res.prospects);
+      } else {
+        onError(res.error ?? "Пошук не вдався");
+      }
     });
   }
 
   return (
-    <form
-      onSubmit={handleSubmit}
-      className="flex flex-col sm:flex-row gap-3"
-    >
-      <input
-        type="text"
-        placeholder="Жанр, платформа або @нік (напр. trap, soundcloud, @luna)"
-        value={query}
-        onChange={(e) => setQuery(e.target.value)}
-        disabled={pending}
-        className="flex-1 rounded-lg border border-gray-300 bg-gray-50 px-4 py-2.5 text-sm focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:opacity-60"
-      />
-      <button
-        type="submit"
-        disabled={pending}
-        className="inline-flex items-center justify-center gap-2 rounded-lg bg-blue-600 px-6 py-2.5 text-sm font-medium text-white shadow-sm transition-colors hover:bg-blue-700 disabled:bg-blue-300 disabled:cursor-not-allowed min-w-[160px]"
+    <div>
+      <form
+        onSubmit={handleSubmit}
+        className="flex flex-col sm:flex-row gap-3"
       >
-        {pending && <Spinner className="h-4 w-4" />}
-        <span>{pending ? "Шукаю…" : "Знайти покупців"}</span>
-      </button>
-    </form>
+        <input
+          type="text"
+          placeholder="Жанр, платформа, місто, ключове слово (напр. ukrainian trap soundcloud, drill rapper looking for type beats)"
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          disabled={pending}
+          className="flex-1 rounded-lg border border-gray-300 bg-gray-50 px-4 py-2.5 text-sm focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:opacity-60"
+        />
+        <button
+          type="submit"
+          disabled={pending || !query.trim()}
+          className="inline-flex items-center justify-center gap-2 rounded-lg bg-blue-600 px-6 py-2.5 text-sm font-medium text-white shadow-sm transition-colors hover:bg-blue-700 disabled:bg-blue-300 disabled:cursor-not-allowed min-w-[160px]"
+        >
+          {pending && <Spinner className="h-4 w-4" />}
+          <span>{pending ? "AI шукає…" : "Знайти покупців"}</span>
+        </button>
+      </form>
+      <p className="mt-2 text-[11px] text-gray-400">
+        Пошук через Gemini AI з Google Search grounding по живих профілях
+        SoundCloud / YouTube / Instagram / BeatStars. Зазвичай 10–20 секунд.
+        Перевіряйте знайдені email перед відправкою.
+      </p>
+    </div>
+  );
+}
+
+interface SearchResultsProps {
+  searched: boolean;
+  results: BeatProspect[];
+  error: string | null;
+  selectedHandles: string[];
+  onToggle: (handle: string) => void;
+}
+
+function SearchResults({
+  searched,
+  results,
+  error,
+  selectedHandles,
+  onToggle,
+}: SearchResultsProps) {
+  if (!searched) {
+    return (
+      <div className="mt-4 rounded-lg border border-dashed border-gray-300 bg-gray-50 px-6 py-10 text-center">
+        <div className="mx-auto flex h-10 w-10 items-center justify-center rounded-full bg-white text-gray-400 shadow-sm">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 20 20"
+            fill="currentColor"
+            className="h-5 w-5"
+            aria-hidden="true"
+          >
+            <path
+              fillRule="evenodd"
+              clipRule="evenodd"
+              d="M9 3.5a5.5 5.5 0 100 11 5.5 5.5 0 000-11ZM2 9a7 7 0 1112.452 4.391l3.328 3.329a.75.75 0 11-1.06 1.06l-3.329-3.328A7 7 0 012 9Z"
+            />
+          </svg>
+        </div>
+        <p className="mt-3 text-sm font-medium text-gray-700">
+          AI знайде реальних артистів за вашим запитом
+        </p>
+        <p className="mt-1 text-xs text-gray-500">
+          Введіть жанр чи нішу й натисніть «Знайти покупців» — Gemini пошукає
+          активні профілі з живими контактами.
+        </p>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="mt-4 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+        {error}
+      </div>
+    );
+  }
+
+  if (results.length === 0) {
+    return (
+      <div className="mt-4 rounded-lg border border-gray-200 bg-gray-50 px-4 py-3 text-sm text-gray-600">
+        Нічого не знайдено. Спробуйте інший запит.
+      </div>
+    );
+  }
+
+  return (
+    <div className="mt-4 grid gap-2 sm:grid-cols-2">
+      {results.map((artist) => (
+        <ArtistCard
+          key={artist.handle}
+          artist={artist}
+          selected={selectedHandles.includes(artist.handle)}
+          onToggle={() => onToggle(artist.handle)}
+        />
+      ))}
+    </div>
   );
 }
 

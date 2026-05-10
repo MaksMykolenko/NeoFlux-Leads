@@ -1,6 +1,5 @@
 import { prisma } from "@/src/lib/prisma";
 import { LeadMode, modeFromQuery, modeKeyFromMode } from "@/src/lib/leadMode";
-import { BEAT_PROSPECTS } from "@/src/lib/beatProspects";
 import ScraperForm from "@/src/components/ScraperForm";
 import BeatOutreach from "@/src/components/BeatOutreach";
 import BrandMark from "@/src/components/BrandMark";
@@ -47,11 +46,7 @@ export default async function Home({
         </div>
 
         <div className="mt-8">
-          {isBeats ? (
-            <BeatOutreach initialProspects={BEAT_PROSPECTS} />
-          ) : (
-            <ScraperForm />
-          )}
+          {isBeats ? <BeatOutreach /> : <ScraperForm />}
         </div>
 
         <div className="mt-10">
