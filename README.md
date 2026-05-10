@@ -70,7 +70,7 @@ cp .env.example .env
 | Variable                  | Purpose                                                                                  |
 | ------------------------- | ---------------------------------------------------------------------------------------- |
 | `DATABASE_URL`            | Pooled Postgres connection string used by the Next.js runtime                            |
-| `DIRECT_URL`              | Direct (non-pooled) connection used by Prisma migrations                                 |
+| `DIRECT_URL`              | Direct Postgres URL for Prisma `migrate` / `db push` (Supabase: **Direct connection**, not session pooler) |
 | `GEMINI_API_KEY`          | Google AI Studio API key for the AI proposal generator                                   |
 | `FLUX_ID_BASE_URL`        | Base URL of the Flux ID server (e.g. `https://fluxid.fluxmarketplace.store`)             |
 | `FLUX_CLIENT_ID`          | OAuth client_id, issued by `php oauth/register_client.php` on the Flux ID server          |
@@ -78,9 +78,12 @@ cp .env.example .env
 | `FLUX_REDIRECT_URI`       | Must match the redirect_uri used when registering the client (e.g. `…/api/auth/flux/callback`) |
 | `FLUX_OAUTH_STATE_SECRET` | Random ≥32-byte secret for signing the OAuth state cookie (`openssl rand -base64 48`)     |
 
-> If you're using Supabase, both `DATABASE_URL` and `DIRECT_URL` can be the
-> same pooler URL on port `5432`. Some networks block port `6543`, hence
-> the deliberate fallback to `5432`.
+> **Supabase:** keep `DATABASE_URL` on the **pooler** (transaction mode on
+> `6543` is best for serverless). Set `DIRECT_URL` to the **direct** URI
+> (host `db.<project-ref>.supabase.co`, port `5432` — from Dashboard →
+> Database → *Connection string* → *Direct*). If `DIRECT_URL` points at the
+> same **session** pooler as the app, `prisma db push` / migrate can fail with
+> `EMAXCONNSESSION` (max 15 clients) when the pool is busy.
 
 ### 4. Run database migrations
 
@@ -129,7 +132,7 @@ missing in **Project → Settings → Environment Variables** (apply to
 | Variable                  | Required | Notes |
 | ------------------------- | -------- | ----- |
 | `DATABASE_URL`            | **Yes**  | Supabase pooler or direct Postgres URL (same DB you use locally). |
-| `DIRECT_URL`              | **Yes**  | Prisma uses this for migrations / introspection; can match `DATABASE_URL` for Supabase `5432`. |
+| `DIRECT_URL`              | **Yes**  | Prisma DDL/migrations: use Supabase **direct** `db.*.supabase.co:5432` URL, not the session pooler (avoids `EMAXCONNSESSION`). |
 | `GEMINI_API_KEY`          | **Yes**  | Needed for AI flows; omit only if you accept failures on those actions. |
 | `FLUX_ID_BASE_URL`        | **Yes**  | Flux ID origin (e.g. `https://fluxid.fluxmarketplace.store`). |
 | `FLUX_CLIENT_ID`          | **Yes**  | Issued by `php oauth/register_client.php` for **this** environment's callback URL. |
