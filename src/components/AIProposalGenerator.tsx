@@ -1,27 +1,42 @@
 "use client";
 
+import Link from "next/link";
 import { useState, useTransition } from "react";
 import { generateProposal } from "@/src/actions/aiActions";
-import { saveGeneratedMessage } from "@/src/actions/messageActions";
+import {
+  saveGeneratedMessage,
+  sendAndSaveEmail,
+} from "@/src/actions/messageActions";
 
 interface AIProposalGeneratorProps {
   leadId: string;
   companyName: string;
+  leadEmail: string | null;
 }
+
+type Toast = {
+  type: "success" | "error" | "warn";
+  msg: string;
+  cta?: { href: string; label: string };
+};
 
 export default function AIProposalGenerator({
   leadId,
   companyName,
+  leadEmail,
 }: AIProposalGeneratorProps) {
   const [text, setText] = useState<string>("");
   const [subject, setSubject] = useState<string>("");
   const [error, setError] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
   const [savedFor, setSavedFor] = useState<string | null>(null);
+  const [toast, setToast] = useState<Toast | null>(null);
   const [isGenerating, startGenerate] = useTransition();
   const [isSaving, startSave] = useTransition();
+  const [isSending, startSend] = useTransition();
 
   const hasText = text.trim().length > 0;
+  const canSendEmail = !!leadEmail;
   // Disable Save while the textarea matches what we last persisted to avoid
   // accidentally inserting an identical Message row a second time.
   const isAlreadySaved = savedFor !== null && savedFor === text.trim();
@@ -64,6 +79,39 @@ export default function AIProposalGenerator({
       } else {
         setError(result.error ?? "Не вдалось зберегти повідомлення");
       }
+    });
+  }
+
+  function handleSendEmail() {
+    setError(null);
+    setToast(null);
+    if (!hasText || !subject.trim() || !canSendEmail) return;
+
+    startSend(async () => {
+      const result = await sendAndSaveEmail(leadId, subject, text);
+
+      if (result.success) {
+        setSavedFor(text.trim());
+        setToast({
+          type: "success",
+          msg: "Лист надіслано та збережено в історії.",
+        });
+        return;
+      }
+
+      if (result.errorCode === "NO_SMTP") {
+        setToast({
+          type: "warn",
+          msg: "Спершу заповніть SMTP-налаштування у профілі.",
+          cta: { href: "/settings", label: "Відкрити" },
+        });
+        return;
+      }
+
+      setToast({
+        type: "error",
+        msg: result.error ?? "Помилка SMTP — перевірте налаштування.",
+      });
     });
   }
 
@@ -165,7 +213,7 @@ export default function AIProposalGenerator({
                   type="button"
                   onClick={handleSave}
                   disabled={isSaving || isAlreadySaved || !subject.trim()}
-                  className="inline-flex items-center gap-1.5 rounded-md bg-blue-600 px-3 py-1.5 text-xs font-medium text-white shadow-sm transition-colors hover:bg-blue-700 disabled:bg-blue-300 disabled:cursor-not-allowed"
+                  className="inline-flex items-center gap-1.5 rounded-md bg-gray-100 px-3 py-1.5 text-xs font-medium text-gray-800 ring-1 ring-inset ring-gray-200 transition-colors hover:bg-gray-200 disabled:cursor-not-allowed disabled:opacity-60"
                 >
                   <SaveIcon className="w-3.5 h-3.5" />
                   {isSaving
@@ -173,6 +221,35 @@ export default function AIProposalGenerator({
                     : isAlreadySaved
                     ? "Збережено"
                     : "Зберегти в CRM"}
+                </button>
+                <button
+                  type="button"
+                  onClick={handleSendEmail}
+                  disabled={
+                    !canSendEmail ||
+                    isSending ||
+                    isSaving ||
+                    !hasText ||
+                    !subject.trim()
+                  }
+                  title={
+                    !canSendEmail
+                      ? "У ліда немає email — додайте його перед відправкою"
+                      : undefined
+                  }
+                  className="inline-flex items-center gap-1.5 rounded-md bg-blue-600 px-3 py-1.5 text-xs font-medium text-white shadow-sm transition-colors hover:bg-blue-700 disabled:bg-blue-300 disabled:cursor-not-allowed"
+                >
+                  {isSending ? (
+                    <>
+                      <SpinnerIcon className="w-3.5 h-3.5 animate-spin" />
+                      Відправляю...
+                    </>
+                  ) : (
+                    <>
+                      <PaperPlaneIcon className="w-3.5 h-3.5" />
+                      Надіслати на Email
+                    </>
+                  )}
                 </button>
               </div>
             </div>
@@ -201,6 +278,35 @@ export default function AIProposalGenerator({
         <div className="mt-4 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
           {error}
         </div>
+      )}
+
+      {toast && (
+        <div
+          className={`mt-4 flex items-start justify-between gap-3 rounded-lg border px-3 py-2.5 text-sm ${
+            toast.type === "success"
+              ? "border-green-200 bg-green-50 text-green-800"
+              : toast.type === "warn"
+              ? "border-amber-200 bg-amber-50 text-amber-800"
+              : "border-red-200 bg-red-50 text-red-700"
+          }`}
+        >
+          <span className="flex-1">{toast.msg}</span>
+          {toast.cta && (
+            <Link
+              href={toast.cta.href}
+              className="font-medium underline hover:no-underline"
+            >
+              {toast.cta.label}
+            </Link>
+          )}
+        </div>
+      )}
+
+      {!canSendEmail && hasText && (
+        <p className="mt-3 text-xs text-gray-400">
+          У ліда немає email — кнопку відправки заблоковано. Допишіть адресу,
+          щоб надіслати лист.
+        </p>
       )}
     </section>
   );
@@ -315,6 +421,46 @@ function SaveIcon({ className = "" }: { className?: string }) {
         fillRule="evenodd"
         d="M3.75 3A1.75 1.75 0 0 0 2 4.75v10.5C2 16.216 2.784 17 3.75 17h12.5A1.75 1.75 0 0 0 18 15.25V8.336c0-.464-.184-.909-.513-1.236l-4.587-4.587A1.75 1.75 0 0 0 11.664 2H3.75ZM6 5.75A.75.75 0 0 1 6.75 5h5a.75.75 0 0 1 0 1.5h-5A.75.75 0 0 1 6 5.75ZM10 11a2 2 0 1 1 0 4 2 2 0 0 1 0-4Z"
         clipRule="evenodd"
+      />
+    </svg>
+  );
+}
+
+function PaperPlaneIcon({ className = "" }: { className?: string }) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 20 20"
+      fill="currentColor"
+      className={className}
+      aria-hidden="true"
+    >
+      <path d="M3.105 3.105a1 1 0 0 1 1.06-.225l13 5a1 1 0 0 1 0 1.866l-13 5a1 1 0 0 1-1.276-1.317L4.36 10 2.89 4.572a1 1 0 0 1 .215-1.467ZM5.602 9.5l-.93 3.428 9.318-3.428H5.602Zm8.388-1L4.672 5.072 5.602 8.5h8.388Z" />
+    </svg>
+  );
+}
+
+function SpinnerIcon({ className = "" }: { className?: string }) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      fill="none"
+      viewBox="0 0 24 24"
+      className={className}
+      aria-hidden="true"
+    >
+      <circle
+        className="opacity-25"
+        cx="12"
+        cy="12"
+        r="10"
+        stroke="currentColor"
+        strokeWidth="4"
+      />
+      <path
+        className="opacity-75"
+        fill="currentColor"
+        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
       />
     </svg>
   );
