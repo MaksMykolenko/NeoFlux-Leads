@@ -10,8 +10,8 @@ import {
   type MouseEvent,
   type ReactNode,
 } from "react";
-import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useLocale, useTranslations } from "next-intl";
+import { Link, useRouter } from "@/src/i18n/navigation";
 import { generateBeatProposal } from "@/src/actions/aiActions";
 import {
   searchBeatProspects,
@@ -21,6 +21,7 @@ import {
 import type { BeatProspect } from "@/src/lib/beatProspects";
 import {
   CHANNELS,
+  channelTranslated,
   getAvailableChannels,
   resolveBeatsProfileHref,
   type ChannelKey,
@@ -39,6 +40,8 @@ interface DemoState {
 
 export default function BeatOutreach() {
   const router = useRouter();
+  const locale = useLocale();
+  const t = useTranslations("BeatOutreach");
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<BeatProspect[]>([]);
   const [searched, setSearched] = useState(false);
@@ -74,7 +77,7 @@ export default function BeatOutreach() {
   return (
     <div className="space-y-6">
       <div id="tour-search-form">
-        <StepCard n={1} title="Знайдіть потенційних покупців" active>
+        <StepCard n={1} title={t("step1Title")} active>
           <ArtistSearch
             query={query}
             setQuery={setQuery}
@@ -107,8 +110,8 @@ export default function BeatOutreach() {
               }`}
             >
               {selectedProspects.length
-                ? `Вибрано: ${selectedProspects.length}`
-                : "Виберіть одного або декількох артистів, кому надішлемо біт."}
+                ? t("pickedCount", { count: selectedProspects.length })
+                : t("pickArtist")}
             </p>
           )}
         </StepCard>
@@ -117,11 +120,11 @@ export default function BeatOutreach() {
       <div id="tour-beats-step-demo">
         <StepCard
           n={2}
-          title="Завантажте демку біта"
+          title={t("step2Title")}
           active={selectedProspects.length > 0}
         >
         {selectedProspects.length === 0 ? (
-          <p className="text-sm text-gray-400">Спочатку виберіть артиста.</p>
+          <p className="text-sm text-gray-400">{t("selectFirst")}</p>
         ) : (
           <DemoUploader
             demo={demo}
@@ -136,25 +139,22 @@ export default function BeatOutreach() {
       <div id="tour-beats-messages">
         <StepCard
           n={3}
-          title="Перегляньте та надішліть повідомлення"
+          title={t("step3Title")}
           active={!!(selectedProspects.length && demo)}
         >
         {!demo || !selectedProspects.length ? (
-          <p className="text-sm text-gray-400">
-            Виберіть артиста і завантажте біт — згенеруємо лист під кожного.
-          </p>
+          <p className="text-sm text-gray-400">{t("selectAndDemo")}</p>
         ) : (
           <div className="space-y-3">
             <p className="rounded-md border border-gray-100 bg-gray-50 px-3 py-2 text-xs text-gray-600">
-              SMTP для відправки email — у{" "}
+              {t("flowNoteBefore")}
               <Link
                 href="/settings"
                 className="font-medium text-blue-600 hover:text-blue-800 hover:underline"
               >
-                Налаштуваннях
+                {t("flowNoteSettings")}
               </Link>
-              . Інші канали відкриваються кнопками нижче; «Зберегти в CRM»
-              фіксує outreach у базі.
+              {t("flowNoteAfter")}
             </p>
             {selectedProspects.length > 1 && (
               <BulkSendBanner
@@ -169,6 +169,7 @@ export default function BeatOutreach() {
                   key={artist.handle}
                   artist={artist}
                   demo={demo}
+                  locale={locale}
                   forceSent={!!sentMap[artist.handle]}
                   onSent={() => handleSent(artist.handle)}
                   onRemove={() => toggleSelect(artist.handle)}
@@ -200,6 +201,7 @@ function ArtistSearch({
   onResults,
   onError,
 }: ArtistSearchProps) {
+  const t = useTranslations("BeatOutreach");
   const [pending, startTransition] = useTransition();
 
   function handleSubmit(e: FormEvent) {
@@ -210,7 +212,7 @@ function ArtistSearch({
       if (res.success) {
         onResults(res.prospects);
       } else {
-        onError(res.error ?? "Пошук не вдався");
+        onError(res.error ?? t("resultsFailed"));
       }
     });
   }
@@ -223,7 +225,7 @@ function ArtistSearch({
       >
         <input
           type="text"
-          placeholder="Жанр, платформа, місто, ключове слово (напр. ukrainian trap soundcloud, drill rapper looking for type beats)"
+          placeholder={t("searchPlaceholder")}
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           disabled={pending}
@@ -235,14 +237,10 @@ function ArtistSearch({
           className="inline-flex items-center justify-center gap-2 rounded-lg bg-blue-600 px-6 py-2.5 text-sm font-medium text-white shadow-sm transition-colors hover:bg-blue-700 disabled:bg-blue-300 disabled:cursor-not-allowed min-w-[160px]"
         >
           {pending && <Spinner className="h-4 w-4" />}
-          <span>{pending ? "AI шукає…" : "Знайти покупців"}</span>
+          <span>{pending ? t("aiSearching") : t("findBuyers")}</span>
         </button>
       </form>
-      <p className="mt-2 text-[11px] text-gray-400">
-        Пошук через Gemini AI з Google Search grounding по живих профілях
-        SoundCloud / YouTube / Instagram / BeatStars. Зазвичай 10–20 секунд.
-        Перевіряйте знайдені email перед відправкою.
-      </p>
+      <p className="mt-2 text-[11px] text-gray-400">{t("searchFooter")}</p>
     </div>
   );
 }
@@ -262,6 +260,7 @@ function SearchResults({
   selectedHandles,
   onToggle,
 }: SearchResultsProps) {
+  const t = useTranslations("BeatOutreach");
   if (!searched) {
     return (
       <div className="mt-4 rounded-lg border border-dashed border-gray-300 bg-gray-50 px-6 py-10 text-center">
@@ -280,13 +279,8 @@ function SearchResults({
             />
           </svg>
         </div>
-        <p className="mt-3 text-sm font-medium text-gray-700">
-          AI знайде реальних артистів за вашим запитом
-        </p>
-        <p className="mt-1 text-xs text-gray-500">
-          Введіть жанр чи нішу й натисніть «Знайти покупців» — Gemini пошукає
-          активні профілі з живими контактами.
-        </p>
+        <p className="mt-3 text-sm font-medium text-gray-700">{t("idleTitle")}</p>
+        <p className="mt-1 text-xs text-gray-500">{t("idleHint")}</p>
       </div>
     );
   }
@@ -302,7 +296,7 @@ function SearchResults({
   if (results.length === 0) {
     return (
       <div className="mt-4 rounded-lg border border-gray-200 bg-gray-50 px-4 py-3 text-sm text-gray-600">
-        Нічого не знайдено. Спробуйте інший запит.
+        {t("noResultsAlt")}
       </div>
     );
   }
@@ -328,6 +322,8 @@ interface ArtistCardProps {
 }
 
 function ArtistCard({ artist, selected, onToggle }: ArtistCardProps) {
+  const t = useTranslations("BeatOutreach");
+  const tc = useTranslations("Channels");
   const available = getAvailableChannels(artist.contacts);
   const profileHref = resolveBeatsProfileHref(artist.profileUrl, artist.contacts);
 
@@ -361,7 +357,7 @@ function ArtistCard({ artist, selected, onToggle }: ArtistCardProps) {
             </span>
             {artist.lookingForType && (
               <span className="inline-flex items-center rounded-full bg-violet-50 px-1.5 py-0.5 text-[10px] font-medium text-violet-700 ring-1 ring-inset ring-violet-200 whitespace-nowrap">
-                шукає type beats
+                {t("cardSeeking")}
               </span>
             )}
           </div>
@@ -377,14 +373,14 @@ function ArtistCard({ artist, selected, onToggle }: ArtistCardProps) {
                 className="font-medium text-blue-600 hover:text-blue-800 hover:underline"
                 onClick={(e) => e.stopPropagation()}
               >
-                {artist.platform} — профіль ↗
+                {t("profileLink", { platform: artist.platform })}
               </a>
             ) : (
               <span>{artist.platform}</span>
             )}
             <span className="text-gray-300 hidden sm:inline">·</span>
             <span className="tabular-nums">
-              {fmtFollowers(artist.followers)} фоловерів
+              {t("cardFollowers", { count: fmtFollowers(artist.followers) })}
             </span>
           </div>
         </div>
@@ -401,25 +397,26 @@ function ArtistCard({ artist, selected, onToggle }: ArtistCardProps) {
 
       {available.length > 0 ? (
         <div className="mt-3 flex flex-wrap items-center gap-1.5">
-          {available.map(({ def, value }) => (
-            <a
-              key={def.key}
-              href={def.buildHref(value)}
-              title={`${def.label}: ${value}`}
-              target={def.key === "phone" || def.key === "email" ? undefined : "_blank"}
-              rel={def.key === "phone" || def.key === "email" ? undefined : "noopener noreferrer"}
-              onClick={(e) => e.stopPropagation()}
-              className="inline-flex items-center gap-1 rounded-md bg-gray-100 px-1.5 py-0.5 text-[10px] font-medium text-gray-700 hover:bg-gray-200 hover:text-gray-900 transition-colors"
-            >
-              <def.Icon className="w-3 h-3" />
-              {def.label}
-            </a>
-          ))}
+          {available.map(({ def, value }) => {
+            const ui = channelTranslated(def.key, tc);
+            return (
+              <a
+                key={def.key}
+                href={def.buildHref(value)}
+                title={`${ui.label}: ${value}`}
+                target={def.key === "phone" || def.key === "email" ? undefined : "_blank"}
+                rel={def.key === "phone" || def.key === "email" ? undefined : "noopener noreferrer"}
+                onClick={(e) => e.stopPropagation()}
+                className="inline-flex items-center gap-1 rounded-md bg-gray-100 px-1.5 py-0.5 text-[10px] font-medium text-gray-700 hover:bg-gray-200 hover:text-gray-900 transition-colors"
+              >
+                <def.Icon className="w-3 h-3" />
+                {ui.label}
+              </a>
+            );
+          })}
         </div>
       ) : (
-        <p className="mt-2 text-[11px] text-amber-700">
-          ⚠ Контакти не знайдено — спробуй інший запит.
-        </p>
+        <p className="mt-2 text-[11px] text-amber-700">{t("contactsMissing")}</p>
       )}
     </div>
   );
@@ -442,6 +439,7 @@ function DemoUploader({
   watermark,
   onWatermarkChange,
 }: DemoUploaderProps) {
+  const t = useTranslations("BeatOutreach");
   const inputRef = useRef<HTMLInputElement>(null);
   const [dragOver, setDragOver] = useState(false);
 
@@ -506,12 +504,8 @@ function DemoUploader({
             />
           </svg>
         </div>
-        <p className="mt-3 text-sm font-medium text-gray-900">
-          Перетягніть біт сюди
-        </p>
-        <p className="mt-1 text-xs text-gray-500">
-          MP3 / WAV / M4A · клацніть для вибору файлу
-        </p>
+        <p className="mt-3 text-sm font-medium text-gray-900">{t("dropzoneTitle")}</p>
+        <p className="mt-1 text-xs text-gray-500">{t("dropzoneHint")}</p>
       </div>
     );
   }
@@ -542,7 +536,7 @@ function DemoUploader({
           type="button"
           onClick={() => onChange(null)}
           className="p-1.5 rounded-md text-gray-400 hover:text-red-600 hover:bg-red-50 transition-colors"
-          aria-label="Видалити демо"
+          aria-label={t("removeDemoAria")}
         >
           <XIcon className="w-4 h-4" />
         </button>
@@ -556,35 +550,32 @@ function DemoUploader({
           className="h-3.5 w-3.5 rounded border-gray-300 text-violet-600 focus:ring-violet-500"
         />
         <span>
-          <span className="font-medium">Voice-tag водяний знак</span>
-          <span className="text-gray-400">
-            {" "}
-            — «НеоФлюкс біт» кожні ~10с (як на BeatStars).
-          </span>
+          <span className="font-medium">{t("voiceTagLabel")}</span>
+          <span className="text-gray-400">{" "}{t("voiceTagHint")}</span>
         </span>
       </label>
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
         <MetaInput
-          label="Жанр"
+          label={t("metaGenre")}
           value={demo.genre}
           onChange={(v) => set({ genre: v })}
           placeholder="Trap"
         />
         <MetaInput
-          label="BPM"
+          label={t("metaBpm")}
           value={demo.bpm}
           onChange={(v) => set({ bpm: v })}
           placeholder="140"
           type="number"
         />
         <MetaInput
-          label="Тональність"
+          label={t("metaKey")}
           value={demo.keySig}
           onChange={(v) => set({ keySig: v })}
           placeholder="G min"
         />
         <MetaInput
-          label="Ціна, $"
+          label={t("metaPriceShort")}
           value={demo.price}
           onChange={(v) => set({ price: v })}
           placeholder="29"
@@ -637,6 +628,7 @@ function WatermarkedAudio({
   src: string;
   watermark: boolean;
 }) {
+  const t = useTranslations("BeatOutreach");
   const audioRef = useRef<HTMLAudioElement>(null);
   const ctxRef = useRef<AudioContext | null>(null);
   const tagRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -709,7 +701,7 @@ function WatermarkedAudio({
       <audio ref={audioRef} src={src} controls className="w-full h-10" />
       {watermark && (
         <span className="absolute -top-2 right-2 inline-flex items-center rounded-full bg-violet-600 px-2 py-0.5 text-[9px] font-semibold uppercase tracking-wider text-white shadow-sm">
-          DEMO·watermarked
+          {t("demoBadge")}
         </span>
       )}
     </div>
@@ -723,15 +715,39 @@ function WatermarkedAudio({
 interface MessageReviewProps {
   artist: BeatProspect;
   demo: DemoState;
+  locale: string;
   forceSent: boolean;
   onSent: () => void;
   onRemove: () => void;
 }
 
-function localBuildMessage(artist: BeatProspect, demo: DemoState): string {
+function localBuildMessage(
+  artist: BeatProspect,
+  demo: DemoState,
+  locale: string
+): string {
   const firstName = artist.realName.split(" ")[0];
   const meta = [demo.bpm && `${demo.bpm} BPM`, demo.keySig].filter(Boolean).join(", ");
   const baseName = demo.name.replace(/\.(mp3|wav|m4a|flac)$/i, "");
+  if (locale === "en") {
+    return [
+      `Hey ${firstName},`,
+      "",
+      `I've been listening to your tracks on ${artist.platform} — the ${artist.genre.toLowerCase()} vibe really lands. You're at the point where a fresh beat could make the track pop.`,
+      "",
+      `Sharing «${baseName}»${meta ? ` (${meta})` : ""}${
+        demo.genre ? `, ${demo.genre.toLowerCase()}` : ""
+      } — feels like it fits your flow.`,
+      "",
+      `Preview attached. If it works, I can do a lease at ${
+        demo.price ? `$${demo.price}` : "a fair price"
+      } and send trackouts.`,
+      "",
+      `Let me know what you think — even a quick “not for me” helps.`,
+      "",
+      "— NeoFlux",
+    ].join("\n");
+  }
   return [
     `Hey ${firstName},`,
     "",
@@ -754,16 +770,21 @@ function localBuildMessage(artist: BeatProspect, demo: DemoState): string {
 function MessageReview({
   artist,
   demo,
+  locale,
   forceSent,
   onSent,
   onRemove,
 }: MessageReviewProps) {
+  const t = useTranslations("BeatOutreach");
+  const tc = useTranslations("Channels");
   const initialBody = useMemo(
-    () => localBuildMessage(artist, demo),
-    [artist, demo]
+    () => localBuildMessage(artist, demo, locale),
+    [artist, demo, locale]
   );
   const [subject, setSubject] = useState(
-    `Біт під твій флоу — для ${artist.handle}`
+    locale === "en"
+      ? `Beat for your flow — ${artist.handle}`
+      : `Біт під твій флоу — для ${artist.handle}`
   );
   const [body, setBody] = useState(initialBody);
   const [generating, startGenerate] = useTransition();
@@ -808,7 +829,7 @@ function MessageReview({
       if (res.success && res.text) {
         setBody(res.text);
       } else {
-        setError(res.error ?? "Не вдалось перегенерувати");
+        setError(res.error ?? t("errRegenerate"));
       }
     });
   }
@@ -820,7 +841,7 @@ function MessageReview({
       setTimeout(() => setCopied(false), 1500);
       return true;
     } catch {
-      setError("Не вдалось скопіювати — можливо браузер блокує clipboard.");
+      setError(t("errClipboard"));
       return false;
     }
   }
@@ -866,7 +887,7 @@ function MessageReview({
         setSaved(true);
         onSent();
       } else {
-        setError(res.error ?? "Не вдалось зберегти");
+        setError(res.error ?? t("errSave"));
       }
     });
   }
@@ -893,8 +914,8 @@ function MessageReview({
           </p>
           <p className="text-xs text-gray-500">
             {available.length > 0
-              ? `${available.length} каналів зв'язку доступно`
-              : `Нема публічних контактів — потрібен ручний DM на ${artist.platform}`}
+              ? t("channelsAvailable", { count: available.length })
+              : t("noPublicContacts", { platform: artist.platform })}
           </p>
         </div>
         {!isSaved && (
@@ -903,7 +924,7 @@ function MessageReview({
             onClick={onRemove}
             className="text-xs text-gray-400 hover:text-red-600 transition-colors"
           >
-            Прибрати
+            {t("remove")}
           </button>
         )}
       </div>
@@ -914,15 +935,15 @@ function MessageReview({
             <CheckIcon className="w-5 h-5" />
           </div>
           <div>
-            <p className="text-sm font-semibold text-gray-900">Збережено</p>
+            <p className="text-sm font-semibold text-gray-900">{t("savedHeading")}</p>
             <p className="text-xs text-gray-500">
-              Лід додано в CRM зі статусом Contacted
+              {t("savedBody")}
               {openedCount > 0 && (
                 <>
                   {" "}
-                  · надіслано через{" "}
+                  · {t("sentViaSuffix")}{" "}
                   {Array.from(openedChannels)
-                    .map((k) => CHANNELS[k].label)
+                    .map((k) => channelTranslated(k, tc).label)
                     .join(", ")}
                 </>
               )}
@@ -934,7 +955,7 @@ function MessageReview({
         <div className="p-4 space-y-3">
           <div>
             <label className="block text-[10px] uppercase tracking-wider text-gray-500 mb-1">
-              Тема
+              {t("reviewSubject")}
             </label>
             <input
               type="text"
@@ -945,7 +966,7 @@ function MessageReview({
           </div>
           <div>
             <label className="block text-[10px] uppercase tracking-wider text-gray-500 mb-1">
-              Текст листа
+              {t("letterBody")}
             </label>
             <textarea
               value={body}
@@ -979,7 +1000,7 @@ function MessageReview({
               ) : (
                 <SparkleIcon className="w-3 h-3" />
               )}
-              {generating ? "Генерую…" : "Перегенерувати (AI)"}
+              {generating ? t("reviewGenerating") : t("regenerateAi")}
             </button>
             <button
               type="button"
@@ -995,7 +1016,7 @@ function MessageReview({
               ) : (
                 <ClipboardIcon className="w-3.5 h-3.5" />
               )}
-              {copied ? "Скопійовано" : "Копіювати"}
+              {copied ? t("reviewCopied") : t("reviewCopy")}
             </button>
           </div>
 
@@ -1003,24 +1024,25 @@ function MessageReview({
             <div className="space-y-2 pt-2 border-t border-gray-100">
               <div className="flex items-center justify-between">
                 <p className="text-[10px] uppercase tracking-wider text-gray-500">
-                  Канали зв&apos;язку
+                  {t("channelsHeadingLower")}
                 </p>
                 <p className="text-[10px] text-gray-400">
                   {openedCount > 0
-                    ? `${openedCount} відкрито`
-                    : "Натисніть, щоб відкрити месенджер"}
+                    ? t("openedCount", { count: openedCount })
+                    : t("clickToOpenMessenger")}
                 </p>
               </div>
               <div className="grid gap-1.5 sm:grid-cols-2">
                 {available.map(({ def, value }) => {
                   const opened = openedChannels.has(def.key);
+                  const ui = channelTranslated(def.key, tc);
                   return (
                     <button
                       key={def.key}
                       type="button"
                       onClick={() => handleOpenChannel(def.key, value)}
                       disabled={!subject.trim() || !body.trim()}
-                      title={`${def.label}: ${value}\n${def.hint}`}
+                      title={`${ui.label}: ${value}\n${ui.hint}`}
                       className={`flex items-center justify-between gap-2 rounded-md border px-3 py-2 text-xs transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${
                         opened
                           ? "border-green-200 bg-green-50 text-green-800 hover:bg-green-100"
@@ -1029,7 +1051,7 @@ function MessageReview({
                     >
                       <span className="flex items-center gap-2 min-w-0">
                         <def.Icon className="w-3.5 h-3.5 flex-shrink-0" />
-                        <span className="font-medium">{def.label}</span>
+                        <span className="font-medium">{ui.label}</span>
                         <span className="text-gray-400 truncate">
                           {value.length > 24 ? `${value.slice(0, 24)}…` : value}
                         </span>
@@ -1038,28 +1060,26 @@ function MessageReview({
                         <CheckIcon className="w-3.5 h-3.5 flex-shrink-0" />
                       ) : (
                         <span className="text-[10px] font-medium text-blue-600 whitespace-nowrap">
-                          Відкрити
+                          {t("open")}
                         </span>
                       )}
                     </button>
                   );
                 })}
               </div>
-              <p className="text-[11px] text-gray-400">
-                Платформи без URL-prefill (Instagram, SoundCloud, etc.) —
-                повідомлення скопіюється в буфер автоматично, вставте в
-                месенджері.
-              </p>
+              <p className="text-[11px] text-gray-400">{t("noPrefillHint")}</p>
             </div>
           )}
 
           <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-gray-100">
             <p className="text-[11px] text-gray-500">
               {openedCount === 0
-                ? "Відкрийте хоча б один канал, щоб зберегти лід у CRM."
-                : `Готово — фіксуємо ${openedCount} ${
-                    openedCount === 1 ? "канал" : "канали"
-                  } у CRM.`}
+                ? t("saveHintNoChannel")
+                : t("saveHintChannels", {
+                    count: openedCount,
+                    channelsWord:
+                      openedCount === 1 ? t("channelOne") : t("channelMany"),
+                  })}
             </p>
             <button
               type="button"
@@ -1073,7 +1093,7 @@ function MessageReview({
               className="inline-flex items-center justify-center gap-2 rounded-lg bg-blue-600 px-6 py-2.5 text-sm font-medium text-white shadow-sm transition-colors hover:bg-blue-700 disabled:bg-blue-300 disabled:cursor-not-allowed"
             >
               {saving && <Spinner className="h-4 w-4" />}
-              <span>{saving ? "Зберігаю…" : "Зберегти в CRM"}</span>
+              <span>{saving ? t("reviewSaving") : t("reviewSaveCrm")}</span>
             </button>
           </div>
 
@@ -1095,16 +1115,15 @@ function BulkSendBanner({
   total: number;
   disabled: boolean;
 }) {
+  const t = useTranslations("BeatOutreach");
   return (
     <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-blue-200 bg-blue-50 px-4 py-3">
       <div className="text-sm text-blue-900">
         <span className="font-semibold">
-          Масове надсилання — {pending}/{total} адресатів
+          {t("bulkHeading", { pending, total })}
         </span>
         <span className="block text-xs text-blue-700/80 mt-0.5">
-          {disabled
-            ? "Всім, кого вибрали, вже надіслано."
-            : "Надішліть кожному вручну нижче — біт точно той самий."}
+          {disabled ? t("bulkAllSent") : t("bulkManual")}
         </span>
       </div>
     </div>

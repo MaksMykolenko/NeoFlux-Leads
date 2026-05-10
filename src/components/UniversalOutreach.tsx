@@ -2,10 +2,12 @@
 
 import { useState, useTransition, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { searchUniversalLeads } from "@/src/actions/universalActions";
 
 export default function UniversalOutreach() {
   const router = useRouter();
+  const t = useTranslations("UniversalOutreach");
   const [prompt, setPrompt] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [lastSaved, setLastSaved] = useState<number | null>(null);
@@ -25,7 +27,7 @@ export default function UniversalOutreach() {
         setLastSaved(res.saved ?? 0);
         router.refresh();
       } else {
-        setError(res.error ?? "Пошук не вдався");
+        setError(res.error ?? t("searchFailed"));
       }
     });
   }
@@ -37,7 +39,7 @@ export default function UniversalOutreach() {
           htmlFor="universal-prompt"
           className="block text-sm font-medium text-gray-700"
         >
-          Опишіть, кого шукаєте
+          {t("promptLabel")}
         </label>
         <textarea
           id="universal-prompt"
@@ -45,7 +47,7 @@ export default function UniversalOutreach() {
           onChange={(e) => setPrompt(e.target.value)}
           rows={6}
           disabled={pending}
-          placeholder='Наприклад: «Знайди 5 SaaS стартапів у сфері логістики в Польщі з публічним сайтом» або «Контакти HR-директорів українських IT-компаній 200+ людей»'
+          placeholder={t("promptPlaceholder")}
           className="block w-full rounded-lg border border-gray-200 bg-white px-4 py-3 text-sm text-gray-900 shadow-sm placeholder:text-gray-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100 disabled:bg-gray-50 disabled:text-gray-500"
         />
         <div className="flex flex-wrap items-center gap-3">
@@ -54,12 +56,10 @@ export default function UniversalOutreach() {
             disabled={pending || !prompt.trim()}
             className="inline-flex items-center justify-center rounded-lg bg-gradient-to-r from-violet-600 to-blue-600 px-5 py-2.5 text-sm font-medium text-white shadow-sm transition hover:from-violet-700 hover:to-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
           >
-            {pending ? "AI аналізує інтернет…" : "Запустити AI-сканер"}
+            {pending ? t("busyInternet") : t("ctaScan")}
           </button>
           {pending && (
-            <span className="text-xs text-gray-500">
-              Зачекайте — виконується пошук у Google…
-            </span>
+            <span className="text-xs text-gray-500">{t("googleWait")}</span>
           )}
         </div>
       </form>
@@ -72,16 +72,14 @@ export default function UniversalOutreach() {
 
       {lastSaved !== null && !pending && (
         <p className="text-sm text-green-700">
-          Збережено в CRM:{" "}
+          {t("savedPrefix")}{" "}
           <span className="font-semibold tabular-nums">{lastSaved}</span>{" "}
-          {lastSaved === 1 ? "запис" : "записів"} (нові та оновлені за назвою).
+          {lastSaved === 1 ? t("recordOne") : t("recordMany")}{" "}
+          {t("savedSuffix")}
         </p>
       )}
 
-      <p className="text-[11px] leading-relaxed text-gray-400">
-        Результати зберігаються як ліди режиму «Універсальний». Перевіряйте
-        достовірність даних перед outreach — AI може помилятися.
-      </p>
+      <p className="text-[11px] leading-relaxed text-gray-400">{t("footerNote")}</p>
     </div>
   );
 }

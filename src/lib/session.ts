@@ -1,7 +1,8 @@
 import { createHash, randomBytes } from "node:crypto";
 import { cookies } from "next/headers";
-import { redirect } from "next/navigation";
+import { getLocale } from "next-intl/server";
 import type { User } from "@prisma/client";
+import { redirect } from "@/src/i18n/navigation";
 import { prisma } from "@/src/lib/prisma";
 
 export const SESSION_COOKIE = "neoflux_session";
@@ -46,13 +47,15 @@ export async function destroySessionByToken(token: string): Promise<void> {
 }
 
 /**
- * Захищає server-component сторінку: повертає юзера або робить redirect("/login").
+ * Захищає server-component сторінку: повертає юзера або робить redirect на локалізований /login.
  * Це другий рівень захисту після middleware (на випадок підробленого cookie).
  */
 export async function requireUser(): Promise<User> {
   const user = await getCurrentUser();
-  if (!user) redirect("/login");
-  return user;
+  if (!user) {
+    redirect({ href: "/login", locale: await getLocale() });
+  }
+  return user!;
 }
 
 /**

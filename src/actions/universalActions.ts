@@ -1,6 +1,6 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { revalidateLocalizedPath } from "@/src/i18n/revalidateLocalized";
 import { GoogleGenAI } from "@google/genai";
 import type { Prisma } from "@prisma/client";
 import { prisma } from "@/src/lib/prisma";
@@ -225,7 +225,7 @@ export async function searchUniversalLeads(
       await incrementLeadsProcessed(userId, newLeadCount);
     }
 
-    revalidatePath("/");
+    await revalidateLocalizedPath("/");
     return { success: true, saved: written };
   } catch (error) {
     console.error("searchUniversalLeads error:", error);

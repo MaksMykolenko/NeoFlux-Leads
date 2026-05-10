@@ -38,6 +38,17 @@ export type ChannelKey =
   | "discord"
   | "whatsapp";
 
+/** UI copy for a channel — pass `getTranslations("Channels")`. */
+export function channelTranslated(
+  key: ChannelKey,
+  tc: (key: string, values?: Record<string, string | number>) => string
+) {
+  return {
+    label: tc(`labels.${key}`),
+    hint: tc(`hints.${key}`),
+  };
+}
+
 type ChannelIcon = (props: { className?: string }) => ReactElement;
 
 // ---------- helpers ----------
@@ -185,23 +196,23 @@ export const CHANNELS: Record<ChannelKey, ChannelDef> = {
   email: {
     key: "email",
     label: "Email",
-    hint: "mailto: відкриває поштовий клієнт із заповненою темою та текстом",
+    hint: "Opens your mail client with subject and body prefilled (mailto:)",
     prefillsMessage: true,
     buildHref: (value, message) => asMailto(value, message),
     Icon: EmailIcon,
   },
   phone: {
     key: "phone",
-    label: "Телефон",
-    hint: "tel: для дзвінка",
+    label: "Phone",
+    hint: "Opens the dialer (tel:)",
     prefillsMessage: false,
     buildHref: (value) => `tel:${digitsOnly(value)}`,
     Icon: PhoneIcon,
   },
   website: {
     key: "website",
-    label: "Сайт",
-    hint: "Відкриває особистий сайт артиста",
+    label: "Website",
+    hint: "Opens the artist website",
     prefillsMessage: false,
     buildHref: (value) => (/^https?:\/\//i.test(value) ? value : `https://${value}`),
     Icon: WebsiteIcon,
@@ -209,7 +220,7 @@ export const CHANNELS: Record<ChannelKey, ChannelDef> = {
   instagram: {
     key: "instagram",
     label: "Instagram",
-    hint: "Відкриває профіль (DM-prefill не підтримується — текст у буфері)",
+    hint: "Opens the profile (no DM prefill — copy message to clipboard)",
     prefillsMessage: false,
     buildHref: (value) =>
       /^https?:\/\//i.test(value)
@@ -220,7 +231,7 @@ export const CHANNELS: Record<ChannelKey, ChannelDef> = {
   soundcloud: {
     key: "soundcloud",
     label: "SoundCloud",
-    hint: "Відкриває профіль (DM через клік на «Message» там)",
+    hint: "Opens the profile (tap Message there)",
     prefillsMessage: false,
     buildHref: (value) => ensureUrl(value, "soundcloud.com"),
     Icon: SoundCloudIcon,
@@ -228,7 +239,7 @@ export const CHANNELS: Record<ChannelKey, ChannelDef> = {
   youtube: {
     key: "youtube",
     label: "YouTube",
-    hint: "Відкриває канал (контакт через email на About)",
+    hint: "Opens the channel (contact via email on About)",
     prefillsMessage: false,
     buildHref: (value) => {
       const v = value.trim();
@@ -241,7 +252,7 @@ export const CHANNELS: Record<ChannelKey, ChannelDef> = {
   tiktok: {
     key: "tiktok",
     label: "TikTok",
-    hint: "Відкриває профіль",
+    hint: "Opens the profile",
     prefillsMessage: false,
     buildHref: (value) => {
       const v = value.trim();
@@ -253,7 +264,7 @@ export const CHANNELS: Record<ChannelKey, ChannelDef> = {
   twitter: {
     key: "twitter",
     label: "X / Twitter",
-    hint: "Відкриває профіль або compose-DM, якщо знаємо ID",
+    hint: "Opens the profile or compose DM when possible",
     prefillsMessage: false,
     buildHref: (value) => {
       const v = value.trim();
@@ -265,7 +276,7 @@ export const CHANNELS: Record<ChannelKey, ChannelDef> = {
   spotify: {
     key: "spotify",
     label: "Spotify",
-    hint: "Сторінка артиста (без DM)",
+    hint: "Artist page (no DMs)",
     prefillsMessage: false,
     buildHref: (value) => {
       const v = value.trim();
@@ -277,7 +288,7 @@ export const CHANNELS: Record<ChannelKey, ChannelDef> = {
   beatstars: {
     key: "beatstars",
     label: "BeatStars",
-    hint: "Профіль артиста на BeatStars",
+    hint: "Artist profile on BeatStars",
     prefillsMessage: false,
     buildHref: (value) => ensureUrl(value, "beatstars.com"),
     Icon: BeatStarsIcon,
@@ -285,7 +296,7 @@ export const CHANNELS: Record<ChannelKey, ChannelDef> = {
   telegram: {
     key: "telegram",
     label: "Telegram",
-    hint: "Відкриває чат через t.me/<handle>",
+    hint: "Opens chat via t.me/<handle>",
     prefillsMessage: false,
     buildHref: (value) => {
       const v = value.trim();
@@ -297,7 +308,7 @@ export const CHANNELS: Record<ChannelKey, ChannelDef> = {
   discord: {
     key: "discord",
     label: "Discord",
-    hint: "Юзернейм для пошуку у Discord (DM-deep-link не підтримується)",
+    hint: "Discord username lookup (no reliable DM deep link)",
     prefillsMessage: false,
     buildHref: (value) => `https://discord.com/users/${trimAt(value)}`,
     Icon: DiscordIcon,
@@ -305,7 +316,7 @@ export const CHANNELS: Record<ChannelKey, ChannelDef> = {
   whatsapp: {
     key: "whatsapp",
     label: "WhatsApp",
-    hint: "wa.me з prefill повідомлення",
+    hint: "Opens WhatsApp with prefilled text",
     prefillsMessage: true,
     buildHref: (value, message) => {
       const phone = digitsOnly(value).replace(/^\+/, "");

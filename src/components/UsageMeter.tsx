@@ -1,4 +1,7 @@
-import Link from "next/link";
+"use client";
+
+import { useTranslations } from "next-intl";
+import { Link } from "@/src/i18n/navigation";
 import type { Plan } from "@/src/lib/subscription";
 import type { LeadLimitStatus } from "@/src/lib/subscription";
 
@@ -7,19 +10,16 @@ interface UsageMeterProps {
   plan: Plan;
 }
 
-/**
- * Компактний прогрес-бар «Використано X з Y» поруч із формою пошуку.
- * Для AGENCY (unlimited) показує тільки бейдж «Без обмежень».
- * Колір змінюється на жовтий ≥75%, червоний ≥95%.
- */
 export default function UsageMeter({ status, plan }: UsageMeterProps) {
+  const t = useTranslations("UsageMeter");
+
   if (status.unlimited) {
     return (
       <div className="flex items-center justify-between gap-3 rounded-lg border border-emerald-200 bg-emerald-50/60 px-4 py-2.5">
         <div className="flex items-center gap-2 text-sm">
           <span className="inline-flex h-2 w-2 rounded-full bg-emerald-500" />
           <span className="font-medium text-emerald-900">{plan.name}</span>
-          <span className="text-emerald-700">— без обмежень на ліди</span>
+          <span className="text-emerald-700">— {t("unlimited")}</span>
         </div>
       </div>
     );
@@ -43,18 +43,19 @@ export default function UsageMeter({ status, plan }: UsageMeterProps) {
           <span className="font-medium text-gray-900">{plan.name}</span>
           <span className="text-gray-600">
             {" "}
-            — використано{" "}
-            <span className="font-semibold text-gray-900">{status.used}</span>{" "}
-            з{" "}
-            <span className="font-semibold text-gray-900">{status.limit}</span>{" "}
-            лідів
+            —{" "}
+            {t("remaining", {
+              remaining: status.remaining,
+              limit: status.limit,
+              used: status.used,
+            })}
           </span>
         </div>
         <Link
           href="/pricing"
           className="text-xs font-medium text-indigo-600 hover:text-indigo-700"
         >
-          Оновити →
+          {t("upgradeCta")} →
         </Link>
       </div>
       <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-gray-100">

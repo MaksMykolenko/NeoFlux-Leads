@@ -1,5 +1,6 @@
 import { Suspense } from "react";
 import type { Prisma } from "@prisma/client";
+import { getTranslations, setRequestLocale } from "next-intl/server";
 import { prisma } from "@/src/lib/prisma";
 import {
   LeadMode,
@@ -24,16 +25,22 @@ import UsageMeter from "@/src/components/UsageMeter";
 export const dynamic = "force-dynamic";
 
 export default async function Home({
+  params,
   searchParams,
 }: {
+  params: Promise<{ locale: string }>;
   searchParams: Promise<{ mode?: string | string[] }>;
 }) {
+  const { locale } = await params;
+  setRequestLocale(locale);
+  const t = await getTranslations("Home");
+
   const user = await requireUser();
   const plan = getPlanForUser(user);
   const limitStatus = getLeadLimitStatus(user);
 
-  const params = await searchParams;
-  const mode = modeFromQuery(params.mode);
+  const query = await searchParams;
+  const mode = modeFromQuery(query.mode);
   const isBeats = mode === LeadMode.BEATS;
   const isUniversal = mode === LeadMode.UNIVERSAL;
 
@@ -87,14 +94,14 @@ export default async function Home({
           />
           <div id="tour-page-title" className="min-w-0">
             <h1 className="text-2xl font-semibold text-gray-900 tracking-tight">
-              NeoFlux Lead Engine
+              {t("title")}
             </h1>
             <p className="mt-1 text-sm text-gray-500">
               {isBeats
-                ? "AI-пошук артистів, які купують біти"
+                ? t("subtitleBeats")
                 : isUniversal
-                  ? "Універсальний AI-пошук лідів (Gemini + Google Search)"
-                  : "Автоматичний збір лідів з Google Maps"}
+                  ? t("subtitleUniversal")
+                  : t("subtitleLocal")}
             </p>
           </div>
         </div>
@@ -122,10 +129,10 @@ export default async function Home({
             <div className="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
               <h2 className="text-base font-medium text-gray-900">
                 {isBeats
-                  ? "Знайдені виконавці"
+                  ? t("tableTitleBeats")
                   : isUniversal
-                    ? "Універсальні ліди"
-                    : "Останні ліди"}
+                    ? t("tableTitleUniversal")
+                    : t("tableTitleLocal")}
               </h2>
               {leads.length > 0 && (
                 <span className="inline-flex items-center rounded-full bg-gray-100 px-2.5 py-0.5 text-xs font-medium text-gray-600">
@@ -150,10 +157,10 @@ export default async function Home({
                   />
                 </svg>
                 <p className="mt-3 text-sm font-medium text-gray-500">
-                  {isBeats ? "Виконавців ще немає" : "Лідів ще немає"}
+                  {isBeats ? t("emptyTitleBeats") : t("emptyTitleOther")}
                 </p>
                 <p className="mt-1 text-sm text-gray-400">
-                  Використайте форму вище, щоб почати пошук
+                  {t("emptyHint")}
                 </p>
               </div>
             ) : (
@@ -162,23 +169,27 @@ export default async function Home({
                   <thead>
                     <tr className="border-b border-gray-100">
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        {isBeats ? "Артист" : isUniversal ? "Назва" : "Компанія"}
+                        {isBeats
+                          ? t("colArtist")
+                          : isUniversal
+                            ? t("colName")
+                            : t("colCompany")}
                       </th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                         {isBeats
-                          ? "Жанр / Платформа"
+                          ? t("colGenre")
                           : isUniversal
-                            ? "Опис (AI)"
-                            : "Категорія / Локація"}
+                            ? t("colDesc")
+                            : t("colCategory")}
                       </th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        {isBeats ? "Профіль" : "Сайт / посилання"}
+                        {isBeats ? t("colProfile") : t("colSite")}
                       </th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Статус
+                        {t("colStatus")}
                       </th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        {isBeats ? "Аудиторія" : "Аудит"}
+                        {isBeats ? t("colAudience") : t("colAudit")}
                       </th>
                     </tr>
                   </thead>

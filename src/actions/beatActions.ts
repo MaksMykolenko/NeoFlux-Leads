@@ -1,6 +1,6 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { revalidateLocalizedPath } from "@/src/i18n/revalidateLocalized";
 import { GoogleGenAI } from "@google/genai";
 import { Prisma } from "@prisma/client";
 import { prisma } from "@/src/lib/prisma";
@@ -405,8 +405,8 @@ export async function sendBeatMessage(
       await incrementLeadsProcessed(userId, 1);
     }
 
-    revalidatePath("/");
-    revalidatePath(`/leads/${result.lead.id}`);
+    await revalidateLocalizedPath("/");
+    await revalidateLocalizedPath(`/leads/${result.lead.id}`);
 
     return { success: true, leadId: result.lead.id };
   } catch (error) {

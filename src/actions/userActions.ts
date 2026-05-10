@@ -1,6 +1,6 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { revalidateLocalizedPath } from "@/src/i18n/revalidateLocalized";
 import { prisma } from "@/src/lib/prisma";
 import { getRequestUserId } from "@/src/lib/session";
 
@@ -72,7 +72,7 @@ export async function saveSmtpSettings(
       data: updateData,
     });
 
-    revalidatePath("/settings");
+    await revalidateLocalizedPath("/settings");
     return { success: true };
   } catch (error) {
     console.error("saveSmtpSettings error:", error);

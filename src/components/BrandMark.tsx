@@ -1,4 +1,7 @@
-import Link from "next/link";
+"use client";
+
+import { useTranslations } from "next-intl";
+import { Link } from "@/src/i18n/navigation";
 
 interface BrandMarkProps {
   className?: string;
@@ -12,6 +15,8 @@ export default function BrandMark({
   href,
   id,
 }: BrandMarkProps) {
+  const t = useTranslations("BrandMark");
+
   const svg = (
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -37,7 +42,7 @@ export default function BrandMark({
         id={id}
         href={href}
         className={`inline-flex shrink-0 rounded-xl text-indigo-700 transition hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 ${className}`}
-        aria-label="На головну панель"
+        aria-label={t("homeAria")}
       >
         {svg}
       </Link>

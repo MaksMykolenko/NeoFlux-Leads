@@ -81,7 +81,8 @@ export interface ScoreContext {
   barColor: string;
   ringColor: string;
   bgColor: string;
-  label: string;
+  /** i18n key suffix: `LeadDetail.score.label.${labelKey}` */
+  labelKey: "high" | "medium" | "low";
   level: "high" | "medium" | "low";
 }
 
@@ -92,7 +93,7 @@ export function getScoreContext(score: number): ScoreContext {
       barColor: "bg-green-500",
       ringColor: "ring-green-200",
       bgColor: "bg-green-50",
-      label: "Високий потенціал для продажу послуг",
+      labelKey: "high",
       level: "high",
     };
   }
@@ -102,7 +103,7 @@ export function getScoreContext(score: number): ScoreContext {
       barColor: "bg-amber-500",
       ringColor: "ring-amber-200",
       bgColor: "bg-amber-50",
-      label: "Помірний потенціал — варто перевірити",
+      labelKey: "medium",
       level: "medium",
     };
   }
@@ -111,7 +112,7 @@ export function getScoreContext(score: number): ScoreContext {
     barColor: "bg-red-500",
     ringColor: "ring-red-200",
     bgColor: "bg-red-50",
-    label: "Низький пріоритет",
+    labelKey: "low",
     level: "low",
   };
 }

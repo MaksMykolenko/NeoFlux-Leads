@@ -9,6 +9,7 @@ import {
   type FluxUserInfo,
 } from "@/src/lib/fluxAuth";
 import { prisma } from "@/src/lib/prisma";
+import { routing } from "@/src/i18n/routing";
 import { buildSessionCookie, createSession } from "@/src/lib/session";
 import { inferRoleForEmail, normalizeRole, type Role } from "@/src/lib/admin";
 
@@ -123,7 +124,7 @@ async function upsertUserFromFluxProfile(params: {
 }
 
 function errorRedirect(req: NextRequest, code: string, detail?: string): NextResponse {
-  const url = new URL("/login", req.url);
+  const url = new URL(`/${routing.defaultLocale}/login`, req.url);
   url.searchParams.set("auth_error", code);
   if (detail) url.searchParams.set("auth_error_detail", detail);
   const res = NextResponse.redirect(url, 302);
@@ -206,7 +207,7 @@ export async function GET(req: NextRequest) {
     ip,
   });
 
-  const home = new URL("/", req.url);
+  const home = new URL(`/${routing.defaultLocale}`, req.url);
   const response = NextResponse.redirect(home, 302);
 
   const cookie = buildSessionCookie(sessionToken);

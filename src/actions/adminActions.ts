@@ -1,6 +1,6 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { revalidateLocalizedPath } from "@/src/i18n/revalidateLocalized";
 import { prisma } from "@/src/lib/prisma";
 import { checkAdminAccess, normalizeRole, type Role } from "@/src/lib/admin";
 import { PLANS, type PlanId } from "@/src/lib/subscription";
@@ -117,7 +117,7 @@ export async function updateUserPlan(
       }),
     ]);
 
-    revalidatePath("/admin/users");
+    await revalidateLocalizedPath("/admin/users");
     return { success: true };
   } catch (error) {
     console.error("updateUserPlan error:", error);
@@ -181,7 +181,7 @@ export async function updateUserRole(
       }),
     ]);
 
-    revalidatePath("/admin/users");
+    await revalidateLocalizedPath("/admin/users");
     return { success: true };
   } catch (error) {
     console.error("updateUserRole error:", error);

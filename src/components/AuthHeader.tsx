@@ -1,7 +1,9 @@
-import Link from "next/link";
+import { getTranslations } from "next-intl/server";
+import { Link } from "@/src/i18n/navigation";
 import { getCurrentUser } from "@/src/lib/session";
 import { getPlanForUser } from "@/src/lib/subscription";
 import { isAdmin } from "@/src/lib/admin";
+import LanguageSwitcher from "@/src/components/LanguageSwitcher";
 
 function initials(value: string): string {
   return value
@@ -15,11 +17,9 @@ function initials(value: string): string {
 export default async function AuthHeader() {
   const user = await getCurrentUser();
 
-  // Не залогінений → хедера взагалі нема. Гостей middleware вже завертає на
-  // /login, де є власна welcome-сторінка з кнопкою входу. Хедер з кнопкою
-  // тут був би дублюванням і ламав би UX логін-сторінки.
   if (!user) return null;
 
+  const t = await getTranslations("AuthHeader");
   const plan = getPlanForUser(user);
   const userIsAdmin = isAdmin(user);
 
@@ -30,10 +30,11 @@ export default async function AuthHeader() {
           href="/"
           className="text-sm font-medium text-gray-700 transition hover:text-gray-900"
         >
-          NeoFlux Lead Engine
+          {t("productName")}
         </Link>
 
         <div className="flex items-center gap-3">
+          <LanguageSwitcher />
           {userIsAdmin && (
             <Link
               href="/admin/users"
@@ -50,7 +51,7 @@ export default async function AuthHeader() {
                   clipRule="evenodd"
                 />
               </svg>
-              Admin
+              {t("admin")}
             </Link>
           )}
           <Link
@@ -68,7 +69,7 @@ export default async function AuthHeader() {
                 clipRule="evenodd"
               />
             </svg>
-            Налаштування
+            {t("settings")}
           </Link>
           <Link
             href="/pricing"
@@ -92,7 +93,7 @@ export default async function AuthHeader() {
             )}
             <div className="hidden sm:block">
               <div className="text-sm font-medium text-gray-900 leading-tight">
-                {user.displayName || user.username || "Користувач"}
+                {user.displayName || user.username || t("fallbackUser")}
               </div>
               {user.email && (
                 <div className="text-xs text-gray-500 leading-tight">{user.email}</div>
@@ -104,7 +105,7 @@ export default async function AuthHeader() {
               type="submit"
               className="rounded-md border border-gray-200 bg-white px-3 py-1.5 text-xs font-medium text-gray-700 shadow-sm transition hover:bg-gray-50"
             >
-              Вийти
+              {t("signOut")}
             </button>
           </form>
         </div>

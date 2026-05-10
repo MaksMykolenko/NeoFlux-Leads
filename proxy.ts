@@ -1,41 +1,49 @@
+import createIntlMiddleware from "next-intl/middleware";
 import { NextResponse, type NextRequest } from "next/server";
+import { routing } from "./src/i18n/routing";
+import { SESSION_COOKIE } from "./src/lib/session";
 
-const SESSION_COOKIE = "neoflux_session";
-const LOGIN_PATH = "/login";
+const handleI18n = createIntlMiddleware(routing);
 
-/**
- * Edge-level guard: visitors without a session cookie are sent to /login.
- *
- * We intentionally do NOT redirect /login → / when a cookie exists: the
- * cookie is only a hint here; validity is checked in `getCurrentUser()` via
- * Prisma. A stale or forged non-empty cookie would otherwise ping-pong with
- * `requireUser()` redirecting to /login (ERR_TOO_MANY_REDIRECTS).
- *
- * Logged-in users on /login are bounced to / by `app/login/page.tsx` after a
- * real session lookup.
- *
- * `/admin/*` gets the same cookie-presence gate here (so unauthenticated
- * traffic can't even reach the layout), and a real RBAC check runs in
- * `app/admin/layout.tsx` via `requireAdmin()`. The role lookup needs Prisma,
- * which can't run on the edge — so role enforcement is deliberately a
- * server-component concern.
- */
-export default function proxy(req: NextRequest) {
-  const { pathname } = req.nextUrl;
-  const hasSession = !!req.cookies.get(SESSION_COOKIE)?.value;
+function stripLocalePrefix(pathname: string): string {
+  for (const loc of routing.locales) {
+    if (pathname === `/${loc}`) return "/";
+    if (pathname.startsWith(`/${loc}/`)) {
+      const rest = pathname.slice(loc.length + 1);
+      return rest.startsWith("/") ? rest : `/${rest}`;
+    }
+  }
+  return pathname;
+}
 
-  if (!hasSession && pathname !== LOGIN_PATH) {
-    const loginUrl = new URL(LOGIN_PATH, req.url);
+function isLoginPath(stripped: string): boolean {
+  return stripped === "/login" || stripped.startsWith("/login?");
+}
+
+export default function proxy(request: NextRequest) {
+  const response = handleI18n(request);
+
+  if (response.status >= 300 && response.status < 400) {
+    return response;
+  }
+
+  const pathname = request.nextUrl.pathname;
+  const stripped = stripLocalePrefix(pathname);
+  const hasSession = !!request.cookies.get(SESSION_COOKIE)?.value;
+
+  if (!hasSession && !isLoginPath(stripped)) {
+    const locale =
+      routing.locales.find(
+        (l) => pathname === `/${l}` || pathname.startsWith(`/${l}/`),
+      ) ?? routing.defaultLocale;
+    const loginUrl = new URL(`/${locale}/login`, request.url);
+    loginUrl.search = request.nextUrl.search;
     return NextResponse.redirect(loginUrl);
   }
 
-  return NextResponse.next();
+  return response;
 }
 
 export const config = {
-  matcher: [
-    // Run on every page except: API routes (auth flow handles itself),
-    // Next.js internals, and the favicon.
-    "/((?!api|_next/static|_next/image|favicon.ico|icon.svg).*)",
-  ],
+  matcher: ["/((?!api|_next|_vercel|.*\\..*).*)"],
 };

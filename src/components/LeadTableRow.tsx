@@ -1,7 +1,7 @@
 "use client";
 
-import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { Link, useRouter } from "@/src/i18n/navigation";
+import { useTranslations } from "next-intl";
 import { LeadMode } from "@/src/lib/leadMode";
 import {
   parseContacts,
@@ -40,6 +40,7 @@ function fmtFollowers(n: number): string {
 
 export default function LeadTableRow({ lead }: LeadRowProps) {
   const router = useRouter();
+  const t = useTranslations("LeadTableRow");
   const isBeats = lead.mode === LeadMode.BEATS;
   const isUniversal = lead.mode === LeadMode.UNIVERSAL;
 
@@ -116,7 +117,7 @@ export default function LeadTableRow({ lead }: LeadRowProps) {
           </a>
         ) : (
           <span className="inline-flex items-center rounded-full bg-gray-100 px-2.5 py-0.5 text-xs font-medium text-gray-500">
-            Немає
+            {t("noLink")}
           </span>
         )}
       </td>
@@ -131,6 +132,14 @@ export default function LeadTableRow({ lead }: LeadRowProps) {
           <BeatsLastCell
             followers={lead.followers}
             lookingForType={lead.lookingForType}
+            followersLabel={
+              lead.followers != null
+                ? t("followers", {
+                    count: fmtFollowers(lead.followers),
+                  })
+                : ""
+            }
+            seekingLabel={t("seekingType")}
           />
         ) : lead.website ? (
           <AuditButton
@@ -149,9 +158,13 @@ export default function LeadTableRow({ lead }: LeadRowProps) {
 function BeatsLastCell({
   followers,
   lookingForType,
+  followersLabel,
+  seekingLabel,
 }: {
   followers: number | null;
   lookingForType: boolean | null;
+  followersLabel: string;
+  seekingLabel: string;
 }) {
   if (followers == null && !lookingForType) {
     return <span className="text-xs text-gray-400">—</span>;
@@ -160,12 +173,12 @@ function BeatsLastCell({
     <div className="flex flex-col items-start gap-0.5">
       {followers != null && (
         <span className="text-xs font-medium text-gray-700 tabular-nums">
-          {fmtFollowers(followers)}
+          {followersLabel}
         </span>
       )}
       {lookingForType && (
         <span className="inline-flex items-center rounded-full bg-violet-50 px-1.5 py-0.5 text-[10px] font-medium text-violet-700 ring-1 ring-inset ring-violet-200 whitespace-nowrap">
-          шукає type beats
+          {seekingLabel}
         </span>
       )}
     </div>

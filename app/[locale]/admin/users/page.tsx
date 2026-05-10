@@ -1,3 +1,4 @@
+import { getTranslations, setRequestLocale } from "next-intl/server";
 import {
   fetchAdminUsers,
   getPlatformStats,
@@ -8,7 +9,15 @@ import AdminUsersTable from "@/src/components/AdminUsersTable";
 
 export const dynamic = "force-dynamic";
 
-export default async function AdminUsersPage() {
+export default async function AdminUsersPage({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}) {
+  const { locale } = await params;
+  setRequestLocale(locale);
+  const t = await getTranslations("AdminUsers");
+
   const viewer = await requireAdmin();
   const viewerRole = normalizeRole(viewer.role);
 
@@ -24,35 +33,32 @@ export default async function AdminUsersPage() {
     <main className="mx-auto max-w-6xl px-4 py-8 sm:px-6 lg:px-8">
       <header>
         <h1 className="text-2xl font-semibold tracking-tight text-gray-900">
-          Користувачі
+          {t("title")}
         </h1>
-        <p className="mt-1 text-sm text-gray-500">
-          Зміни плану застосовуються миттєво. Лічильник лідів скидається на 0
-          при зміні плану.
-        </p>
+        <p className="mt-1 text-sm text-gray-500">{t("subtitle")}</p>
       </header>
 
       {stats && (
         <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <StatCard
-            label="Всього юзерів"
+            label={t("statTotalUsers")}
             value={stats.totalUsers.toLocaleString()}
-            hint={`${stats.activeUsers} активних за 30д`}
+            hint={t("statActiveHint", { count: stats.activeUsers })}
           />
           <StatCard
-            label="Активні скрапери"
+            label={t("statActiveScrapers")}
             value={stats.activeUsers.toLocaleString()}
-            hint="входили за останні 30 днів"
+            hint={t("statActiveScrapersHint")}
           />
           <StatCard
-            label="Лідів у системі"
+            label={t("statLeads")}
             value={stats.totalLeads.toLocaleString()}
-            hint="усі юзери разом"
+            hint={t("statLeadsHint")}
           />
           <StatCard
-            label="Revenue / міс"
+            label={t("statRevenue")}
             value={`$${stats.monthlyRevenueUsd.toLocaleString()}`}
-            hint="симульовано з PRO+AGENCY"
+            hint={t("statRevenueHint")}
             accent
           />
         </div>
@@ -61,19 +67,19 @@ export default async function AdminUsersPage() {
       {stats && (
         <div className="mt-4 grid gap-4 sm:grid-cols-3">
           <StatCard
-            label="Нові акаунти за 24 год"
+            label={t("statNew24h")}
             value={stats.newUsers24h.toLocaleString()}
-            hint="за датою створення запису User (Flux ID)"
+            hint={t("statNew24hHint")}
           />
           <StatCard
-            label="Нові за 7 днів"
+            label={t("statNew7d")}
             value={stats.newUsers7d.toLocaleString()}
-            hint="останні 7 діб"
+            hint={t("statNew7dHint")}
           />
           <StatCard
-            label="Нові за 30 днів"
+            label={t("statNew30d")}
             value={stats.newUsers30d.toLocaleString()}
-            hint="останні 30 діб"
+            hint={t("statNew30dHint")}
           />
         </div>
       )}
@@ -102,7 +108,7 @@ export default async function AdminUsersPage() {
 
       {!usersResult.success && (
         <div className="mt-4 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
-          Не вдалося завантажити користувачів: {usersResult.error}
+          {t("loadUsersErr", { message: usersResult.error ?? "" })}
         </div>
       )}
     </main>
