@@ -19,11 +19,21 @@ function buildTourSteps(tourMode: TourMode): DriveStep[] {
 
   const commonHead: DriveStep[] = [
     {
-      element: "#tour-page-header",
+      element: "#tour-brand-mark",
       popover: {
-        title: "NeoFlux Lead Engine",
+        title: "Логотип — на головну",
         description:
-          "Головний екран: логотип NeoFlux і заголовок. Тут ви керуєте пошуком лідів і збереженими контактами.",
+          "Клік по марці NeoFlux відкриває основну сторінку панелі: зручно повернутися після перегляду ліда, налаштувань або іншого розділу.",
+        side: "bottom",
+        align: "start",
+      },
+    },
+    {
+      element: "#tour-page-title",
+      popover: {
+        title: "Заголовок і режим",
+        description:
+          "Тут — назва продукту та короткий опис активного режиму: локальний бізнес (карти), артисти для бітів або універсальний AI-пошук.",
         side: "bottom",
         align: "start",
       },
@@ -33,7 +43,7 @@ function buildTourSteps(tourMode: TourMode): DriveStep[] {
       popover: {
         title: "Режими роботи",
         description:
-          "Три режими: локальний бізнес (Google Maps), виконавці для бітів (AI + демо), універсальний AI-пошук (Gemini + Google для будь-якого OSINT-запиту).",
+          "Три вкладки: локальний бізнес (Google Maps), виконавці для бітів (AI + демо), універсальний пошук (Gemini + Google для довільного OSINT-запиту).",
         side: "bottom",
         align: "start",
       },
@@ -99,7 +109,7 @@ function buildTourSteps(tourMode: TourMode): DriveStep[] {
     popover: {
       title: "Підказки завжди поруч",
       description:
-        "Натисніть «Як це працює» у будь-який момент, щоб пройти тур знову (після першого візиту тур не стартує автоматично).",
+        "Кнопка «Як це працює» запускає цей тур знову. Після першого проходження він не відкривається автоматично. На головну також можна з логотипу NeoFlux або з назви вгорі сторінки.",
       side: "left",
       align: "end",
     },

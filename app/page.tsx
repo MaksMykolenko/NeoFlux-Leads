@@ -79,9 +79,13 @@ export default async function Home({
           <DatabaseConfigBanner variant="query_failed" detail={dbQueryError} />
         )}
 
-        <div id="tour-page-header" className="flex items-center gap-3">
-          <BrandMark className="h-9 w-9 flex-shrink-0" />
-          <div className="min-w-0">
+        <div className="flex items-center gap-3">
+          <BrandMark
+            id="tour-brand-mark"
+            href="/"
+            className="h-9 w-9 flex-shrink-0"
+          />
+          <div id="tour-page-title" className="min-w-0">
             <h1 className="text-2xl font-semibold text-gray-900 tracking-tight">
               NeoFlux Lead Engine
             </h1>

@@ -40,7 +40,7 @@ export default async function LoginPage({
       <div className="w-full max-w-md">
         <div className="rounded-2xl bg-white p-8 shadow-lg ring-1 ring-gray-200/70 sm:p-10">
           <div className="flex flex-col items-center text-center">
-            <BrandMark className="h-14 w-14" />
+            <BrandMark href="/" className="h-14 w-14" />
             <h1 className="mt-5 text-2xl font-semibold tracking-tight text-gray-900">
               NeoFlux Lead Engine
             </h1>
