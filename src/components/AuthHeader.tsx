@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { getCurrentUser } from "@/src/lib/session";
 import { getPlanForUser } from "@/src/lib/subscription";
+import { isAdmin } from "@/src/lib/admin";
 
 function initials(value: string): string {
   return value
@@ -20,6 +21,7 @@ export default async function AuthHeader() {
   if (!user) return null;
 
   const plan = getPlanForUser(user);
+  const userIsAdmin = isAdmin(user);
 
   return (
     <header className="border-b border-gray-200 bg-white">
@@ -27,6 +29,25 @@ export default async function AuthHeader() {
         <span className="text-sm font-medium text-gray-700">NeoFlux Lead Engine</span>
 
         <div className="flex items-center gap-3">
+          {userIsAdmin && (
+            <Link
+              href="/admin/users"
+              className="hidden items-center gap-1 rounded-md bg-amber-50 px-2 py-1 text-xs font-medium text-amber-800 ring-1 ring-inset ring-amber-200 transition hover:bg-amber-100 sm:inline-flex"
+            >
+              <svg
+                className="h-3.5 w-3.5"
+                viewBox="0 0 20 20"
+                fill="currentColor"
+              >
+                <path
+                  fillRule="evenodd"
+                  d="M10 1a4.5 4.5 0 0 0-4.5 4.5V9H5a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-6a2 2 0 0 0-2-2h-.5V5.5A4.5 4.5 0 0 0 10 1Zm3 8V5.5a3 3 0 1 0-6 0V9h6Z"
+                  clipRule="evenodd"
+                />
+              </svg>
+              Admin
+            </Link>
+          )}
           <Link
             href="/settings"
             className="hidden items-center gap-1 rounded-md px-2 py-1 text-xs font-medium text-gray-600 transition hover:bg-gray-100 hover:text-gray-900 sm:inline-flex"

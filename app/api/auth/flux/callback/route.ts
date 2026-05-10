@@ -7,6 +7,7 @@ import {
 } from "@/src/lib/fluxAuth";
 import { prisma } from "@/src/lib/prisma";
 import { buildSessionCookie, createSession } from "@/src/lib/session";
+import { inferRoleForEmail, normalizeRole } from "@/src/lib/admin";
 
 export const dynamic = "force-dynamic";
 
@@ -66,28 +67,52 @@ export async function GET(req: NextRequest) {
     return errorRedirect(req, "invalid_subject");
   }
 
+  // Роль на ПЕРШОМУ вході: якщо email = OWNER_EMAIL → OWNER, інакше USER
+  // (Flux ID повертає `role` всередині своєї системи, але у нас власна
+  // ієрархія, тож не довіряємо їй для bootstrap-y).
+  // На наступних входах роль НЕ перезаписуємо — інакше промоушн до ADMIN,
+  // зроблений у /admin/users, скидався б при кожному логіні.
+  const initialRole = inferRoleForEmail(userInfo.email ?? null);
+
   let user;
   try {
-    user = await prisma.user.upsert({
+    const existing = await prisma.user.findUnique({
       where: { fluxUserId },
-      create: {
-        fluxUserId,
-        email: userInfo.email ?? null,
-        username: userInfo.username ?? null,
-        displayName: userInfo.display_name ?? null,
-        avatarUrl: userInfo.avatar ?? null,
-        role: userInfo.role ?? "user",
-        accountType: userInfo.account_type ?? null,
-      },
-      update: {
-        email: userInfo.email ?? null,
-        username: userInfo.username ?? null,
-        displayName: userInfo.display_name ?? null,
-        avatarUrl: userInfo.avatar ?? null,
-        role: userInfo.role ?? "user",
-        accountType: userInfo.account_type ?? null,
-      },
+      select: { id: true, role: true },
     });
+
+    if (existing) {
+      const currentRole = normalizeRole(existing.role);
+      // Якщо юзер уже OWNER через email-bootstrap — не лишаємо стару роль.
+      // Винятком — якщо OWNER_EMAIL збігається з email юзера (повторне
+      // підтвердження ownership), форсуємо OWNER на випадок ручної правки.
+      const desiredRole =
+        initialRole === "OWNER" ? "OWNER" : currentRole;
+
+      user = await prisma.user.update({
+        where: { id: existing.id },
+        data: {
+          email: userInfo.email ?? null,
+          username: userInfo.username ?? null,
+          displayName: userInfo.display_name ?? null,
+          avatarUrl: userInfo.avatar ?? null,
+          role: desiredRole,
+          accountType: userInfo.account_type ?? null,
+        },
+      });
+    } else {
+      user = await prisma.user.create({
+        data: {
+          fluxUserId,
+          email: userInfo.email ?? null,
+          username: userInfo.username ?? null,
+          displayName: userInfo.display_name ?? null,
+          avatarUrl: userInfo.avatar ?? null,
+          role: initialRole,
+          accountType: userInfo.account_type ?? null,
+        },
+      });
+    }
   } catch (err) {
     console.error("[flux callback] user upsert", err);
     return errorRedirect(req, "db_failure");

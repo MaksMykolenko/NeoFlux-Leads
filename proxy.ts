@@ -11,6 +11,12 @@ const LOGIN_PATH = "/login";
  * The DB-backed validity check happens inside server components via
  * `requireUser()` / `getCurrentUser()`. That two-layer approach keeps cold
  * navigation snappy while preventing forged cookies from rendering data.
+ *
+ * `/admin/*` gets the same cookie-presence gate here (so unauthenticated
+ * traffic can't even reach the layout), and a real RBAC check runs in
+ * `app/admin/layout.tsx` via `requireAdmin()`. The role lookup needs Prisma,
+ * which can't run on the edge — so role enforcement is deliberately a
+ * server-component concern.
  */
 export default function proxy(req: NextRequest) {
   const { pathname } = req.nextUrl;

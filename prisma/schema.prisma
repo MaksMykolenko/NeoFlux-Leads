@@ -98,7 +98,10 @@ model User {
   username     String?
   displayName  String?
   avatarUrl    String?   @db.Text
-  role         String    @default("user")         // mirror of Flux ID role: user / admin / owner
+  // RBAC: USER (default) | ADMIN | OWNER. OWNER призначається автоматично за
+  // email-у з env OWNER_EMAIL при першому вході. Тільки OWNER може змінювати
+  // ролі інших юзерів. Див. src/lib/admin.ts.
+  role         String    @default("USER")
   accountType  String?
   createdAt    DateTime  @default(now())
   updatedAt    DateTime  @updatedAt
@@ -137,4 +140,19 @@ model Session {
 
   @@index([userId])
   @@index([expiresAt])
+}
+
+// Журнал дій адмінів. Кожна зміна плану/ролі юзера, ручне втручання тощо
+// фіксується тут — щоб у спорах було видно, хто і коли що змінив.
+model AuditLog {
+  id           String   @id @default(uuid())
+  action       String   // напр. "USER_PLAN_CHANGED", "USER_ROLE_CHANGED"
+  adminId      String
+  targetUserId String?
+  metadata     Json?    // { from: "STARTER", to: "PRO", ... }
+  timestamp    DateTime @default(now())
+
+  @@index([adminId])
+  @@index([targetUserId])
+  @@index([timestamp])
 }
