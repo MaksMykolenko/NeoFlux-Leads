@@ -14,7 +14,22 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+function resolveMetadataBase(): URL | undefined {
+  try {
+    if (process.env.VERCEL_URL) {
+      return new URL(`https://${process.env.VERCEL_URL}`);
+    }
+    if (process.env.NEXT_PUBLIC_SITE_URL) {
+      return new URL(process.env.NEXT_PUBLIC_SITE_URL);
+    }
+    return new URL("http://localhost:3000");
+  } catch {
+    return undefined;
+  }
+}
+
 export const metadata: Metadata = {
+  metadataBase: resolveMetadataBase(),
   title: "NeoFlux Lead Engine",
   description: "AI збір лідів",
   openGraph: {

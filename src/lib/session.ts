@@ -65,21 +65,34 @@ export async function getRequestUserId(): Promise<string | null> {
 }
 
 export async function getCurrentUser(): Promise<User | null> {
-  const jar = await cookies();
-  const token = jar.get(SESSION_COOKIE)?.value;
-  if (!token) return null;
+  try {
+    const jar = await cookies();
+    const token = jar.get(SESSION_COOKIE)?.value;
+    if (!token) return null;
 
-  const session = await prisma.session.findUnique({
-    where: { tokenHash: hashToken(token) },
-    include: { user: true },
-  });
+    const session = await prisma.session.findUnique({
+      where: { tokenHash: hashToken(token) },
+      include: { user: true },
+    });
 
-  if (!session) return null;
-  if (session.expiresAt.getTime() < Date.now()) {
-    await prisma.session.delete({ where: { id: session.id } }).catch(() => {});
+    if (!session) return null;
+    if (session.expiresAt.getTime() < Date.now()) {
+      await prisma.session.delete({ where: { id: session.id } }).catch(() => {});
+      return null;
+    }
+    return session.user;
+  } catch (err) {
+    if (
+      typeof err === "object" &&
+      err !== null &&
+      "digest" in err &&
+      (err as { digest?: string }).digest === "DYNAMIC_SERVER_USAGE"
+    ) {
+      throw err;
+    }
+    console.error("[session] getCurrentUser", err);
     return null;
   }
-  return session.user;
 }
 
 export type CookieAttrs = {
