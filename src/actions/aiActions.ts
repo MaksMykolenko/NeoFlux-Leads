@@ -10,7 +10,7 @@ export interface ProposalResult {
   error?: string;
 }
 
-const MODEL = "gemini-2.5-flash";
+const MODELS = ["gemini-2.5-flash", "gemini-2.0-flash", "gemini-1.5-flash"];
 
 const SYSTEM_INSTRUCTION = `Ти B2B-продажник веб-розробки в українській digital-агенції NeoFlux.
 Пишеш короткі (5–7 речень), персоналізовані холодні листи українською мовою.
@@ -139,22 +139,40 @@ export async function generateProposal(leadId: string): Promise<ProposalResult> 
 
     const ai = new GoogleGenAI({ apiKey });
 
-    const response = await ai.models.generateContent({
-      model: MODEL,
-      contents: userPrompt,
-      config: {
-        systemInstruction: SYSTEM_INSTRUCTION,
-        temperature: 0.7,
-        maxOutputTokens: 800,
-      },
-    });
+    let lastError: unknown;
+    for (const model of MODELS) {
+      try {
+        const response = await ai.models.generateContent({
+          model,
+          contents: userPrompt,
+          config: {
+            systemInstruction: SYSTEM_INSTRUCTION,
+            temperature: 0.7,
+            maxOutputTokens: 800,
+          },
+        });
 
-    const text = response.text?.trim();
-    if (!text) {
-      return { success: false, error: "AI не повернув тексту" };
+        const text = response.text?.trim();
+        if (!text) return { success: false, error: "AI не повернув тексту" };
+        return { success: true, text };
+      } catch (err) {
+        lastError = err;
+        const msg = err instanceof Error ? err.message : String(err);
+        if (!msg.includes("503") && !msg.includes("UNAVAILABLE") && !msg.includes("high demand")) {
+          break;
+        }
+        console.warn(`[AI] ${model} unavailable, trying next...`);
+      }
     }
 
-    return { success: true, text };
+    console.error("generateProposal error:", lastError);
+    return {
+      success: false,
+      error:
+        lastError instanceof Error
+          ? lastError.message
+          : "An unexpected error occurred while generating proposal",
+    };
   } catch (error) {
     console.error("generateProposal error:", error);
     return {
@@ -232,22 +250,40 @@ export async function generateBeatProposal(
 
     const ai = new GoogleGenAI({ apiKey });
 
-    const response = await ai.models.generateContent({
-      model: MODEL,
-      contents: userPrompt,
-      config: {
-        systemInstruction: BEAT_SYSTEM_INSTRUCTION,
-        temperature: 0.85,
-        maxOutputTokens: 600,
-      },
-    });
+    let lastError: unknown;
+    for (const model of MODELS) {
+      try {
+        const response = await ai.models.generateContent({
+          model,
+          contents: userPrompt,
+          config: {
+            systemInstruction: BEAT_SYSTEM_INSTRUCTION,
+            temperature: 0.85,
+            maxOutputTokens: 600,
+          },
+        });
 
-    const text = response.text?.trim();
-    if (!text) {
-      return { success: false, error: "AI не повернув тексту" };
+        const text = response.text?.trim();
+        if (!text) return { success: false, error: "AI не повернув тексту" };
+        return { success: true, text };
+      } catch (err) {
+        lastError = err;
+        const msg = err instanceof Error ? err.message : String(err);
+        if (!msg.includes("503") && !msg.includes("UNAVAILABLE") && !msg.includes("high demand")) {
+          break;
+        }
+        console.warn(`[AI] ${model} unavailable, trying next...`);
+      }
     }
 
-    return { success: true, text };
+    console.error("generateBeatProposal error:", lastError);
+    return {
+      success: false,
+      error:
+        lastError instanceof Error
+          ? lastError.message
+          : "An unexpected error occurred while generating proposal",
+    };
   } catch (error) {
     console.error("generateBeatProposal error:", error);
     return {

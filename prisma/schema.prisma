@@ -77,3 +77,35 @@ model Message {
   // Зв'язки
   lead        Lead     @relation(fields: [leadId], references: [id], onDelete: Cascade)
 }
+
+// Юзер, який увійшов через Flux ID. Локальна копія профілю — оновлюється при кожному вході.
+model User {
+  id           String    @id @default(uuid())
+  fluxUserId   Int       @unique                  // sub з Flux ID userinfo
+  email        String?   @unique
+  username     String?
+  displayName  String?
+  avatarUrl    String?   @db.Text
+  role         String    @default("user")         // mirror of Flux ID role: user / admin / owner
+  accountType  String?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  sessions     Session[]
+}
+
+model Session {
+  id         String   @id @default(uuid())
+  // SHA-256 hash значення cookie. Сирий токен ніколи не зберігається в БД.
+  tokenHash  String   @unique
+  userId     String
+  expiresAt  DateTime
+  userAgent  String?  @db.Text
+  ip         String?
+  createdAt  DateTime @default(now())
+
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([expiresAt])
+}

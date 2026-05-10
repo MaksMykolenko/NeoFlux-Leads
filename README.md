@@ -67,11 +67,16 @@ Copy the example file and fill in your own values:
 cp .env.example .env
 ```
 
-| Variable         | Purpose                                                                 |
-| ---------------- | ----------------------------------------------------------------------- |
-| `DATABASE_URL`   | Pooled Postgres connection string used by the Next.js runtime           |
-| `DIRECT_URL`     | Direct (non-pooled) connection used by Prisma migrations                |
-| `GEMINI_API_KEY` | Google AI Studio API key for the AI proposal generator                  |
+| Variable                  | Purpose                                                                                  |
+| ------------------------- | ---------------------------------------------------------------------------------------- |
+| `DATABASE_URL`            | Pooled Postgres connection string used by the Next.js runtime                            |
+| `DIRECT_URL`              | Direct (non-pooled) connection used by Prisma migrations                                 |
+| `GEMINI_API_KEY`          | Google AI Studio API key for the AI proposal generator                                   |
+| `FLUX_ID_BASE_URL`        | Base URL of the Flux ID server (e.g. `https://fluxid.fluxmarketplace.store`)             |
+| `FLUX_CLIENT_ID`          | OAuth client_id, issued by `php oauth/register_client.php` on the Flux ID server          |
+| `FLUX_CLIENT_SECRET`      | OAuth client_secret (shown once at registration time — store securely)                    |
+| `FLUX_REDIRECT_URI`       | Must match the redirect_uri used when registering the client (e.g. `…/api/auth/flux/callback`) |
+| `FLUX_OAUTH_STATE_SECRET` | Random ≥32-byte secret for signing the OAuth state cookie (`openssl rand -base64 48`)     |
 
 > If you're using Supabase, both `DATABASE_URL` and `DIRECT_URL` can be the
 > same pooler URL on port `5432`. Some networks block port `6543`, hence
@@ -84,7 +89,27 @@ npx prisma migrate dev
 npx prisma generate
 ```
 
-This creates four tables: `Lead`, `Audit`, `Campaign`, `Message`.
+This creates the application tables: `Lead`, `Audit`, `Campaign`, `Message`,
+plus `User` and `Session` (used by the Flux ID login flow).
+
+### 4a. Register a Flux ID OAuth client
+
+The login button on every page kicks off an OAuth 2.0 Authorization Code flow
+against [Flux ID](https://fluxid.fluxmarketplace.store). On the Flux ID server,
+register this app once:
+
+```bash
+php oauth/register_client.php "NeoFlux Lead Engine" "http://localhost:3000/api/auth/flux/callback"
+```
+
+It prints a `client_id` and `client_secret` (the secret is shown **only once**).
+Paste both into your `.env` as `FLUX_CLIENT_ID` / `FLUX_CLIENT_SECRET`, set
+`FLUX_REDIRECT_URI` to the same callback URL you registered, and generate
+`FLUX_OAUTH_STATE_SECRET` with `openssl rand -base64 48`.
+
+For production, register a second client with the production callback URL
+(e.g. `https://your-app.vercel.app/api/auth/flux/callback`) and put those
+values into Vercel env vars.
 
 ### 5. Start the dev server
 
@@ -101,11 +126,16 @@ shows “server error” on your `.vercel.app` URL, almost always one of these i
 missing in **Project → Settings → Environment Variables** (apply to
 *Production*, *Preview*, *Development* as needed):
 
-| Variable         | Required | Notes |
-| ---------------- | -------- | ----- |
-| `DATABASE_URL`   | **Yes**  | Supabase pooler or direct Postgres URL (same DB you use locally). |
-| `DIRECT_URL`     | **Yes**  | Prisma uses this for migrations / introspection; can match `DATABASE_URL` for Supabase `5432`. |
-| `GEMINI_API_KEY` | **Yes**  | Needed for AI flows; omit only if you accept failures on those actions. |
+| Variable                  | Required | Notes |
+| ------------------------- | -------- | ----- |
+| `DATABASE_URL`            | **Yes**  | Supabase pooler or direct Postgres URL (same DB you use locally). |
+| `DIRECT_URL`              | **Yes**  | Prisma uses this for migrations / introspection; can match `DATABASE_URL` for Supabase `5432`. |
+| `GEMINI_API_KEY`          | **Yes**  | Needed for AI flows; omit only if you accept failures on those actions. |
+| `FLUX_ID_BASE_URL`        | **Yes**  | Flux ID origin (e.g. `https://fluxid.fluxmarketplace.store`). |
+| `FLUX_CLIENT_ID`          | **Yes**  | Issued by `php oauth/register_client.php` for **this** environment's callback URL. |
+| `FLUX_CLIENT_SECRET`      | **Yes**  | Paired with `FLUX_CLIENT_ID`; shown only once at registration. |
+| `FLUX_REDIRECT_URI`       | **Yes**  | Must exactly match the URL you registered (e.g. `https://<app>.vercel.app/api/auth/flux/callback`). |
+| `FLUX_OAUTH_STATE_SECRET` | **Yes**  | Any high-entropy string (`openssl rand -base64 48`); rotates state cookies. |
 
 Then **Redeploy** (Deployments → … → Redeploy) so the new env vars are picked up.
 
@@ -149,15 +179,21 @@ production.
 app/                    # Next.js App Router pages
   page.tsx              # Lead list + scraper form
   leads/[id]/page.tsx   # Lead detail view
+  api/auth/
+    flux/login/         # GET → redirect to Flux ID /oauth/authorize.php
+    flux/callback/      # GET ?code → token exchange → upsert User → session cookie
+    logout/             # POST → destroy session
 prisma/
   schema.prisma         # Database schema
 src/
   actions/              # Server Actions (scrape, audit, AI, status, save)
-  components/           # Client React components
+  components/           # Client React components (incl. AuthHeader)
   lib/
     prisma.ts           # Prisma singleton
     scoring.ts          # Opportunity Score logic
     leadStatus.ts       # Status enum + style map
+    fluxAuth.ts         # Flux ID OAuth helpers (state, token, userinfo)
+    session.ts          # DB-backed session cookie helpers
   modules/scraper/
     googleMapsScraper.ts
     websiteAuditor.ts
