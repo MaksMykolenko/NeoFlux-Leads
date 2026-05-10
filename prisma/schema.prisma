@@ -1,0 +1,67 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+// --- Моделі ---
+
+model Lead {
+  id          String   @id @default(uuid())
+  companyName String
+  website     String?
+  email       String?
+  phone       String?
+  city        String?
+  category    String?  // Наприклад: "стоматологія", "автосервіс"
+  source      String?  // Google Maps, OLX, LinkedIn
+  score       Int      @default(0) // Opportunity Scoring (0-100)
+  status      String   @default("New") // New, Qualified, Contacted, Replied, Won, Lost
+  notes       String?  @db.Text
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Зв'язки
+  audit       Audit?
+  messages    Message[]
+}
+
+model Audit {
+  id               String   @id @default(uuid())
+  leadId           String   @unique
+  mobileFriendly   Boolean  @default(false)
+  hasSSL           Boolean  @default(false)
+  performanceScore Int?     // Оцінка швидкості
+  issues           String[] // Список знайдених проблем
+  summary          String?  @db.Text // AI-згенерований висновок
+  createdAt        DateTime @default(now())
+
+  // Зв'язки
+  lead             Lead     @relation(fields: [leadId], references: [id], onDelete: Cascade)
+}
+
+model Campaign {
+  id        String   @id @default(uuid())
+  name      String
+  niche     String   // Цільова ніша кампанії
+  template  String   @db.Text // Шаблон листа
+  status    String   @default("Draft") // Draft, Active, Paused, Completed
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Message {
+  id          String   @id @default(uuid())
+  leadId      String
+  subject     String
+  body        String   @db.Text
+  sentAt      DateTime @default(now())
+  replyStatus String   @default("No Reply") // No Reply, Replied, Bounced
+
+  // Зв'язки
+  lead        Lead     @relation(fields: [leadId], references: [id], onDelete: Cascade)
+}
