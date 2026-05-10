@@ -1,4 +1,5 @@
 import { NextResponse, type NextRequest } from "next/server";
+import { Prisma } from "@prisma/client";
 import {
   exchangeCodeForToken,
   fetchUserInfo,
@@ -90,7 +91,17 @@ export async function GET(req: NextRequest) {
     });
   } catch (err) {
     console.error("[flux callback] user upsert", err);
-    return errorRedirect(req, "db_failure");
+    let detail: string | undefined;
+    if (err instanceof Prisma.PrismaClientKnownRequestError) {
+      if (err.code === "P2021") {
+        detail =
+          "У цій базі ще немає таблиць User/Session. Застосуйте схему Prisma до тієї ж БД, що в DATABASE_URL (локально: npx prisma db push; прод: migrate deploy або db push), потім спробуйте вхід знову.";
+      } else if (err.code === "P2002") {
+        detail =
+          "Конфлікт унікальності (частіше всього email уже прив’язаний до іншого fluxUserId). Перевірте таблицю User у БД або зверніться до адміністратора.";
+      }
+    }
+    return errorRedirect(req, "db_failure", detail);
   }
 
   const userAgent = req.headers.get("user-agent");

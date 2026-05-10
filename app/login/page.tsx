@@ -17,7 +17,11 @@ const ERROR_MESSAGES: Record<string, string> = {
 
 function describeError(code: string | null, detail: string | null): string | null {
   if (!code) return null;
-  return ERROR_MESSAGES[code] ?? detail ?? `Помилка входу: ${code}`;
+  const base = ERROR_MESSAGES[code] ?? `Помилка входу: ${code}`;
+  if (detail?.trim()) {
+    return ERROR_MESSAGES[code] ? `${base}\n\n${detail.trim()}` : detail.trim();
+  }
+  return base;
 }
 
 export default async function LoginPage({
@@ -58,7 +62,9 @@ export default async function LoginPage({
                   clipRule="evenodd"
                 />
               </svg>
-              <p className="text-xs leading-relaxed text-red-700">{errorMessage}</p>
+              <p className="whitespace-pre-line text-xs leading-relaxed text-red-700">
+                {errorMessage}
+              </p>
             </div>
           )}
 
