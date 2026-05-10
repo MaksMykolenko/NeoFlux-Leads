@@ -16,7 +16,16 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "NeoFlux Lead Engine",
-  description: "Автоматичний збір лідів з Google Maps",
+  description: "AI збір лідів",
+  openGraph: {
+    title: "NeoFlux Lead Engine",
+    description: "AI збір лідів",
+  },
+  twitter: {
+    card: "summary",
+    title: "NeoFlux Lead Engine",
+    description: "AI збір лідів",
+  },
 };
 
 export default function RootLayout({
