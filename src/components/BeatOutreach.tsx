@@ -7,6 +7,7 @@ import {
   useTransition,
   useMemo,
   type FormEvent,
+  type MouseEvent,
   type ReactNode,
 } from "react";
 import { useRouter } from "next/navigation";
@@ -20,6 +21,7 @@ import type { BeatProspect } from "@/src/lib/beatProspects";
 import {
   CHANNELS,
   getAvailableChannels,
+  resolveBeatsProfileHref,
   type ChannelKey,
 } from "@/src/lib/channels";
 
@@ -359,12 +361,25 @@ interface ArtistCardProps {
 
 function ArtistCard({ artist, selected, onToggle }: ArtistCardProps) {
   const available = getAvailableChannels(artist.contacts);
+  const profileHref = resolveBeatsProfileHref(artist.profileUrl, artist.contacts);
+
+  function cardClick(e: MouseEvent) {
+    if ((e.target as HTMLElement).closest("a")) return;
+    onToggle();
+  }
 
   return (
-    <button
-      type="button"
-      onClick={onToggle}
-      className={`w-full text-left rounded-lg border p-4 transition-all ${
+    <div
+      role="button"
+      tabIndex={0}
+      onClick={cardClick}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          onToggle();
+        }
+      }}
+      className={`w-full text-left rounded-lg border p-4 transition-all cursor-pointer ${
         selected
           ? "border-blue-500 ring-2 ring-blue-100 bg-blue-50/40"
           : "border-gray-200 bg-white hover:border-gray-300 hover:shadow-sm"
@@ -385,9 +400,21 @@ function ArtistCard({ artist, selected, onToggle }: ArtistCardProps) {
           <p className="text-xs text-gray-500 mt-0.5">
             {artist.realName} · {artist.genre}
           </p>
-          <div className="mt-2 flex items-center gap-3 text-xs text-gray-500">
-            <span>{artist.platform}</span>
-            <span className="text-gray-300">·</span>
+          <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-gray-500">
+            {profileHref ? (
+              <a
+                href={profileHref}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="font-medium text-blue-600 hover:text-blue-800 hover:underline"
+                onClick={(e) => e.stopPropagation()}
+              >
+                {artist.platform} — профіль ↗
+              </a>
+            ) : (
+              <span>{artist.platform}</span>
+            )}
+            <span className="text-gray-300 hidden sm:inline">·</span>
             <span className="tabular-nums">
               {fmtFollowers(artist.followers)} фоловерів
             </span>
@@ -407,14 +434,18 @@ function ArtistCard({ artist, selected, onToggle }: ArtistCardProps) {
       {available.length > 0 ? (
         <div className="mt-3 flex flex-wrap items-center gap-1.5">
           {available.map(({ def, value }) => (
-            <span
+            <a
               key={def.key}
+              href={def.buildHref(value)}
               title={`${def.label}: ${value}`}
-              className="inline-flex items-center gap-1 rounded-md bg-gray-100 px-1.5 py-0.5 text-[10px] font-medium text-gray-700"
+              target={def.key === "phone" || def.key === "email" ? undefined : "_blank"}
+              rel={def.key === "phone" || def.key === "email" ? undefined : "noopener noreferrer"}
+              onClick={(e) => e.stopPropagation()}
+              className="inline-flex items-center gap-1 rounded-md bg-gray-100 px-1.5 py-0.5 text-[10px] font-medium text-gray-700 hover:bg-gray-200 hover:text-gray-900 transition-colors"
             >
               <def.Icon className="w-3 h-3" />
               {def.label}
-            </span>
+            </a>
           ))}
         </div>
       ) : (
@@ -422,7 +453,7 @@ function ArtistCard({ artist, selected, onToggle }: ArtistCardProps) {
           ⚠ Контакти не знайдено — спробуй інший запит.
         </p>
       )}
-    </button>
+    </div>
   );
 }
 
@@ -924,6 +955,10 @@ function MessageReview({
     () => getAvailableChannels(artist.contacts),
     [artist.contacts]
   );
+  const profileHref = useMemo(
+    () => resolveBeatsProfileHref(artist.profileUrl, artist.contacts),
+    [artist.profileUrl, artist.contacts]
+  );
 
   const isSaved = saved || forceSent;
 
@@ -1018,7 +1053,20 @@ function MessageReview({
     <div className="rounded-lg border border-gray-200 bg-white">
       <div className="flex items-center justify-between gap-3 px-4 py-3 border-b border-gray-100 bg-gray-50/60">
         <div>
-          <p className="text-sm font-semibold text-gray-900">{artist.handle}</p>
+          <p className="text-sm font-semibold text-gray-900">
+            {profileHref ? (
+              <a
+                href={profileHref}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="hover:text-blue-600 hover:underline"
+              >
+                {artist.handle}
+              </a>
+            ) : (
+              artist.handle
+            )}
+          </p>
           <p className="text-xs text-gray-500">
             {available.length > 0
               ? `${available.length} каналів зв'язку доступно`

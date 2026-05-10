@@ -167,6 +167,7 @@ export default async function Home({
                           category: lead.category,
                           city: lead.city,
                           website: lead.website,
+                          socialLinks: lead.socialLinks,
                           status: lead.status,
                           source: lead.source,
                           followers: lead.followers,

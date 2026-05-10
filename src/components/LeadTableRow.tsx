@@ -3,6 +3,10 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { LeadMode } from "@/src/lib/leadMode";
+import {
+  parseContacts,
+  resolveBeatsProfileHref,
+} from "@/src/lib/channels";
 import AuditButton from "@/src/components/AuditButton";
 import StatusPill from "@/src/components/StatusPill";
 
@@ -14,6 +18,7 @@ interface LeadRowProps {
     category: string | null;
     city: string | null;
     website: string | null;
+    socialLinks?: unknown;
     status: string;
     source: string | null;
     followers: number | null;
@@ -34,6 +39,15 @@ function fmtFollowers(n: number): string {
 export default function LeadTableRow({ lead }: LeadRowProps) {
   const router = useRouter();
   const isBeats = lead.mode === LeadMode.BEATS;
+
+  const profileHref = isBeats
+    ? resolveBeatsProfileHref(
+        lead.website,
+        parseContacts(lead.socialLinks ?? null) ?? undefined
+      )
+    : null;
+  const siteHref =
+    isBeats ? profileHref : lead.website ? lead.website.trim() || null : null;
 
   const subtitle = isBeats
     ? lead.source ?? null
@@ -60,15 +74,15 @@ export default function LeadTableRow({ lead }: LeadRowProps) {
         )}
       </td>
       <td className="px-6 py-4 text-sm whitespace-nowrap">
-        {lead.website ? (
+        {siteHref ? (
           <a
-            href={lead.website}
+            href={siteHref}
             onClick={stopPropagation}
             target="_blank"
             rel="noopener noreferrer"
             className="text-blue-600 hover:text-blue-800 hover:underline transition-colors"
           >
-            {lead.website.replace(/^https?:\/\//, "").replace(/\/$/, "")}
+            {siteHref.replace(/^https?:\/\//, "").replace(/\/$/, "")}
           </a>
         ) : (
           <span className="inline-flex items-center rounded-full bg-gray-100 px-2.5 py-0.5 text-xs font-medium text-gray-500">

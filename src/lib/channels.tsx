@@ -337,6 +337,40 @@ export const CHANNEL_ORDER: ChannelKey[] = [
  * Walk a `ProspectContacts` blob and return only the channels that have a
  * truthy value, in canonical display order.
  */
+
+/** Builds a safe https URL for display/open — used for AI `profileUrl` and top-level `Lead.website`. */
+export function normalizeExternalHref(
+  raw: string | null | undefined
+): string | null {
+  if (typeof raw !== "string") return null;
+  const t = raw.trim();
+  if (!t) return null;
+  if (/^https?:\/\//i.test(t)) return t;
+  if (/^\/\//.test(t)) return `https:${t}`;
+  return `https://${t.replace(/^\/+/, "")}`;
+}
+
+/**
+ * Primary URL for beats: saved `website` / AI `profileUrl`, else first
+ * non-email/non-phone contact that maps to a web profile (same order as CRM).
+ */
+export function resolveBeatsProfileHref(
+  primaryUrl: string | null | undefined,
+  contacts: ProspectContacts | null | undefined
+): string | null {
+  const direct = normalizeExternalHref(primaryUrl ?? null);
+  if (direct) return direct;
+  if (!contacts) return null;
+  for (const key of CHANNEL_ORDER) {
+    if (key === "email" || key === "phone") continue;
+    const raw = contacts[key];
+    if (typeof raw === "string" && raw.trim()) {
+      return CHANNELS[key].buildHref(raw.trim());
+    }
+  }
+  return null;
+}
+
 export function getAvailableChannels(
   contacts: ProspectContacts | null | undefined
 ): { def: ChannelDef; value: string }[] {

@@ -142,7 +142,7 @@ function PlanCard({ plan, isCurrent }: PlanCardProps) {
           </button>
         ) : (
           <a
-            href="https://t.me/maks_mykolenko"
+            href="https://t.me/MaksMykolenko"
             target="_blank"
             rel="noopener noreferrer"
             className={`inline-flex w-full items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium shadow-sm transition ${
