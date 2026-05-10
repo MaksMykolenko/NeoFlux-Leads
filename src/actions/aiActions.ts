@@ -1,6 +1,7 @@
 "use server";
 
 import { GoogleGenAI } from "@google/genai";
+import { LeadMode } from "@prisma/client";
 import { prisma } from "@/src/lib/prisma";
 
 export interface ProposalResult {
@@ -25,6 +26,23 @@ const SYSTEM_INSTRUCTION = `Ти B2B-продажник веб-розробки 
 5) Підпис "З повагою, команда NeoFlux".
 
 Виведи ВИКЛЮЧНО текст листа — без вступу від себе, без "ось ваш лист", без \`\`\` блоків.`;
+
+const BEAT_SYSTEM_INSTRUCTION = `Ти український біт-продюсер під брендом NeoFlux.
+Пишеш короткі (5–8 речень), персоналізовані холодні DM-повідомлення артистам, кому хочеш продати свій біт.
+
+Тон: дружній, peer-to-peer (продюсер-артисту), без формальностей. Зверайся на "ти".
+Без емодзі. Без markdown. Без HTML. Без preamble. Без заголовка "Subject:".
+
+Структура:
+1) Коротке привітання по імені/нікнейму.
+2) Згадай конкретну платформу (SoundCloud / YouTube / Instagram), жанр і чому саме його звучання тебе зачепило (1 речення).
+3) Скажи, що скинув йому конкретний біт — обовʼязково назви файл, BPM/тональність/жанр якщо їх дано.
+4) Поясни, чому цей біт пасує під його флоу (1 речення).
+5) Назви ціну на lease (якщо дано) і запропонуй прислати trackouts якщо зайде.
+6) Заклич до простої відповіді — навіть "не моє" допоможе.
+7) Підпис "— NeoFlux".
+
+Виведи ВИКЛЮЧНО текст повідомлення — без \`\`\` блоків, без коментарів від себе.`;
 
 function buildIssuesList(input: {
   hasAudit: boolean;
@@ -76,6 +94,22 @@ export async function generateProposal(leadId: string): Promise<ProposalResult> 
       return { success: false, error: "Лід не знайдено" };
     }
 
+    // BEATS-mode leads use a peer-to-peer producer→artist tone instead of the
+    // local-business sales pitch. We don't have a demo on the detail page, so
+    // the prompt asks for a follow-up DM rather than a "here's the file" DM.
+    if (lead.mode === LeadMode.BEATS) {
+      return generateBeatProposal({
+        artist: {
+          handle: lead.companyName,
+          realName: lead.realName ?? lead.companyName,
+          genre: lead.category ?? "music",
+          platform: lead.source ?? "Platform",
+          followers: lead.followers,
+        },
+        demo: null,
+      });
+    }
+
     const issues = buildIssuesList({
       hasAudit: !!lead.audit,
       hasSSL: lead.audit?.hasSSL ?? null,
@@ -123,6 +157,99 @@ export async function generateProposal(leadId: string): Promise<ProposalResult> 
     return { success: true, text };
   } catch (error) {
     console.error("generateProposal error:", error);
+    return {
+      success: false,
+      error:
+        error instanceof Error
+          ? error.message
+          : "An unexpected error occurred while generating proposal",
+    };
+  }
+}
+
+export interface BeatProposalInput {
+  artist: {
+    handle: string;
+    realName: string;
+    genre: string;
+    platform: string;
+    followers?: number | null;
+  };
+  demo?: {
+    name: string;
+    bpm?: string | null;
+    keySig?: string | null;
+    genre?: string | null;
+    price?: string | null;
+  } | null;
+}
+
+export async function generateBeatProposal(
+  input: BeatProposalInput
+): Promise<ProposalResult> {
+  const apiKey = process.env.GEMINI_API_KEY;
+  if (!apiKey) {
+    return {
+      success: false,
+      error:
+        "GEMINI_API_KEY не налаштовано. Додайте ключ у .env та перезапустіть сервер.",
+    };
+  }
+
+  const { artist, demo } = input;
+  if (!artist?.handle) {
+    return { success: false, error: "Missing artist data" };
+  }
+
+  try {
+    const demoFacts = demo
+      ? [
+          `- Файл: ${demo.name}`,
+          demo.bpm ? `- BPM: ${demo.bpm}` : null,
+          demo.keySig ? `- Тональність: ${demo.keySig}` : null,
+          demo.genre ? `- Жанр біта: ${demo.genre}` : null,
+          demo.price ? `- Ціна за lease: $${demo.price}` : null,
+        ].filter(Boolean)
+      : ["- Файл біта поки не прикріплений — пиши узагальнено"];
+
+    const userPrompt = [
+      "Контекст артиста:",
+      `- Нік: ${artist.handle}`,
+      `- Реальне імʼя: ${artist.realName}`,
+      `- Жанр / напрямок: ${artist.genre}`,
+      `- Платформа: ${artist.platform}`,
+      artist.followers != null
+        ? `- Аудиторія: ~${artist.followers} фоловерів`
+        : null,
+      "",
+      "Контекст біта:",
+      ...demoFacts,
+      "",
+      "Напиши ОДНЕ повідомлення для DM/email цього артиста українською. Зроби його коротким, по-людськи. Згадай платформу і жанр, конкретно файл біта, чому він підходить артисту.",
+    ]
+      .filter(Boolean)
+      .join("\n");
+
+    const ai = new GoogleGenAI({ apiKey });
+
+    const response = await ai.models.generateContent({
+      model: MODEL,
+      contents: userPrompt,
+      config: {
+        systemInstruction: BEAT_SYSTEM_INSTRUCTION,
+        temperature: 0.85,
+        maxOutputTokens: 600,
+      },
+    });
+
+    const text = response.text?.trim();
+    if (!text) {
+      return { success: false, error: "AI не повернув тексту" };
+    }
+
+    return { success: true, text };
+  } catch (error) {
+    console.error("generateBeatProposal error:", error);
     return {
       success: false,
       error:

@@ -8,12 +8,22 @@ export interface ScoringAudit {
   mobileFriendly: boolean;
 }
 
+export interface ScoringArtist {
+  email: string | null;
+  followers: number | null;
+  lookingForType: boolean | null;
+}
+
 const BASE_SCORE = 50;
 
 const SSL_PENALTY = 30;
 const MOBILE_PENALTY = 20;
 const LANDING_PLATFORM_BONUS = 40;
 const EMAIL_BONUS = 10;
+
+const TYPE_BUYER_BONUS = 30;
+const FOLLOWERS_PER_POINT = 1000;
+const FOLLOWERS_BONUS_CAP = 20;
 
 // Patterns that indicate the business uses a no-code/social profile in lieu of
 // a real website — these are prime targets for a landing-page upsell.
@@ -40,6 +50,28 @@ export function calculateLeadScore(
 
   if (isLandingPlatformWebsite(lead.website)) score += LANDING_PLATFORM_BONUS;
   if (lead.email) score += EMAIL_BONUS;
+
+  return Math.max(0, Math.min(100, score));
+}
+
+/**
+ * Opportunity Score for BEATS-mode artist prospects. Higher = better target
+ * for a beat-pitch DM. Public "type beat" search signals + reachable email +
+ * audience size are the main positive drivers.
+ */
+export function calculateArtistScore(artist: ScoringArtist): number {
+  let score = BASE_SCORE;
+
+  if (artist.lookingForType) score += TYPE_BUYER_BONUS;
+  if (artist.email) score += EMAIL_BONUS;
+
+  if (artist.followers && artist.followers > 0) {
+    const fb = Math.min(
+      FOLLOWERS_BONUS_CAP,
+      Math.floor(artist.followers / FOLLOWERS_PER_POINT)
+    );
+    score += fb;
+  }
 
   return Math.max(0, Math.min(100, score));
 }

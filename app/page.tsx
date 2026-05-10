@@ -1,12 +1,25 @@
 import { prisma } from "@/src/lib/prisma";
+import { LeadMode, modeFromQuery, modeKeyFromMode } from "@/src/lib/leadMode";
+import { BEAT_PROSPECTS } from "@/src/lib/beatProspects";
 import ScraperForm from "@/src/components/ScraperForm";
+import BeatOutreach from "@/src/components/BeatOutreach";
 import BrandMark from "@/src/components/BrandMark";
 import LeadTableRow from "@/src/components/LeadTableRow";
+import ModeTabs from "@/src/components/ModeTabs";
 
 export const dynamic = "force-dynamic";
 
-export default async function Home() {
+export default async function Home({
+  searchParams,
+}: {
+  searchParams: Promise<{ mode?: string | string[] }>;
+}) {
+  const params = await searchParams;
+  const mode = modeFromQuery(params.mode);
+  const isBeats = mode === LeadMode.BEATS;
+
   const leads = await prisma.lead.findMany({
+    where: { mode },
     orderBy: { createdAt: "desc" },
     take: 10,
     include: { audit: true },
@@ -22,20 +35,30 @@ export default async function Home() {
               NeoFlux Lead Engine
             </h1>
             <p className="mt-1 text-sm text-gray-500">
-              Автоматичний збір лідів з Google Maps
+              {isBeats
+                ? "AI-пошук артистів, які купують біти"
+                : "Автоматичний збір лідів з Google Maps"}
             </p>
           </div>
         </div>
 
+        <div className="mt-6">
+          <ModeTabs active={modeKeyFromMode(mode)} />
+        </div>
+
         <div className="mt-8">
-          <ScraperForm />
+          {isBeats ? (
+            <BeatOutreach initialProspects={BEAT_PROSPECTS} />
+          ) : (
+            <ScraperForm />
+          )}
         </div>
 
         <div className="mt-10">
           <div className="bg-white shadow-sm rounded-lg border border-gray-200 overflow-hidden">
             <div className="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
               <h2 className="text-base font-medium text-gray-900">
-                Останні ліди
+                {isBeats ? "Знайдені виконавці" : "Останні ліди"}
               </h2>
               {leads.length > 0 && (
                 <span className="inline-flex items-center rounded-full bg-gray-100 px-2.5 py-0.5 text-xs font-medium text-gray-600">
@@ -60,7 +83,7 @@ export default async function Home() {
                   />
                 </svg>
                 <p className="mt-3 text-sm font-medium text-gray-500">
-                  Лідів ще немає
+                  {isBeats ? "Виконавців ще немає" : "Лідів ще немає"}
                 </p>
                 <p className="mt-1 text-sm text-gray-400">
                   Використайте форму вище, щоб почати пошук
@@ -72,19 +95,19 @@ export default async function Home() {
                   <thead>
                     <tr className="border-b border-gray-100">
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Компанія
+                        {isBeats ? "Артист" : "Компанія"}
                       </th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Категорія / Локація
+                        {isBeats ? "Жанр / Платформа" : "Категорія / Локація"}
                       </th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Сайт
+                        {isBeats ? "Профіль" : "Сайт"}
                       </th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                         Статус
                       </th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Аудит
+                        {isBeats ? "Аудиторія" : "Аудит"}
                       </th>
                     </tr>
                   </thead>
@@ -94,11 +117,15 @@ export default async function Home() {
                         key={lead.id}
                         lead={{
                           id: lead.id,
+                          mode: lead.mode,
                           companyName: lead.companyName,
                           category: lead.category,
                           city: lead.city,
                           website: lead.website,
                           status: lead.status,
+                          source: lead.source,
+                          followers: lead.followers,
+                          lookingForType: lead.lookingForType,
                           audit: lead.audit
                             ? { issues: lead.audit.issues }
                             : null,

@@ -1,10 +1,15 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { LeadMode } from "@prisma/client";
 import { prisma } from "@/src/lib/prisma";
 import AuditButton from "@/src/components/AuditButton";
 import StatusPicker from "@/src/components/StatusPicker";
 import AIProposalGenerator from "@/src/components/AIProposalGenerator";
-import { calculateLeadScore, getScoreContext } from "@/src/lib/scoring";
+import {
+  calculateArtistScore,
+  calculateLeadScore,
+  getScoreContext,
+} from "@/src/lib/scoring";
 
 export const dynamic = "force-dynamic";
 
@@ -50,16 +55,27 @@ export default async function LeadDetailPage({
     notFound();
   }
 
-  // We compute the score live for display so the UI stays accurate even if
-  // the persisted `lead.score` lags (e.g. before the first audit run, or
-  // after a manual website edit). The persisted value is still kept in sync
-  // by `runAuditForLead` for query/sort use cases.
-  const opportunityScore = calculateLeadScore(
-    { website: lead.website, email: lead.email },
-    lead.audit
-      ? { hasSSL: lead.audit.hasSSL, mobileFriendly: lead.audit.mobileFriendly }
-      : null
-  );
+  const isBeats = lead.mode === LeadMode.BEATS;
+
+  // Compute the score live for display so the UI stays accurate even if the
+  // persisted `lead.score` lags (e.g. before the first audit run, or after a
+  // manual website edit). The persisted value is still kept in sync by the
+  // creating actions for query/sort use cases.
+  const opportunityScore = isBeats
+    ? calculateArtistScore({
+        email: lead.email,
+        followers: lead.followers,
+        lookingForType: lead.lookingForType,
+      })
+    : calculateLeadScore(
+        { website: lead.website, email: lead.email },
+        lead.audit
+          ? {
+              hasSSL: lead.audit.hasSSL,
+              mobileFriendly: lead.audit.mobileFriendly,
+            }
+          : null
+      );
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -88,10 +104,20 @@ export default async function LeadDetailPage({
             <h1 className="text-3xl font-semibold tracking-tight text-gray-900">
               {lead.companyName}
             </h1>
-            {(lead.category || lead.city) && (
-              <p className="mt-1.5 text-sm text-gray-500">
-                {[lead.category, lead.city].filter(Boolean).join(" · ")}
-              </p>
+            {isBeats ? (
+              (lead.realName || lead.category || lead.source) && (
+                <p className="mt-1.5 text-sm text-gray-500">
+                  {[lead.realName, lead.category, lead.source]
+                    .filter(Boolean)
+                    .join(" · ")}
+                </p>
+              )
+            ) : (
+              (lead.category || lead.city) && (
+                <p className="mt-1.5 text-sm text-gray-500">
+                  {[lead.category, lead.city].filter(Boolean).join(" · ")}
+                </p>
+              )
             )}
           </div>
           <StatusPicker
@@ -105,6 +131,7 @@ export default async function LeadDetailPage({
           <OpportunityScoreCard
             score={opportunityScore}
             hasAudit={!!lead.audit}
+            isBeats={isBeats}
           />
         </div>
 
@@ -115,20 +142,33 @@ export default async function LeadDetailPage({
           />
         </div>
 
-        <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-2">
-          <ContactsCard lead={lead} />
-          <AuditCard
-            audit={lead.audit}
-            leadId={lead.id}
-            hasWebsite={!!lead.website}
-          />
+        <div
+          className={`mt-6 grid grid-cols-1 gap-6 ${
+            isBeats ? "" : "lg:grid-cols-2"
+          }`}
+        >
+          <ContactsCard lead={lead} isBeats={isBeats} />
+          {!isBeats && (
+            <AuditCard
+              audit={lead.audit}
+              leadId={lead.id}
+              hasWebsite={!!lead.website}
+            />
+          )}
 
-          <section className="lg:col-span-2 bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+          <section
+            className={`bg-white rounded-xl shadow-sm border border-gray-200 p-6 ${
+              isBeats ? "" : "lg:col-span-2"
+            }`}
+          >
             <h2 className="text-base font-semibold text-gray-900">
               Системна інформація
             </h2>
             <dl className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-3">
-              <SystemField label="Джерело" value={lead.source ?? null} />
+              <SystemField
+                label={isBeats ? "Платформа" : "Джерело"}
+                value={lead.source ?? null}
+              />
               <SystemField
                 label="Створено"
                 value={formatDate(lead.createdAt)}
@@ -152,9 +192,11 @@ export default async function LeadDetailPage({
 function OpportunityScoreCard({
   score,
   hasAudit,
+  isBeats,
 }: {
   score: number;
   hasAudit: boolean;
+  isBeats: boolean;
 }) {
   const ctx = getScoreContext(score);
 
@@ -199,11 +241,18 @@ function OpportunityScoreCard({
             style={{ width: `${score}%` }}
           />
         </div>
-        {!hasAudit && (
+        {isBeats ? (
           <p className="mt-3 text-xs text-gray-500">
-            Бал розрахований із наявних даних. Запустіть аудит сайту, щоб
-            врахувати SSL та mobile-friendly чинники.
+            Бал враховує сигнал «шукає type beats», наявність email і розмір
+            аудиторії на платформі.
           </p>
+        ) : (
+          !hasAudit && (
+            <p className="mt-3 text-xs text-gray-500">
+              Бал розрахований із наявних даних. Запустіть аудит сайту, щоб
+              врахувати SSL та mobile-friendly чинники.
+            </p>
+          )
         )}
       </div>
     </section>
@@ -217,10 +266,77 @@ interface ContactsCardProps {
     phone: string | null;
     website: string | null;
     email: string | null;
+    realName: string | null;
+    source: string | null;
+    followers: number | null;
+    lookingForType: boolean | null;
   };
+  isBeats: boolean;
 }
 
-function ContactsCard({ lead }: ContactsCardProps) {
+function fmtFollowers(n: number): string {
+  if (n >= 1000) return `${(n / 1000).toFixed(n >= 10000 ? 0 : 1)}K`;
+  return `${n}`;
+}
+
+function ContactsCard({ lead, isBeats }: ContactsCardProps) {
+  if (isBeats) {
+    return (
+      <section className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+        <h2 className="text-base font-semibold text-gray-900">Контакти</h2>
+        <dl className="mt-4 divide-y divide-gray-100 text-sm">
+          <ContactRow label="Реальне імʼя" value={lead.realName} />
+          <ContactRow label="Жанр" value={lead.category} />
+          <ContactRow label="Платформа" value={lead.source} />
+          <ContactRow
+            label="Аудиторія"
+            value={lead.followers != null ? `${lead.followers}` : null}
+          >
+            {lead.followers != null && (
+              <span className="text-gray-900 tabular-nums">
+                {fmtFollowers(lead.followers)} фоловерів
+              </span>
+            )}
+          </ContactRow>
+          <ContactRow
+            label="Type beats"
+            value={lead.lookingForType ? "Так" : "Ні"}
+          >
+            {lead.lookingForType ? (
+              <span className="inline-flex items-center rounded-full bg-violet-50 px-2 py-0.5 text-xs font-medium text-violet-700 ring-1 ring-inset ring-violet-200">
+                Шукає type beats
+              </span>
+            ) : (
+              <span className="text-gray-500">Не шукає публічно</span>
+            )}
+          </ContactRow>
+          <ContactRow label="Профіль" value={lead.website}>
+            {lead.website && (
+              <a
+                href={lead.website}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-blue-600 hover:text-blue-800 hover:underline transition-colors"
+              >
+                {stripProtocol(lead.website)}
+              </a>
+            )}
+          </ContactRow>
+          <ContactRow label="Email" value={lead.email}>
+            {lead.email && (
+              <a
+                href={`mailto:${lead.email}`}
+                className="text-blue-600 hover:text-blue-800 hover:underline transition-colors"
+              >
+                {lead.email}
+              </a>
+            )}
+          </ContactRow>
+        </dl>
+      </section>
+    );
+  }
+
   return (
     <section className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
       <h2 className="text-base font-semibold text-gray-900">Контакти</h2>
@@ -441,12 +557,41 @@ function SystemField({
   );
 }
 
+interface MessageAttachment {
+  name?: string | null;
+  bytes?: number | null;
+  bpm?: string | null;
+  keySig?: string | null;
+  genre?: string | null;
+  price?: string | null;
+}
+
 interface MessageItem {
   id: string;
   subject: string;
   body: string;
   sentAt: Date;
   replyStatus: string;
+  attachment: unknown;
+}
+
+function fmtBytes(b: number): string {
+  if (b < 1024) return `${b} B`;
+  if (b < 1024 * 1024) return `${(b / 1024).toFixed(0)} KB`;
+  return `${(b / 1024 / 1024).toFixed(1)} MB`;
+}
+
+function asAttachment(value: unknown): MessageAttachment | null {
+  if (!value || typeof value !== "object") return null;
+  const v = value as Record<string, unknown>;
+  return {
+    name: typeof v.name === "string" ? v.name : null,
+    bytes: typeof v.bytes === "number" ? v.bytes : null,
+    bpm: typeof v.bpm === "string" ? v.bpm : null,
+    keySig: typeof v.keySig === "string" ? v.keySig : null,
+    genre: typeof v.genre === "string" ? v.genre : null,
+    price: typeof v.price === "string" ? v.price : null,
+  };
 }
 
 function MessageHistoryFeed({ messages }: { messages: MessageItem[] }) {
@@ -530,11 +675,39 @@ function MessageHistoryFeed({ messages }: { messages: MessageItem[] }) {
             </summary>
             <div className="border-t border-gray-100 bg-gray-50 px-4 py-3 text-sm leading-relaxed text-gray-700 whitespace-pre-wrap">
               {msg.body}
+              <MessageAttachmentBadge attachment={asAttachment(msg.attachment)} />
             </div>
           </details>
         ))}
       </div>
     </section>
+  );
+}
+
+function MessageAttachmentBadge({
+  attachment,
+}: {
+  attachment: MessageAttachment | null;
+}) {
+  if (!attachment || !attachment.name) return null;
+  const meta = [
+    attachment.bpm ? `${attachment.bpm} BPM` : null,
+    attachment.keySig,
+    attachment.genre,
+    attachment.price ? `$${attachment.price}` : null,
+    attachment.bytes ? fmtBytes(attachment.bytes) : null,
+  ]
+    .filter(Boolean)
+    .join(" · ");
+
+  return (
+    <div className="mt-3 flex items-center gap-2 rounded-md border border-violet-200 bg-violet-50 px-3 py-2 text-xs not-prose">
+      <span className="text-violet-700">♪</span>
+      <span className="font-medium text-violet-900 truncate">
+        {attachment.name}
+      </span>
+      {meta && <span className="text-violet-700/70">· {meta}</span>}
+    </div>
   );
 }
 

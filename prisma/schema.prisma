@@ -10,20 +10,29 @@ datasource db {
 
 // --- Моделі ---
 
+enum LeadMode {
+  LOCAL  // Local-business leads (Google Maps + website audit pipeline)
+  BEATS  // Music artists (potential beat buyers — handles, platforms, followers)
+}
+
 model Lead {
-  id          String   @id @default(uuid())
-  companyName String
-  website     String?
-  email       String?
-  phone       String?
-  city        String?
-  category    String?  // Наприклад: "стоматологія", "автосервіс"
-  source      String?  // Google Maps, OLX, LinkedIn
-  score       Int      @default(0) // Opportunity Scoring (0-100)
-  status      String   @default("New") // New, Qualified, Contacted, Replied, Won, Lost
-  notes       String?  @db.Text
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id              String   @id @default(uuid())
+  mode            LeadMode @default(LOCAL)
+  companyName     String   // For BEATS this stores the artist handle, e.g. "@youngluna.beats"
+  realName        String?  // BEATS-only: real / stage name behind the handle
+  website         String?
+  email           String?
+  phone           String?
+  city            String?
+  category        String?  // LOCAL: business niche. BEATS: genre tags ("Trap / Drill")
+  source          String?  // LOCAL: "Google Maps". BEATS: "SoundCloud" / "YouTube" / "Instagram"
+  followers       Int?     // BEATS-only audience size
+  lookingForType  Boolean? // BEATS-only — is the artist publicly seeking type beats?
+  score           Int      @default(0) // Opportunity Scoring (0-100)
+  status          String   @default("New") // New, Qualified, Contacted, Replied, Won, Lost
+  notes           String?  @db.Text
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
 
   // Зв'язки
   audit       Audit?
@@ -61,6 +70,7 @@ model Message {
   body        String   @db.Text
   sentAt      DateTime @default(now())
   replyStatus String   @default("No Reply") // No Reply, Replied, Bounced
+  attachment  Json?    // BEATS-only: { name, bytes, bpm, keySig, genre, price }
 
   // Зв'язки
   lead        Lead     @relation(fields: [leadId], references: [id], onDelete: Cascade)

@@ -2,17 +2,22 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { LeadMode } from "@prisma/client";
 import AuditButton from "@/src/components/AuditButton";
 import StatusPill from "@/src/components/StatusPill";
 
 interface LeadRowProps {
   lead: {
     id: string;
+    mode: LeadMode;
     companyName: string;
     category: string | null;
     city: string | null;
     website: string | null;
     status: string;
+    source: string | null;
+    followers: number | null;
+    lookingForType: boolean | null;
     audit: { issues: string[] } | null;
   };
 }
@@ -21,8 +26,18 @@ function stopPropagation(e: React.MouseEvent | React.KeyboardEvent) {
   e.stopPropagation();
 }
 
+function fmtFollowers(n: number): string {
+  if (n >= 1000) return `${(n / 1000).toFixed(n >= 10000 ? 0 : 1)}K`;
+  return `${n}`;
+}
+
 export default function LeadTableRow({ lead }: LeadRowProps) {
   const router = useRouter();
+  const isBeats = lead.mode === LeadMode.BEATS;
+
+  const subtitle = isBeats
+    ? lead.source ?? null
+    : lead.city ?? null;
 
   return (
     <tr
@@ -40,8 +55,8 @@ export default function LeadTableRow({ lead }: LeadRowProps) {
       </td>
       <td className="px-6 py-4 text-sm text-gray-500 whitespace-nowrap">
         {lead.category}
-        {lead.city && (
-          <span className="text-gray-400"> · {lead.city}</span>
+        {subtitle && (
+          <span className="text-gray-400"> · {subtitle}</span>
         )}
       </td>
       <td className="px-6 py-4 text-sm whitespace-nowrap">
@@ -68,7 +83,12 @@ export default function LeadTableRow({ lead }: LeadRowProps) {
         className="px-6 py-4 text-sm whitespace-nowrap"
         onClick={stopPropagation}
       >
-        {lead.website ? (
+        {isBeats ? (
+          <BeatsLastCell
+            followers={lead.followers}
+            lookingForType={lead.lookingForType}
+          />
+        ) : lead.website ? (
           <AuditButton
             leadId={lead.id}
             hasAudit={!!lead.audit}
@@ -79,5 +99,31 @@ export default function LeadTableRow({ lead }: LeadRowProps) {
         )}
       </td>
     </tr>
+  );
+}
+
+function BeatsLastCell({
+  followers,
+  lookingForType,
+}: {
+  followers: number | null;
+  lookingForType: boolean | null;
+}) {
+  if (followers == null && !lookingForType) {
+    return <span className="text-xs text-gray-400">—</span>;
+  }
+  return (
+    <div className="flex flex-col items-start gap-0.5">
+      {followers != null && (
+        <span className="text-xs font-medium text-gray-700 tabular-nums">
+          {fmtFollowers(followers)}
+        </span>
+      )}
+      {lookingForType && (
+        <span className="inline-flex items-center rounded-full bg-violet-50 px-1.5 py-0.5 text-[10px] font-medium text-violet-700 ring-1 ring-inset ring-violet-200 whitespace-nowrap">
+          шукає type beats
+        </span>
+      )}
+    </div>
   );
 }
