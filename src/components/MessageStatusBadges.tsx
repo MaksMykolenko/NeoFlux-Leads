@@ -8,12 +8,12 @@ import {
   type MouseEvent,
 } from "react";
 import { useTranslations } from "next-intl";
+import { updateReplyStatus } from "@/src/actions/messageActions";
+import { useRouter } from "@/src/i18n/navigation";
 import {
   REPLY_STATUSES,
-  updateReplyStatus,
   type ReplyStatus,
-} from "@/src/actions/messageActions";
-import { useRouter } from "@/src/i18n/navigation";
+} from "@/src/lib/replyStatus";
 
 const REPLY_STATUS_STYLES: Record<ReplyStatus, string> = {
   "No Reply": "bg-gray-100 text-gray-600 hover:bg-gray-200",

@@ -2,21 +2,9 @@
 
 import { revalidateLocalizedPath } from "@/src/i18n/revalidateLocalized";
 import { prisma } from "@/src/lib/prisma";
+import { isReplyStatus } from "@/src/lib/replyStatus";
 import { getRequestUserId } from "@/src/lib/session";
 import { sendUserEmail } from "@/src/lib/mailer";
-
-export const REPLY_STATUSES = [
-  "No Reply",
-  "Replied",
-  "Interested",
-  "Bounced",
-] as const;
-
-export type ReplyStatus = (typeof REPLY_STATUSES)[number];
-
-export function isReplyStatus(value: string): value is ReplyStatus {
-  return (REPLY_STATUSES as readonly string[]).includes(value);
-}
 
 export interface SaveMessageResult {
   success: boolean;
