@@ -8,6 +8,10 @@ import AuditButton from "@/src/components/AuditButton";
 import StatusPicker from "@/src/components/StatusPicker";
 import AIProposalGenerator from "@/src/components/AIProposalGenerator";
 import {
+  DeliveryStatusBadge,
+  ReplyStatusEditor,
+} from "@/src/components/MessageStatusBadges";
+import {
   calculateArtistScore,
   calculateLeadScore,
   getScoreContext,
@@ -751,6 +755,8 @@ interface MessageItem {
   body: string;
   sentAt: Date;
   replyStatus: string;
+  deliveryStatus: string;
+  errorLog: string | null;
   attachment: unknown;
   channels: unknown;
 }
@@ -845,12 +851,19 @@ function MessageHistoryFeed({
           >
             <summary className="flex cursor-pointer list-none items-start justify-between gap-3 px-4 py-3">
               <div className="min-w-0 flex-1">
-                <div className="flex items-center gap-2 text-xs text-gray-500">
+                <div className="flex flex-wrap items-center gap-2 text-xs text-gray-500">
                   <time dateTime={msg.sentAt.toISOString()}>
                     {formatDate(msg.sentAt)}
                   </time>
                   <span className="text-gray-300">·</span>
-                  <ReplyStatusBadge status={msg.replyStatus} t={t} />
+                  <DeliveryStatusBadge
+                    status={msg.deliveryStatus}
+                    errorLog={msg.errorLog}
+                  />
+                  <ReplyStatusEditor
+                    messageId={msg.id}
+                    initialStatus={msg.replyStatus}
+                  />
                 </div>
                 <h3 className="mt-1 text-sm font-medium text-gray-900 truncate">
                   {msg.subject}
@@ -941,33 +954,3 @@ function MessageChannelsBadge({
   );
 }
 
-const REPLY_STATUS_STYLES: Record<string, string> = {
-  "No Reply": "bg-gray-100 text-gray-600",
-  Replied: "bg-green-100 text-green-700",
-  Bounced: "bg-red-100 text-red-700",
-};
-
-function ReplyStatusBadge({
-  status,
-  t,
-}: {
-  status: string;
-  t: (key: string, values?: Record<string, string | number>) => string;
-}) {
-  const cls = REPLY_STATUS_STYLES[status] ?? "bg-gray-100 text-gray-600";
-  const label =
-    status === "No Reply"
-      ? t("replyNoReply")
-      : status === "Replied"
-        ? t("replyReplied")
-        : status === "Bounced"
-          ? t("replyBounced")
-          : status;
-  return (
-    <span
-      className={`inline-flex items-center rounded-full px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wider ${cls}`}
-    >
-      {label}
-    </span>
-  );
-}

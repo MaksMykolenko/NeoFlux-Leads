@@ -11,39 +11,39 @@ datasource db {
 // --- Моделі ---
 
 enum LeadMode {
-  LOCAL      // Local-business leads (niche + city via AI web search + website audit pipeline)
-  BEATS      // Music artists (potential beat buyers — handles, platforms, followers)
-  UNIVERSAL  // Free-form OSINT-style leads (Gemini + Google Search grounding)
+  LOCAL // Local-business leads (niche + city via AI web search + website audit pipeline)
+  BEATS // Music artists (potential beat buyers — handles, platforms, followers)
+  UNIVERSAL // Free-form OSINT-style leads (Gemini + Google Search grounding)
 }
 
 model Lead {
-  id              String   @id @default(uuid())
-  mode            LeadMode @default(LOCAL)
+  id             String   @id @default(uuid())
+  mode           LeadMode @default(LOCAL)
   // Власник ліда. Кожен юзер бачить тільки СВОЇ ліди — це поле обов'язкове
   // для всіх лідів, створених після запуску мульти-юзера. Старі (pre-auth)
   // ліди мають NULL і не з'являються в жодному запиті.
-  userId          String?
-  companyName     String   // For BEATS this stores the artist handle, e.g. "@youngluna.beats"
-  realName        String?  // BEATS-only: real / stage name behind the handle
-  website         String?
-  email           String?
-  phone           String?
-  city            String?
-  category        String?  // LOCAL: business niche. BEATS: genre tags ("Trap / Drill")
-  source          String?  // LOCAL: e.g. "Web search (AI)". BEATS: "SoundCloud" / "YouTube" / "Instagram"
-  followers       Int?     // BEATS-only audience size
-  lookingForType  Boolean? // BEATS-only — is the artist publicly seeking type beats?
-  socialLinks     Json?    // BEATS-only: { instagram, soundcloud, youtube, tiktok, twitter, spotify, beatstars, discord, telegram, website }
-  score           Int      @default(0) // Opportunity Scoring (0-100)
-  status          String   @default("New") // New, Qualified, Contacted, Replied, Won, Lost
-  notes           String?  @db.Text
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  userId         String?
+  companyName    String // For BEATS this stores the artist handle, e.g. "@youngluna.beats"
+  realName       String? // BEATS-only: real / stage name behind the handle
+  website        String?
+  email          String?
+  phone          String?
+  city           String?
+  category       String? // LOCAL: business niche. BEATS: genre tags ("Trap / Drill")
+  source         String? // LOCAL: e.g. "Web search (AI)". BEATS: "SoundCloud" / "YouTube" / "Instagram"
+  followers      Int? // BEATS-only audience size
+  lookingForType Boolean? // BEATS-only — is the artist publicly seeking type beats?
+  socialLinks    Json? // BEATS-only: { instagram, soundcloud, youtube, tiktok, twitter, spotify, beatstars, discord, telegram, website }
+  score          Int      @default(0) // Opportunity Scoring (0-100)
+  status         String   @default("New") // New, Qualified, Contacted, Replied, Won, Lost
+  notes          String?  @db.Text
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
 
   // Зв'язки
-  user        User?     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  audit       Audit?
-  messages    Message[]
+  user     User?     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  audit    Audit?
+  messages Message[]
 
   @@index([userId])
 }
@@ -53,23 +53,13 @@ model Audit {
   leadId           String   @unique
   mobileFriendly   Boolean  @default(false)
   hasSSL           Boolean  @default(false)
-  performanceScore Int?     // Оцінка швидкості
+  performanceScore Int? // Оцінка швидкості
   issues           String[] // Список знайдених проблем
   summary          String?  @db.Text // AI-згенерований висновок
   createdAt        DateTime @default(now())
 
   // Зв'язки
-  lead             Lead     @relation(fields: [leadId], references: [id], onDelete: Cascade)
-}
-
-model Campaign {
-  id        String   @id @default(uuid())
-  name      String
-  niche     String   // Цільова ніша кампанії
-  template  String   @db.Text // Шаблон листа
-  status    String   @default("Draft") // Draft, Active, Paused, Completed
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  lead Lead @relation(fields: [leadId], references: [id], onDelete: Cascade)
 }
 
 model Message {
@@ -79,43 +69,49 @@ model Message {
   body           String   @db.Text
   sentAt         DateTime @default(now())
   replyStatus    String   @default("No Reply") // No Reply, Replied, Bounced
-  attachment     Json?    // BEATS-only: { name, bytes, bpm, keySig, genre, price }
-  channels       Json?    // BEATS-only outreach: ["email", "instagram", "telegram", ...] — channels the user actually opened to send through
+  attachment     Json? // BEATS-only: { name, bytes, bpm, keySig, genre, price }
+  channels       Json? // BEATS-only outreach: ["email", "instagram", "telegram", ...] — channels the user actually opened to send through
   // Стан реальної доставки через BYOSMTP. DRAFT = тільки збережено в CRM,
   // не відправлено. SENT = успішно відправлено. FAILED = nodemailer повернув
   // помилку (див. errorLog).
-  deliveryStatus String   @default("DRAFT")    // DRAFT | SENT | FAILED
-  errorLog       String?  @db.Text             // повний текст помилки SMTP
+  deliveryStatus String   @default("DRAFT") // DRAFT | SENT | FAILED
+  errorLog       String?  @db.Text // повний текст помилки SMTP
 
   // Зв'язки
-  lead        Lead     @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  lead Lead @relation(fields: [leadId], references: [id], onDelete: Cascade)
 }
 
 // Юзер, який увійшов через Flux ID. Локальна копія профілю — оновлюється при кожному вході.
 model User {
-  id           String    @id @default(uuid())
-  fluxUserId   Int       @unique                  // sub з Flux ID userinfo
-  email        String?   @unique
-  username     String?
-  displayName  String?
-  avatarUrl    String?   @db.Text
+  id          String   @id @default(uuid())
+  fluxUserId  Int      @unique // sub з Flux ID userinfo
+  email       String?  @unique
+  username    String?
+  displayName String?
+  avatarUrl   String?  @db.Text
   // RBAC: USER (default) | ADMIN | OWNER. OWNER призначається автоматично за
   // email-у з env OWNER_EMAIL при першому вході. Тільки OWNER може змінювати
   // ролі інших юзерів. Див. src/lib/admin.ts.
-  role         String    @default("USER")
-  accountType  String?
-  createdAt    DateTime  @default(now())
-  updatedAt    DateTime  @updatedAt
+  role        String   @default("USER")
+  accountType String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
   // Підписка / тарифний план
   plan                String   @default("STARTER") // STARTER | PRO | AGENCY (див. src/lib/subscription.ts)
-  leadsProcessedCount Int      @default(0)         // лічильник місячного скрапінгу
-  planResetDate       DateTime @default(now())     // коли востаннє скидали лічильник
+  leadsProcessedCount Int      @default(0) // лічильник місячного скрапінгу
+  planResetDate       DateTime @default(now()) // коли востаннє скидали лічильник
+
+  // Stripe billing. Customer створюється на першому Checkout, Subscription —
+  // після успішної оплати. Обидва поля унікальні: один Stripe-об'єкт ↔ один юзер.
+  // Видалення підписки (cancel) обнуляє лише stripeSubscriptionId, customer
+  // залишається — щоб юзер міг купити знову без створення нового Customer.
+  stripeCustomerId     String? @unique
+  stripeSubscriptionId String? @unique
 
   // BYOSMTP: користувач підключає власний поштовий сервер для відправки.
-  // smtpPass зберігається у відкритому вигляді — TODO: зашифрувати AES-GCM
-  // ключем з env (FLUX_OAUTH_STATE_SECRET підійде як шарод з тим самим
-  // життєвим циклом).
+  // smtpPass зашифрований AES-256-GCM з ключем ENCRYPTION_KEY (src/lib/crypto.ts).
+  // Записи зі старим plaintext продовжать працювати завдяки fallback у decrypt().
   smtpHost  String?
   smtpPort  Int?
   smtpUser  String?
@@ -123,21 +119,21 @@ model User {
   fromEmail String?
   fromName  String?
 
-  sessions     Session[]
-  leads        Lead[]
+  sessions Session[]
+  leads    Lead[]
 }
 
 model Session {
-  id         String   @id @default(uuid())
+  id        String   @id @default(uuid())
   // SHA-256 hash значення cookie. Сирий токен ніколи не зберігається в БД.
-  tokenHash  String   @unique
-  userId     String
-  expiresAt  DateTime
-  userAgent  String?  @db.Text
-  ip         String?
-  createdAt  DateTime @default(now())
+  tokenHash String   @unique
+  userId    String
+  expiresAt DateTime
+  userAgent String?  @db.Text
+  ip        String?
+  createdAt DateTime @default(now())
 
-  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
   @@index([expiresAt])
@@ -147,10 +143,10 @@ model Session {
 // фіксується тут — щоб у спорах було видно, хто і коли що змінив.
 model AuditLog {
   id           String   @id @default(uuid())
-  action       String   // напр. "USER_PLAN_CHANGED", "USER_ROLE_CHANGED"
+  action       String // напр. "USER_PLAN_CHANGED", "USER_ROLE_CHANGED"
   adminId      String
   targetUserId String?
-  metadata     Json?    // { from: "STARTER", to: "PRO", ... }
+  metadata     Json? // { from: "STARTER", to: "PRO", ... }
   timestamp    DateTime @default(now())
 
   @@index([adminId])

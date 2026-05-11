@@ -5,11 +5,73 @@ import { prisma } from "@/src/lib/prisma";
 import { getRequestUserId } from "@/src/lib/session";
 import { sendUserEmail } from "@/src/lib/mailer";
 
+export const REPLY_STATUSES = [
+  "No Reply",
+  "Replied",
+  "Interested",
+  "Bounced",
+] as const;
+
+export type ReplyStatus = (typeof REPLY_STATUSES)[number];
+
+export function isReplyStatus(value: string): value is ReplyStatus {
+  return (REPLY_STATUSES as readonly string[]).includes(value);
+}
+
 export interface SaveMessageResult {
   success: boolean;
   error?: string;
   errorCode?: "NO_SMTP" | "NO_EMAIL" | "SEND_FAILED";
   messageId?: string;
+}
+
+export interface UpdateReplyStatusResult {
+  success: boolean;
+  error?: string;
+}
+
+/**
+ * Юзер вручну позначає, що відповів/зацікавився/баунснувся. Доступ контролюємо
+ * через JOIN на Lead.userId — Message напряму не має userId, тож фільтр
+ * `lead: { userId }` потрібний щоб чужий messageId не дав доступу.
+ */
+export async function updateReplyStatus(
+  messageId: string,
+  newStatus: string,
+): Promise<UpdateReplyStatusResult> {
+  if (!messageId) return { success: false, error: "Missing message id" };
+  if (!isReplyStatus(newStatus)) {
+    return { success: false, error: `Невалідний статус: ${newStatus}` };
+  }
+
+  const userId = await getRequestUserId();
+  if (!userId) return { success: false, error: "Не авторизовано" };
+
+  try {
+    const result = await prisma.message.updateMany({
+      where: { id: messageId, lead: { userId } },
+      data: { replyStatus: newStatus },
+    });
+
+    if (result.count === 0) {
+      return { success: false, error: "Повідомлення не знайдено" };
+    }
+
+    const message = await prisma.message.findUnique({
+      where: { id: messageId },
+      select: { leadId: true },
+    });
+    if (message) {
+      await revalidateLocalizedPath(`/leads/${message.leadId}`);
+    }
+    return { success: true };
+  } catch (error) {
+    console.error("updateReplyStatus error:", error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "DB error",
+    };
+  }
 }
 
 export async function saveGeneratedMessage(

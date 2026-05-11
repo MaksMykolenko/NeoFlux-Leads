@@ -1,4 +1,5 @@
-import Link from "next/link";
+import { getTranslations, setRequestLocale } from "next-intl/server";
+import { Link } from "@/src/i18n/navigation";
 import { requireUser } from "@/src/lib/session";
 import {
   PLAN_ORDER,
@@ -6,15 +7,26 @@ import {
   getPlanForUser,
   type Plan,
 } from "@/src/lib/subscription";
+import UpgradeButton from "@/src/components/UpgradeButton";
 
 export const dynamic = "force-dynamic";
 
-export default async function PricingPage() {
+type PricingT = Awaited<ReturnType<typeof getTranslations<"Pricing">>>;
+
+export default async function PricingPage({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}) {
+  const { locale } = await params;
+  setRequestLocale(locale);
+  const t = await getTranslations({ locale, namespace: "Pricing" });
+
   const user = await requireUser();
   const currentPlan = getPlanForUser(user);
 
   return (
-    <main className="min-h-screen bg-gradient-to-br from-gray-50 to-indigo-50 py-12 sm:py-16">
+    <main className="min-h-screen bg-gradient-to-br from-gray-50 to-purple-50 py-12 sm:py-16">
       <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
         <Link
           href="/"
@@ -32,18 +44,16 @@ export default async function PricingPage() {
               clipRule="evenodd"
             />
           </svg>
-          Назад до робочого простору
+          {t("back")}
         </Link>
 
         <header className="mt-8 text-center">
           <h1 className="text-4xl font-semibold tracking-tight text-gray-900 sm:text-5xl">
-            Тарифні плани
+            {t("title")}
           </h1>
-          <p className="mt-4 text-lg text-gray-600">
-            Виберіть план під ваш обсяг outreach. Можна оновити будь-коли.
-          </p>
+          <p className="mt-4 text-lg text-gray-600">{t("subtitle")}</p>
           <p className="mt-2 text-sm text-gray-500">
-            Поточний план:{" "}
+            {t("current")}{" "}
             <span className="font-medium text-gray-900">{currentPlan.name}</span>
           </p>
         </header>
@@ -54,13 +64,14 @@ export default async function PricingPage() {
               key={id}
               plan={PLANS[id]}
               isCurrent={id === currentPlan.id}
+              locale={locale}
+              t={t}
             />
           ))}
         </div>
 
         <p className="mt-12 text-center text-xs text-gray-500">
-          Платіжна інтеграція ще в розробці. Для оновлення плану зв&apos;яжіться з
-          командою NeoFlux у Telegram.
+          {t("paymentNote")}
         </p>
       </div>
     </main>
@@ -72,30 +83,35 @@ function formatPrice(value: number): string {
   return `$${value}`;
 }
 
-function formatLeadsLimit(value: number): string {
-  if (!Number.isFinite(value)) return "Безліміт";
-  return `${value}`;
-}
-
 interface PlanCardProps {
   plan: Plan;
   isCurrent: boolean;
+  locale: string;
+  t: PricingT;
 }
 
-function PlanCard({ plan, isCurrent }: PlanCardProps) {
+function PlanCard({ plan, isCurrent, locale, t }: PlanCardProps) {
   const isPro = plan.id === "PRO";
+  const unlimited = !Number.isFinite(plan.leadsPerMonth);
+  const formatted = unlimited ? t("unlimitedWord") : String(plan.leadsPerMonth);
+  const perMonthSuffix = unlimited ? "" : t("perMonthSuffix");
+  const upgradeClasses = `inline-flex w-full items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium shadow-sm transition ${
+    isPro
+      ? "bg-purple-600 text-white hover:bg-purple-700"
+      : "bg-gray-900 text-white hover:bg-gray-800"
+  }`;
 
   return (
     <div
       className={`relative flex flex-col rounded-2xl border bg-white p-8 shadow-sm transition ${
         isPro
-          ? "border-indigo-200 ring-2 ring-indigo-500 lg:scale-[1.02]"
+          ? "border-purple-200 ring-2 ring-purple-500 lg:scale-[1.02]"
           : "border-gray-200"
       }`}
     >
       {isPro && (
-        <span className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-indigo-600 px-3 py-1 text-xs font-semibold uppercase tracking-wider text-white shadow">
-          Найпопулярніший
+        <span className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-purple-600 px-3 py-1 text-xs font-semibold uppercase tracking-wider text-white shadow">
+          {t("popular")}
         </span>
       )}
 
@@ -108,7 +124,7 @@ function PlanCard({ plan, isCurrent }: PlanCardProps) {
         <span className="text-5xl font-semibold tracking-tight text-gray-900">
           {formatPrice(plan.priceUsd)}
         </span>
-        <span className="text-base text-gray-500">/міс</span>
+        <span className="text-base text-gray-500">{t("perMonth")}</span>
       </div>
 
       <p className="mt-4 text-sm text-gray-600">{plan.description}</p>
@@ -117,10 +133,7 @@ function PlanCard({ plan, isCurrent }: PlanCardProps) {
         <li className="flex items-start gap-2">
           <CheckIcon />
           <span className="text-gray-700">
-            <span className="font-medium text-gray-900">
-              {formatLeadsLimit(plan.leadsPerMonth)}
-            </span>{" "}
-            нових лідів{Number.isFinite(plan.leadsPerMonth) ? "/міс" : ""}
+            {t("leadsLine", { formatted, perMonthSuffix })}
           </span>
         </li>
         {plan.highlights.slice(1).map((h) => (
@@ -138,21 +151,23 @@ function PlanCard({ plan, isCurrent }: PlanCardProps) {
             disabled
             className="inline-flex w-full cursor-default items-center justify-center rounded-lg border border-gray-200 bg-gray-50 px-4 py-2.5 text-sm font-medium text-gray-500"
           >
-            Поточний план
+            {t("currentPlan")}
           </button>
+        ) : plan.stripePriceId ? (
+          <UpgradeButton
+            priceId={plan.stripePriceId}
+            locale={locale}
+            label={t("upgradeNow")}
+            className={upgradeClasses}
+          />
         ) : (
-          <a
-            href="https://t.me/MaksMykolenko"
-            target="_blank"
-            rel="noopener noreferrer"
-            className={`inline-flex w-full items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium shadow-sm transition ${
-              isPro
-                ? "bg-indigo-600 text-white hover:bg-indigo-700"
-                : "bg-gray-900 text-white hover:bg-gray-800"
-            }`}
+          <button
+            type="button"
+            disabled
+            className="inline-flex w-full cursor-default items-center justify-center rounded-lg border border-gray-200 bg-gray-50 px-4 py-2.5 text-sm font-medium text-gray-500"
           >
-            Оновити зараз
-          </a>
+            {t("currentPlan")}
+          </button>
         )}
       </div>
     </div>
@@ -162,7 +177,7 @@ function PlanCard({ plan, isCurrent }: PlanCardProps) {
 function CheckIcon() {
   return (
     <svg
-      className="mt-0.5 h-4 w-4 flex-shrink-0 text-indigo-600"
+      className="mt-0.5 h-4 w-4 flex-shrink-0 text-purple-600"
       viewBox="0 0 20 20"
       fill="currentColor"
     >

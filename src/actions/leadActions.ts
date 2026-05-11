@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidateLocalizedPath } from "@/src/i18n/revalidateLocalized";
+import { requireGeminiKey } from "@/src/lib/gemini";
 import { searchLocalBusinessesViaGemini } from "@/src/lib/geminiLocalBusinessSearch";
 import { prisma } from "@/src/lib/prisma";
 import { calculateLeadScore } from "@/src/lib/scoring";
@@ -56,15 +57,7 @@ export async function searchAndSaveLeads(
       };
     }
 
-    const apiKey = process.env.GEMINI_API_KEY?.trim();
-    if (!apiKey) {
-      return {
-        success: false,
-        count: 0,
-        error:
-          "Не налаштовано GEMINI_API_KEY. Додайте ключ у змінні середовища (Vercel / .env).",
-      };
-    }
+    const apiKey = requireGeminiKey();
 
     const scrapedLeads = await searchLocalBusinessesViaGemini(
       query,

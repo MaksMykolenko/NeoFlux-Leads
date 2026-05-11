@@ -25,7 +25,7 @@ export default async function LoginPage({
   const errorMessage = formatLoginError(t, code, detail);
 
   return (
-    <main className="flex min-h-screen items-center justify-center bg-gradient-to-br from-gray-50 via-white to-indigo-50 px-4 py-12 sm:px-6 lg:px-8">
+    <main className="flex min-h-screen items-center justify-center bg-gradient-to-br from-gray-50 via-white to-purple-50 px-4 py-12 sm:px-6 lg:px-8">
       <div className="w-full max-w-md">
         <div className="rounded-2xl bg-white p-8 shadow-lg ring-1 ring-gray-200/70 sm:p-10">
           <div className="flex flex-col items-center text-center">

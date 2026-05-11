@@ -1,6 +1,7 @@
 "use server";
 
 import { GoogleGenAI } from "@google/genai";
+import { requireGeminiKey } from "@/src/lib/gemini";
 import { prisma } from "@/src/lib/prisma";
 import { LeadMode } from "@/src/lib/leadMode";
 import { getCurrentUser } from "@/src/lib/session";
@@ -84,13 +85,11 @@ function buildIssuesList(input: {
 }
 
 export async function generateProposal(leadId: string): Promise<ProposalResult> {
-  const apiKey = process.env.GEMINI_API_KEY;
-  if (!apiKey) {
-    return {
-      success: false,
-      error:
-        "GEMINI_API_KEY не налаштовано. Додайте ключ у .env та перезапустіть сервер.",
-    };
+  let apiKey: string;
+  try {
+    apiKey = requireGeminiKey();
+  } catch (err) {
+    return { success: false, error: (err as Error).message };
   }
 
   if (!leadId) {
@@ -275,13 +274,11 @@ export interface BeatProposalInput {
 export async function generateBeatProposal(
   input: BeatProposalInput
 ): Promise<ProposalResult> {
-  const apiKey = process.env.GEMINI_API_KEY;
-  if (!apiKey) {
-    return {
-      success: false,
-      error:
-        "GEMINI_API_KEY не налаштовано. Додайте ключ у .env та перезапустіть сервер.",
-    };
+  let apiKey: string;
+  try {
+    apiKey = requireGeminiKey();
+  } catch (err) {
+    return { success: false, error: (err as Error).message };
   }
 
   const user = await getCurrentUser();
@@ -396,12 +393,11 @@ export async function rewriteProposal(
   currentText: string,
   instruction: RewriteInstruction,
 ): Promise<ProposalResult> {
-  const apiKey = process.env.GEMINI_API_KEY;
-  if (!apiKey) {
-    return {
-      success: false,
-      error: "GEMINI_API_KEY не налаштовано",
-    };
+  let apiKey: string;
+  try {
+    apiKey = requireGeminiKey();
+  } catch (err) {
+    return { success: false, error: (err as Error).message };
   }
 
   const trimmed = currentText?.trim();
@@ -500,9 +496,11 @@ const STEP_LABELS = ["Pitch", "Follow-up", "Break-up"] as const;
 export async function generateSequence(
   leadId: string,
 ): Promise<SequenceResult> {
-  const apiKey = process.env.GEMINI_API_KEY;
-  if (!apiKey) {
-    return { success: false, error: "GEMINI_API_KEY не налаштовано" };
+  let apiKey: string;
+  try {
+    apiKey = requireGeminiKey();
+  } catch (err) {
+    return { success: false, error: (err as Error).message };
   }
   if (!leadId) return { success: false, error: "Missing lead id" };
 

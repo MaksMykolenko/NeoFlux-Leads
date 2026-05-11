@@ -15,7 +15,7 @@ export function isLeadStatus(value: string): value is LeadStatus {
 
 const STATUS_STYLES: Record<LeadStatus, string> = {
   New: "bg-blue-50 text-blue-700 ring-blue-200",
-  Qualified: "bg-indigo-50 text-indigo-700 ring-indigo-200",
+  Qualified: "bg-violet-50 text-violet-700 ring-violet-200",
   Contacted: "bg-amber-50 text-amber-700 ring-amber-200",
   Replied: "bg-purple-50 text-purple-700 ring-purple-200",
   Won: "bg-green-50 text-green-700 ring-green-200",

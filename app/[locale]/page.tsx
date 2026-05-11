@@ -16,6 +16,7 @@ import ScraperForm from "@/src/components/ScraperForm";
 import BeatOutreach from "@/src/components/BeatOutreach";
 import UniversalOutreach from "@/src/components/UniversalOutreach";
 import CsvUploader from "@/src/components/CsvUploader";
+import CheckoutSuccessBanner from "@/src/components/CheckoutSuccessBanner";
 import BrandMark from "@/src/components/BrandMark";
 import LeadsTableSection from "@/src/components/LeadsTableSection";
 import LeadKanbanBoard, {
@@ -47,6 +48,7 @@ export default async function Home({
   searchParams: Promise<{
     mode?: string | string[];
     view?: string | string[];
+    checkout?: string | string[];
   }>;
 }) {
   const { locale } = await params;
@@ -60,6 +62,10 @@ export default async function Home({
   const query = await searchParams;
   const mode = modeFromQuery(query.mode);
   const view = viewFromQuery(query.view);
+  const checkoutParam = Array.isArray(query.checkout)
+    ? query.checkout[0]
+    : query.checkout;
+  const showCheckoutSuccess = checkoutParam === "success";
   const isBeats = mode === LeadMode.BEATS;
   const isUniversal = mode === LeadMode.UNIVERSAL;
   const isBoard = view === "board";
@@ -120,6 +126,7 @@ export default async function Home({
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="mx-auto max-w-4xl px-4 py-12 sm:px-6 lg:px-8">
+        {showCheckoutSuccess && <CheckoutSuccessBanner />}
         {missingDbEnv && (
           <DatabaseConfigBanner variant="missing_env" />
         )}

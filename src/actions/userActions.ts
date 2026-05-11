@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidateLocalizedPath } from "@/src/i18n/revalidateLocalized";
+import { encrypt } from "@/src/lib/crypto";
 import { prisma } from "@/src/lib/prisma";
 import { getRequestUserId } from "@/src/lib/session";
 
@@ -64,7 +65,7 @@ export async function saveSmtpSettings(
 
     // Не перезаписуємо пароль, якщо юзер просто зберіг форму без зміни поля.
     if (pass && pass !== PASSWORD_PLACEHOLDER) {
-      updateData.smtpPass = pass;
+      updateData.smtpPass = encrypt(pass);
     }
 
     await prisma.user.update({

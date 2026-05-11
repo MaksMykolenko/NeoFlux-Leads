@@ -121,7 +121,7 @@ function UserRow({
               className="h-8 w-8 flex-shrink-0 rounded-full object-cover ring-1 ring-gray-200"
             />
           ) : (
-            <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-indigo-100 text-xs font-medium text-indigo-700">
+            <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-purple-100 text-xs font-medium text-purple-700">
               {(user.displayName || user.username || user.email || "?")
                 .charAt(0)
                 .toUpperCase()}
@@ -145,7 +145,7 @@ function UserRow({
             value={role}
             onChange={(e) => handleRoleChange(e.target.value as Role)}
             disabled={isPending}
-            className="rounded-md border border-gray-200 bg-white px-2 py-1 text-xs font-medium text-gray-700 shadow-sm transition focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 disabled:opacity-60"
+            className="rounded-md border border-gray-200 bg-white px-2 py-1 text-xs font-medium text-gray-700 shadow-sm transition focus:border-purple-500 focus:outline-none focus:ring-1 focus:ring-purple-500 disabled:opacity-60"
           >
             {ROLES.map((r) => (
               <option key={r} value={r}>
@@ -163,7 +163,7 @@ function UserRow({
           value={plan}
           onChange={(e) => handlePlanChange(e.target.value as PlanId)}
           disabled={isPending}
-          className="rounded-md border border-gray-200 bg-white px-2 py-1 text-xs font-medium text-gray-700 shadow-sm transition focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 disabled:opacity-60"
+          className="rounded-md border border-gray-200 bg-white px-2 py-1 text-xs font-medium text-gray-700 shadow-sm transition focus:border-purple-500 focus:outline-none focus:ring-1 focus:ring-purple-500 disabled:opacity-60"
         >
           {PLAN_ORDER.map((id) => (
             <option key={id} value={id}>
@@ -205,7 +205,7 @@ function RoleBadge({ role }: { role: Role }) {
     role === "OWNER"
       ? "bg-amber-100 text-amber-800 ring-amber-200"
       : role === "ADMIN"
-      ? "bg-indigo-100 text-indigo-800 ring-indigo-200"
+      ? "bg-purple-100 text-purple-800 ring-purple-200"
       : "bg-gray-100 text-gray-700 ring-gray-200";
   return (
     <span

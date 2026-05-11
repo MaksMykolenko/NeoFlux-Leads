@@ -1,5 +1,6 @@
 import "server-only";
 import nodemailer from "nodemailer";
+import { decrypt } from "@/src/lib/crypto";
 import { prisma } from "@/src/lib/prisma";
 
 /**
@@ -80,13 +81,25 @@ export async function sendUserEmail(
     };
   }
 
+  let plaintextPass: string;
+  try {
+    plaintextPass = decrypt(smtpPass);
+  } catch (err) {
+    console.error(`[mailer] decrypt smtpPass failed for user=${userId}`, err);
+    return {
+      success: false,
+      error:
+        "Не вдалося розшифрувати SMTP пароль. Заново збережіть налаштування у /settings.",
+    };
+  }
+
   // SMTPS over 465 потребує `secure: true` (TLS handshake at connect).
   // 587 / 25 / 2525 — STARTTLS, secure: false + автоматичний upgrade.
   const transporter = nodemailer.createTransport({
     host: smtpHost,
     port: smtpPort,
     secure: smtpPort === 465,
-    auth: { user: smtpUser, pass: smtpPass },
+    auth: { user: smtpUser, pass: plaintextPass },
   });
 
   const finalText = `${bodyText.trim()}\n\n${watermarkText()}`;

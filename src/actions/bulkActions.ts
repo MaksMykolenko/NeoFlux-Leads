@@ -1,5 +1,6 @@
 "use server";
 
+import pLimit from "p-limit";
 import { revalidateLocalizedPath } from "@/src/i18n/revalidateLocalized";
 import { prisma } from "@/src/lib/prisma";
 import { getCurrentUser } from "@/src/lib/session";
@@ -8,6 +9,11 @@ import { isLeadStatus } from "@/src/lib/leadStatus";
 import { runAuditForLead } from "@/src/actions/auditActions";
 
 const MAX_BULK_SIZE = 100;
+
+// Playwright важкий — одночасно більш ніж ~5 сесій з'їдають CPU/RAM
+// на serverless instance і починаються timeout-и. 5 — компроміс між
+// швидкістю і стабільністю.
+const AUDIT_CONCURRENCY = 5;
 
 export interface BulkAuditResult {
   success: boolean;
@@ -49,8 +55,9 @@ export async function bulkRunAudit(leadIds: string[]): Promise<BulkAuditResult> 
 
   const skipped = ids.length - eligible.length;
 
+  const limit = pLimit(AUDIT_CONCURRENCY);
   const settled = await Promise.allSettled(
-    eligible.map((l) => runAuditForLead(l.id)),
+    eligible.map((l) => limit(() => runAuditForLead(l.id))),
   );
 
   let succeeded = 0;

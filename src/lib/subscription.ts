@@ -16,8 +16,7 @@ export type FeatureKey =
   | "emailEnrichment" // витяг email з HTML під час аудиту
   | "advancedAi" // повноцінний промпт Gemini (а не спрощений)
   | "unlimitedAi" // без обмежень на кількість AI-генерацій
-  | "csvExport" // експорт лідів у CSV
-  | "whiteLabel"; // White-label звіти
+  | "csvExport"; // експорт лідів у CSV
 
 export interface Plan {
   id: PlanId;
@@ -30,6 +29,9 @@ export interface Plan {
   description: string;
   highlights: string[];
   features: Record<FeatureKey, boolean>;
+  // Stripe Price ID для Checkout-сесії. null для STARTER (безкоштовно — без чекауту).
+  // Test mode IDs захардкоджені; для прода замініть на live IDs.
+  stripePriceId: string | null;
 }
 
 export const PLANS: Record<PlanId, Plan> = {
@@ -51,8 +53,8 @@ export const PLANS: Record<PlanId, Plan> = {
       advancedAi: false,
       unlimitedAi: false,
       csvExport: false,
-      whiteLabel: false,
     },
+    stripePriceId: null,
   },
   PRO: {
     id: "PRO",
@@ -73,8 +75,8 @@ export const PLANS: Record<PlanId, Plan> = {
       advancedAi: true,
       unlimitedAi: true,
       csvExport: false,
-      whiteLabel: false,
     },
+    stripePriceId: "price_1TW0l2JJgWmDrCZLlV8INSZz",
   },
   AGENCY: {
     id: "AGENCY",
@@ -87,7 +89,6 @@ export const PLANS: Record<PlanId, Plan> = {
       "Безліміт лідів",
       "Усі функції Pro",
       "Експорт у CSV",
-      "White-label звіти",
     ],
     features: {
       websiteAudit: true,
@@ -95,8 +96,8 @@ export const PLANS: Record<PlanId, Plan> = {
       advancedAi: true,
       unlimitedAi: true,
       csvExport: true,
-      whiteLabel: true,
     },
+    stripePriceId: "price_1TW0mWJJgWmDrCZLYwICUy1y",
   },
 };
 
@@ -110,6 +111,15 @@ export function getPlanById(id: string | null | undefined): Plan {
 
 export function getPlanForUser(user: Pick<User, "plan">): Plan {
   return getPlanById(user.plan);
+}
+
+/** Зворотній lookup: Stripe priceId → PlanId. Повертає null для STARTER/невідомих. */
+export function getPlanIdByStripePriceId(priceId: string | null | undefined): PlanId | null {
+  if (!priceId) return null;
+  for (const id of PLAN_ORDER) {
+    if (PLANS[id].stripePriceId === priceId) return id;
+  }
+  return null;
 }
 
 /** Перевірка фічі за поточним планом юзера. */
@@ -160,11 +170,17 @@ export function getLeadLimitStatus(
 }
 
 /**
- * Інкрементуємо лічильник на `delta` нових лідів. Якщо період (30 днів) минув —
- * скидаємо лічильник у `delta` і оновлюємо `planResetDate`. Атомарно через
- * `update({ where: { id, planResetDate } })` важко зробити, тому покладаємося
- * на коротке перевикання — race condition тут не критичний (лічильник може
- * "скочити" на одиницю, але юзер ніколи не отримає менше, ніж заплачено).
+ * Атомарне інкрементування лічильника. Два кроки:
+ *
+ * 1) Conditional reset через `updateMany` з фільтром planResetDate < cutoff —
+ *    скидає counter тільки якщо вікно вже сплило. Race-safe: якщо одночасно
+ *    два запити дійшли сюди, лише один з них пройде фільтр (інший побачить
+ *    новий planResetDate і пропустить reset).
+ * 2) Атомарний `increment: delta` — Prisma транслює в SQL `count = count + N`,
+ *    тож паралельні виклики не "обнуляють" один одного.
+ *
+ * Не робимо декремент при видаленні лідів — стандартна анти-абуз практика
+ * (інакше юзер може імпортувати/видалити/повторити нескінченно в межах вікна).
  */
 export async function incrementLeadsProcessed(
   userId: string,
@@ -172,22 +188,15 @@ export async function incrementLeadsProcessed(
 ): Promise<void> {
   if (delta <= 0) return;
 
-  const user = await prisma.user.findUnique({
-    where: { id: userId },
-    select: { leadsProcessedCount: true, planResetDate: true },
-  });
-  if (!user) return;
+  const cutoff = new Date(Date.now() - RESET_INTERVAL_MS);
 
-  const elapsed = Date.now() - user.planResetDate.getTime();
-  if (elapsed >= RESET_INTERVAL_MS) {
-    await prisma.user.update({
-      where: { id: userId },
-      data: { leadsProcessedCount: delta, planResetDate: new Date() },
-    });
-  } else {
-    await prisma.user.update({
-      where: { id: userId },
-      data: { leadsProcessedCount: { increment: delta } },
-    });
-  }
+  await prisma.user.updateMany({
+    where: { id: userId, planResetDate: { lt: cutoff } },
+    data: { leadsProcessedCount: 0, planResetDate: new Date() },
+  });
+
+  await prisma.user.update({
+    where: { id: userId },
+    data: { leadsProcessedCount: { increment: delta } },
+  });
 }

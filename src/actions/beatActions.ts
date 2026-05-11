@@ -3,6 +3,7 @@
 import { revalidateLocalizedPath } from "@/src/i18n/revalidateLocalized";
 import { GoogleGenAI } from "@google/genai";
 import { Prisma } from "@prisma/client";
+import { requireGeminiKey } from "@/src/lib/gemini";
 import { prisma } from "@/src/lib/prisma";
 import { LeadMode } from "@/src/lib/leadMode";
 import {
@@ -54,14 +55,11 @@ export async function searchBeatProspects(
     };
   }
 
-  const apiKey = process.env.GEMINI_API_KEY;
-  if (!apiKey) {
-    return {
-      success: false,
-      prospects: [],
-      error:
-        "Не налаштовано GEMINI_API_KEY. Додайте ключ у .env та перезапустіть сервер.",
-    };
+  let apiKey: string;
+  try {
+    apiKey = requireGeminiKey();
+  } catch (err) {
+    return { success: false, prospects: [], error: (err as Error).message };
   }
 
   const trimmed = query.trim();

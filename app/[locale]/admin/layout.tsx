@@ -52,7 +52,7 @@ export default async function AdminLayout({
               className={`rounded-full px-2.5 py-1 text-xs font-semibold ${
                 role === "OWNER"
                   ? "bg-amber-100 text-amber-800"
-                  : "bg-indigo-100 text-indigo-800"
+                  : "bg-purple-100 text-purple-800"
               }`}
             >
               {role}
