@@ -78,7 +78,12 @@ export default async function LocaleLayout({
           <Suspense fallback={null}>
             <AuthHeader />
           </Suspense>
-          {children}
+          <div className="flex-1">{children}</div>
+          <footer className="border-t border-gray-200 bg-white/60">
+            <div className="mx-auto max-w-6xl px-4 py-4 text-center text-xs text-gray-500 sm:px-6 lg:px-8">
+              © 2026 NeoFlux Software. All rights reserved.
+            </div>
+          </footer>
         </NextIntlClientProvider>
       </body>
     </html>
