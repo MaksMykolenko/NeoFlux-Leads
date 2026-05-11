@@ -5,6 +5,7 @@ import {
   destroySessionByToken,
 } from "@/src/lib/session";
 import { routing } from "@/src/i18n/routing";
+import { getPublicAppOrigin } from "@/src/lib/siteOrigin";
 
 export const dynamic = "force-dynamic";
 
@@ -18,7 +19,7 @@ export async function POST(req: NextRequest) {
     }
   }
 
-  const login = new URL(`/${routing.defaultLocale}/login`, req.url);
+  const login = new URL(`/${routing.defaultLocale}/login`, getPublicAppOrigin(req));
   const response = NextResponse.redirect(login, 303);
   response.cookies.set(buildClearedSessionCookie());
   return response;

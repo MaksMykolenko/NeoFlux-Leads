@@ -136,10 +136,11 @@ missing in **Project → Settings → Environment Variables** (apply to
 | `DATABASE_URL`            | **Yes**  | Supabase pooler or direct Postgres URL (same DB you use locally). |
 | `DIRECT_URL`              | **Yes**  | Prisma DDL/migrations: use Supabase **direct** `db.*.supabase.co:5432` URL, not the session pooler (avoids `EMAXCONNSESSION`). |
 | `GEMINI_API_KEY`          | **Yes**  | Needed for AI search and letter flows. |
+| `NEXT_PUBLIC_SITE_URL`    | Strongly recommended | Canonical public URL with custom domain, e.g. `https://flux-leads.com` (no trailing slash). Fixes post–Flux-ID login redirects and email footers so they do not stick to `*.vercel.app`. |
 | `FLUX_ID_BASE_URL`        | **Yes**  | Flux ID origin (e.g. `https://fluxid.fluxmarketplace.store`). |
 | `FLUX_CLIENT_ID`          | **Yes**  | Issued by `php oauth/register_client.php` for **this** environment's callback URL. |
 | `FLUX_CLIENT_SECRET`      | **Yes**  | Paired with `FLUX_CLIENT_ID`; shown only once at registration. |
-| `FLUX_REDIRECT_URI`       | **Yes**  | Must exactly match the URL you registered (e.g. `https://<app>.vercel.app/api/auth/flux/callback`). |
+| `FLUX_REDIRECT_URI`       | **Yes**  | Must exactly match the URL you registered (e.g. `https://flux-leads.com/api/auth/flux/callback` or `https://<app>.vercel.app/api/auth/flux/callback`). |
 | `FLUX_OAUTH_STATE_SECRET` | **Yes**  | Any high-entropy string (`openssl rand -base64 48`); rotates state cookies. |
 
 Then **Redeploy** (Deployments → … → Redeploy) so the new env vars are picked up.

@@ -8,14 +8,41 @@ import { prisma } from "@/src/lib/prisma";
  * — це безкоштовний канал залучення нових юзерів.
  */
 
-const WATERMARK_TEXT =
-  "---\nSent via NeoFlux Lead Engine — Automate your cold outreach.\nhttps://neo-flux-leads-m752.vercel.app";
+function publicSiteHref(): string {
+  const raw = process.env.NEXT_PUBLIC_SITE_URL?.trim();
+  if (raw) {
+    try {
+      return new URL(raw).origin;
+    } catch {
+      /* fall through */
+    }
+  }
+  if (process.env.VERCEL_URL) {
+    return `https://${process.env.VERCEL_URL}`;
+  }
+  return "http://localhost:3000";
+}
 
-const WATERMARK_HTML = `<hr style="margin:24px 0 8px;border:none;border-top:1px solid #e5e7eb" />
+function watermarkText(): string {
+  const href = publicSiteHref();
+  return `---\nSent via NeoFlux Lead Engine — Automate your cold outreach.\n${href}`;
+}
+
+function escapeAttr(s: string): string {
+  return s
+    .replace(/&/g, "&amp;")
+    .replace(/"/g, "&quot;")
+    .replace(/</g, "&lt;");
+}
+
+function watermarkHtml(): string {
+  const href = publicSiteHref();
+  return `<hr style="margin:24px 0 8px;border:none;border-top:1px solid #e5e7eb" />
 <p style="font:12px/1.5 -apple-system,BlinkMacSystemFont,Inter,sans-serif;color:#9ca3af;margin:0">
-  Sent via <a href="https://neo-flux-leads-m752.vercel.app" style="color:#6366f1;text-decoration:none">NeoFlux Lead Engine</a>
+  Sent via <a href="${escapeAttr(href)}" style="color:#6366f1;text-decoration:none">NeoFlux Lead Engine</a>
   — Automate your cold outreach.
 </p>`;
+}
 
 export type SendEmailResult =
   | { success: true; messageId: string }
@@ -62,8 +89,8 @@ export async function sendUserEmail(
     auth: { user: smtpUser, pass: smtpPass },
   });
 
-  const finalText = `${bodyText.trim()}\n\n${WATERMARK_TEXT}`;
-  const finalHtml = `${escapeHtml(bodyText.trim()).replace(/\n/g, "<br />")}${WATERMARK_HTML}`;
+  const finalText = `${bodyText.trim()}\n\n${watermarkText()}`;
+  const finalHtml = `${escapeHtml(bodyText.trim()).replace(/\n/g, "<br />")}${watermarkHtml()}`;
 
   try {
     const info = await transporter.sendMail({
