@@ -9,11 +9,11 @@ import { prisma } from "@/src/lib/prisma";
  */
 
 const WATERMARK_TEXT =
-  "---\nSent via NeoFlux Lead Engine — Automate your cold outreach.\nhttps://neo-flux-leads-m752.vercel.app";
+  "---\nSent via NeoFlux Lead Engine — Automate your cold outreach.\nhttps://flux-leads.com";
 
 const WATERMARK_HTML = `<hr style="margin:24px 0 8px;border:none;border-top:1px solid #e5e7eb" />
 <p style="font:12px/1.5 -apple-system,BlinkMacSystemFont,Inter,sans-serif;color:#9ca3af;margin:0">
-  Sent via <a href="https://neo-flux-leads-m752.vercel.app" style="color:#6366f1;text-decoration:none">NeoFlux Lead Engine</a>
+  Sent via <a href="https://flux-leads.com" style="color:#6366f1;text-decoration:none">NeoFlux Lead Engine</a>
   — Automate your cold outreach.
 </p>`;
 
