@@ -39,7 +39,7 @@ const messages = {
   },
   ModeTabs: {
     localLabel: "Local business",
-    localHint: "Google Maps · sites & phones",
+    localHint: "AI + Google · sites & phones from public sources",
     beatsLabel: "Artists for beats",
     beatsHint: "SoundCloud · YouTube · Instagram",
     universalLabel: "Universal AI search",
@@ -49,7 +49,8 @@ const messages = {
     title: "NeoFlux Lead Engine",
     subtitleBeats: "AI search for artists who buy beats",
     subtitleUniversal: "Universal AI lead search (Gemini + Google Search)",
-    subtitleLocal: "Automatic lead collection from Google Maps",
+    subtitleLocal:
+      "Find companies by niche and city using Gemini and Google Search",
     tableTitleBeats: "Found artists",
     tableTitleUniversal: "Universal leads",
     tableTitleLocal: "Recent leads",
@@ -134,10 +135,12 @@ const messages = {
     cityPlaceholder: "e.g. Kyiv",
     submitIdle: "Search",
     submitBusy: "Collecting data…",
-    helperChrome:
-      "A Chromium window with Google Maps will open — this is expected (anti-bot). ~15–30s.",
+    helperAi:
+      "Searching the public web via AI (Google Search grounding) — usually ~10–40s.",
     toastAdded: "Added {count} new leads.",
-    toastDup: "All found businesses are already in your table.",
+    toastEmpty:
+      "No businesses matched this query in available sources. Try a different niche, city, or wording.",
+    toastDup: "All businesses found are already in your table.",
     toastErr: "Error: {message}",
     blockedTitle: "Plan limit reached",
     blockedBody:
@@ -428,10 +431,10 @@ const messages = {
         "Click the NeoFlux mark to return to the main workspace — handy after viewing a lead or settings.",
       headerTitle: "Title & mode",
       headerBody:
-        "Product name and the active mode: local businesses (maps), beat-buying artists, or universal AI search.",
+        "Product name and the active mode: local businesses (AI + Google), beat-buying artists, or universal AI search.",
       modesTitle: "Working modes",
       modesBody:
-        "Three tabs: local businesses (Google Maps), beat outreach (AI + demo), universal search (Gemini + Google OSINT).",
+        "Three tabs: local businesses (AI + Google by niche and city), beat outreach (AI + demo), universal search (Gemini + Google OSINT).",
       searchTitleBeats: "Artist search (AI)",
       searchTitleUniversal: "Universal AI search",
       searchTitleLocal: "Local lead search",
@@ -440,7 +443,7 @@ const messages = {
       searchDescUniversal:
         "Describe who you want in natural language — AI scans open sources and fills the table below.",
       searchDescLocal:
-        "Enter niche and city, press Search. We pull businesses from Maps into the table.",
+        "Enter niche and city, then Search. Gemini with Google Search finds real businesses from public pages and adds them to the table below.",
       demoTitle: "Beat demo",
       demoBody:
         "After selecting artists, upload a track: preview, optional watermark, metadata for the AI letter (BPM, key, price). SMTP for email is configured once in Settings.",

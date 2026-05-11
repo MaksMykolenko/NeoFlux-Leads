@@ -23,7 +23,7 @@ export default function ScraperForm() {
     if (!query || !city) return;
 
     setLoading(true);
-    setStatus({ type: "info", msg: t("helperChrome") });
+    setStatus({ type: "info", msg: t("helperAi") });
 
     try {
       const result = await searchAndSaveLeads(query, city);
@@ -32,7 +32,9 @@ export default function ScraperForm() {
         setStatus(
           result.count > 0
             ? { type: "success", msg: t("toastAdded", { count: result.count }) }
-            : { type: "info", msg: t("toastDup") },
+            : result.noMatches
+              ? { type: "info", msg: t("toastEmpty") }
+              : { type: "info", msg: t("toastDup") },
         );
         setQuery("");
         router.refresh();

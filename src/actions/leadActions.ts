@@ -1,5 +1,7 @@
 "use server";
 
+import { revalidateLocalizedPath } from "@/src/i18n/revalidateLocalized";
+import { searchLocalBusinessesViaGemini } from "@/src/lib/geminiLocalBusinessSearch";
 import { prisma } from "@/src/lib/prisma";
 import { calculateLeadScore } from "@/src/lib/scoring";
 import { getCurrentUser } from "@/src/lib/session";
@@ -13,6 +15,8 @@ export interface LeadActionResult {
   success: boolean;
   count: number;
   skipped?: number;
+  /** True when the search returned no businesses (distinct from all-duplicates). */
+  noMatches?: boolean;
   error?: string;
   /** Машиночитаний код помилки, e.g. "LIMIT_REACHED". */
   errorCode?: "LIMIT_REACHED";
@@ -38,8 +42,7 @@ export async function searchAndSaveLeads(
       };
     }
 
-    // Перевірка ліміту до запуску дорогого скрапера. Якщо юзер на 20/20 —
-    // навіть не відкриваємо браузер.
+    // Перевірка ліміту до дорогого AI-запиту.
     const limitStatus = getLeadLimitStatus(user);
     if (!limitStatus.allowed) {
       const plan = getPlanForUser(user);
@@ -53,16 +56,28 @@ export async function searchAndSaveLeads(
       };
     }
 
-    const { scrapeGoogleMaps } = await import(
-      "@/src/modules/scraper/googleMapsScraper"
+    const apiKey = process.env.GEMINI_API_KEY?.trim();
+    if (!apiKey) {
+      return {
+        success: false,
+        count: 0,
+        error:
+          "Не налаштовано GEMINI_API_KEY. Додайте ключ у змінні середовища (Vercel / .env).",
+      };
+    }
+
+    const scrapedLeads = await searchLocalBusinessesViaGemini(
+      query,
+      city,
+      apiKey,
     );
-    const scrapedLeads = await scrapeGoogleMaps(query, city);
 
     if (scrapedLeads.length === 0) {
       return {
         success: true,
         count: 0,
         skipped: 0,
+        noMatches: true,
       };
     }
 
@@ -97,14 +112,13 @@ export async function searchAndSaveLeads(
           continue;
         }
 
-        // Якщо ліміт вичерпано в процесі скрапінгу (юзер запустив рівно на
-        // межі) — пропускаємо решту. У відповіді скажемо, скільки збережено.
+        // Якщо ліміт вичерпано під час збереження — пропускаємо решту.
         if (remaining <= 0) {
           skippedCount++;
           continue;
         }
 
-        // Initial Opportunity Score from data we have at scrape time.
+        // Initial Opportunity Score from data we have at import time.
         // No audit yet, so SSL/mobile penalties don't apply; landing-platform
         // bonus does (e.g. Instagram-only listings get an immediate boost).
         const initialScore = calculateLeadScore(
@@ -120,7 +134,7 @@ export async function searchAndSaveLeads(
             phone: lead.phone,
             city,
             category: query,
-            source: "Google Maps",
+            source: "Web search (AI)",
             score: initialScore,
           },
         });
@@ -133,6 +147,7 @@ export async function searchAndSaveLeads(
 
     if (savedCount > 0) {
       await incrementLeadsProcessed(user.id, savedCount);
+      await revalidateLocalizedPath("/");
     }
 
     return {

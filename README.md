@@ -1,7 +1,8 @@
 # NeoFlux Lead Engine
 
-Lightweight lead-generation tool for B2B web-development outreach. Scrapes
-local businesses from Google Maps, audits their websites for common
+Lightweight lead-generation tool for B2B web-development outreach. Finds
+local businesses by niche and city using **Gemini + Google Search grounding**
+(no browser automation for discovery), audits their websites for common
 technical problems, scores each lead by sales-opportunity potential, and
 drafts personalized cold emails with Google Gemini.
 
@@ -11,8 +12,9 @@ costing you customers"*.
 
 ## Features
 
-- **Google Maps scraper** — runs Playwright (headed) to collect company
-  name, phone, and website for a given niche + city.
+- **Local business search** — Gemini 2.5 Flash with Google Search finds
+  company name, phone, and website from public pages for a given niche + city
+  (serverless-friendly, works on Vercel).
 - **Website auditor** — headless Playwright check for SSL, mobile-friendly
   viewport, `<h1>`/`<title>` presence, slow load (> 3s), and contact email
   extraction from raw HTML.
@@ -31,8 +33,8 @@ costing you customers"*.
 - **Next.js 16** (App Router, Server Actions, React 19)
 - **TypeScript 5**, **Tailwind CSS v4**
 - **Prisma 6** + **PostgreSQL** (works great with Supabase)
-- **Playwright** for web scraping & website auditing
-- **`@google/genai`** for the Gemini integration
+- **Playwright** for website auditing only (local discovery does not use it)
+- **`@google/genai`** for Gemini (proposals, beat/universal/local search)
 
 ## Getting started
 
@@ -52,8 +54,8 @@ cd NeoFlux-Leads
 npm install
 ```
 
-After install, Prisma generates the client (`postinstall`). For the **Google
-Maps scraper** locally you also need Chromium:
+After install, Prisma generates the client (`postinstall`). For the
+**website auditor** (Playwright) locally you need Chromium:
 
 ```bash
 npx playwright install chromium
@@ -71,7 +73,7 @@ cp .env.example .env
 | ------------------------- | ---------------------------------------------------------------------------------------- |
 | `DATABASE_URL`            | Pooled Postgres connection string used by the Next.js runtime                            |
 | `DIRECT_URL`              | Direct Postgres URL for Prisma `migrate` / `db push` (Supabase: **Direct connection**, not session pooler) |
-| `GEMINI_API_KEY`          | Google AI Studio API key for the AI proposal generator                                   |
+| `GEMINI_API_KEY`          | Google AI Studio API key (local search, universal/beats search, AI letters)              |
 | `FLUX_ID_BASE_URL`        | Base URL of the Flux ID server (e.g. `https://fluxid.fluxmarketplace.store`)             |
 | `FLUX_CLIENT_ID`          | OAuth client_id, issued by `php oauth/register_client.php` on the Flux ID server          |
 | `FLUX_CLIENT_SECRET`      | OAuth client_secret (shown once at registration time — store securely)                    |
@@ -133,7 +135,7 @@ missing in **Project → Settings → Environment Variables** (apply to
 | ------------------------- | -------- | ----- |
 | `DATABASE_URL`            | **Yes**  | Supabase pooler or direct Postgres URL (same DB you use locally). |
 | `DIRECT_URL`              | **Yes**  | Prisma DDL/migrations: use Supabase **direct** `db.*.supabase.co:5432` URL, not the session pooler (avoids `EMAXCONNSESSION`). |
-| `GEMINI_API_KEY`          | **Yes**  | Needed for AI flows; omit only if you accept failures on those actions. |
+| `GEMINI_API_KEY`          | **Yes**  | Needed for AI search and letter flows. |
 | `FLUX_ID_BASE_URL`        | **Yes**  | Flux ID origin (e.g. `https://fluxid.fluxmarketplace.store`). |
 | `FLUX_CLIENT_ID`          | **Yes**  | Issued by `php oauth/register_client.php` for **this** environment's callback URL. |
 | `FLUX_CLIENT_SECRET`      | **Yes**  | Paired with `FLUX_CLIENT_ID`; shown only once at registration. |
@@ -155,10 +157,10 @@ for Prisma or connection errors.
 
 ## Usage
 
-1. On the home page, type a niche (e.g. `Стоматологія`) and a city
-   (e.g. `Черкаси`) and hit **Пошук**. A visible Chromium window will
-   open and walk through Google Maps. Expect 15–30 seconds per search.
-2. Each scraped business shows up in the leads table. Click a row to open
+1. On the home page (local mode), type a niche (e.g. `Стоматологія`) and a city
+   (e.g. `Черкаси`) and hit **Пошук**. Gemini searches the open web and returns
+   a short list of businesses; expect on the order of **10–40 seconds** per search.
+2. Each saved business shows up in the leads table. Click a row to open
    the lead detail page.
 3. On the detail page, hit **Зробити аудит** to run the website auditor
    in the background. SSL, mobile, and SEO findings populate, and the
@@ -168,19 +170,14 @@ for Prisma or connection errors.
    then **Зберегти в CRM** to log it as a `Message` and bump the lead's
    status to `Contacted`.
 
-## Why is the Google Maps scraper not headless?
-
-Google aggressively serves CAPTCHAs to headless Chromium. Running with
-`headless: false` reliably reaches the results page. If you deploy this
-to a server, you'll need a virtual display (Xvfb) or a different
-strategy — the auditor itself **is** headless and works fine in
-production.
+> **Note:** Local search results depend on what Gemini can retrieve via Google
+> Search grounding. Treat listings as starting points and verify before outreach.
 
 ## Project layout
 
 ```
-app/                    # Next.js App Router pages
-  page.tsx              # Lead list + scraper form
+app/[locale]/           # Localized App Router pages (uk / en)
+  page.tsx              # Lead list + local / beats / universal forms
   leads/[id]/page.tsx   # Lead detail view
   api/auth/
     flux/login/         # GET → redirect to Flux ID /oauth/authorize.php
@@ -189,17 +186,17 @@ app/                    # Next.js App Router pages
 prisma/
   schema.prisma         # Database schema
 src/
-  actions/              # Server Actions (scrape, audit, AI, status, save)
+  actions/              # Server Actions (search, audit, AI, status, save)
   components/           # Client React components (incl. AuthHeader)
   lib/
     prisma.ts           # Prisma singleton
+    geminiLocalBusinessSearch.ts  # Local niche+city → Gemini + Google Search
     scoring.ts          # Opportunity Score logic
     leadStatus.ts       # Status enum + style map
     fluxAuth.ts         # Flux ID OAuth helpers (state, token, userinfo)
     session.ts          # DB-backed session cookie helpers
   modules/scraper/
-    googleMapsScraper.ts
-    websiteAuditor.ts
+    websiteAuditor.ts   # Playwright site checks
 ```
 
 ## Scripts

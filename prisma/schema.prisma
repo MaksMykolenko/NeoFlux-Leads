@@ -11,7 +11,7 @@ datasource db {
 // --- Моделі ---
 
 enum LeadMode {
-  LOCAL      // Local-business leads (Google Maps + website audit pipeline)
+  LOCAL      // Local-business leads (niche + city via AI web search + website audit pipeline)
   BEATS      // Music artists (potential beat buyers — handles, platforms, followers)
   UNIVERSAL  // Free-form OSINT-style leads (Gemini + Google Search grounding)
 }
@@ -30,7 +30,7 @@ model Lead {
   phone           String?
   city            String?
   category        String?  // LOCAL: business niche. BEATS: genre tags ("Trap / Drill")
-  source          String?  // LOCAL: "Google Maps". BEATS: "SoundCloud" / "YouTube" / "Instagram"
+  source          String?  // LOCAL: e.g. "Web search (AI)". BEATS: "SoundCloud" / "YouTube" / "Instagram"
   followers       Int?     // BEATS-only audience size
   lookingForType  Boolean? // BEATS-only — is the artist publicly seeking type beats?
   socialLinks     Json?    // BEATS-only: { instagram, soundcloud, youtube, tiktok, twitter, spotify, beatstars, discord, telegram, website }

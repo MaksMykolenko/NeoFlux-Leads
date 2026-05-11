@@ -42,7 +42,7 @@ export const PLANS: Record<PlanId, Plan> = {
     description: "Спробувати продукт і зрозуміти, як працює пошук лідів.",
     highlights: [
       "20 нових лідів на місяць",
-      "Базовий пошук Google Maps",
+      "Локальний пошук (AI + Google)",
       "Спрощена AI-генерація листів",
     ],
     features: {
