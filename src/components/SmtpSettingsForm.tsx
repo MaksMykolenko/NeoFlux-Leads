@@ -135,7 +135,7 @@ export default function SmtpSettingsForm({ user }: SmtpSettingsFormProps) {
             type="text"
             value={fromName}
             onChange={(e) => setFromName(e.target.value)}
-            placeholder="Maks Mykolenko"
+            placeholder="Sales Team"
             className={inputClass}
             disabled={isPending}
           />
