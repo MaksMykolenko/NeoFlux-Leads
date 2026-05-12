@@ -109,6 +109,18 @@ model User {
   stripeCustomerId     String? @unique
   stripeSubscriptionId String? @unique
 
+  // Гібридна email-модель.
+  //   true  → "Простий режим" (рекомендовано): листи йдуть через центральний
+  //           PLATFORM_SMTP_* акаунт. У заголовку From: підставляємо платформну
+  //           адресу, а Reply-To = fromEmail юзера, щоб відповіді приходили
+  //           прямо йому в інбокс.
+  //   false → "Розширений режим": BYOSMTP, тобто відправка через
+  //           smtpHost/smtpPort/smtpUser/smtpPass юзера нижче.
+  // Дефолт true — щоб нові юзери одразу могли слати без налаштування SMTP.
+  // Існуючим юзерам після міграції рекомендовано виконати:
+  //   UPDATE "User" SET "usePlatformSmtp" = false WHERE "smtpHost" IS NOT NULL;
+  usePlatformSmtp Boolean @default(true)
+
   // BYOSMTP: користувач підключає власний поштовий сервер для відправки.
   // smtpPass зашифрований AES-256-GCM з ключем ENCRYPTION_KEY (src/lib/crypto.ts).
   // Записи зі старим plaintext продовжать працювати завдяки fallback у decrypt().

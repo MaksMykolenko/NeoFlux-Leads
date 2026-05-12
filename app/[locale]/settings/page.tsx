@@ -20,6 +20,7 @@ export default async function SettingsPage({
   const fresh = await prisma.user.findUnique({
     where: { id: user.id },
     select: {
+      usePlatformSmtp: true,
       smtpHost: true,
       smtpPort: true,
       smtpUser: true,
@@ -67,6 +68,7 @@ export default async function SettingsPage({
           </div>
           <SmtpSettingsForm
             user={{
+              usePlatformSmtp: fresh?.usePlatformSmtp ?? true,
               smtpHost: fresh?.smtpHost ?? null,
               smtpPort: fresh?.smtpPort ?? null,
               smtpUser: fresh?.smtpUser ?? null,
