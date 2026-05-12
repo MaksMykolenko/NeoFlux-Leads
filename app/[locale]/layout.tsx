@@ -6,6 +6,7 @@ import { getMessages, getTranslations, setRequestLocale } from "next-intl/server
 import type { Metadata } from "next";
 import { routing } from "@/src/i18n/routing";
 import AuthHeader from "@/src/components/AuthHeader";
+import Footer from "@/src/components/Footer";
 import ThemeProvider from "@/src/components/ThemeProvider";
 
 const geistSans = Geist({
@@ -85,11 +86,9 @@ export default async function LocaleLayout({
               <AuthHeader />
             </Suspense>
             <div className="flex-1">{children}</div>
-            <footer>
-              <div className="mx-auto max-w-6xl px-4 py-6 text-center text-xs text-zinc-500 dark:text-flux-muted sm:px-6 lg:px-8">
-                © 2026 NeoFlux Software. All rights reserved.
-              </div>
-            </footer>
+            <Suspense fallback={null}>
+              <Footer />
+            </Suspense>
           </NextIntlClientProvider>
         </ThemeProvider>
       </body>

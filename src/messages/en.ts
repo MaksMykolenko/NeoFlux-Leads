@@ -626,6 +626,27 @@ const messages = {
     saving: "Saving…",
     ownerNote: "OWNER is assigned only via OWNER_EMAIL in .env",
   },
+  Footer: {
+    brandName: "Flux Leads",
+    tagline:
+      "AI lead engine for cold outreach. Find local businesses, artists, and companies via Gemini + Google Search.",
+    projectsTitle: "Our projects",
+    accountTitle: "Account",
+    companyTitle: "NeoFlux Software",
+    linkFluxId: "Flux ID",
+    linkMarketplace: "Flux MarketPlace",
+    linkSocial: "Fluxy Social",
+    linkFluxPay: "Flux Pay",
+    badgeSoon: "SOON",
+    linkPricing: "Pricing",
+    linkSettings: "Settings",
+    linkLogin: "Log in",
+    linkPolicy: "Privacy policy",
+    socialTelegram: "Telegram",
+    socialYoutube: "YouTube",
+    socialTiktok: "TikTok",
+    rightsReserved: "All rights reserved.",
+  },
 } satisfies AbstractIntlMessages;
 
 export default messages;

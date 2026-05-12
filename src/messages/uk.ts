@@ -629,6 +629,27 @@ const messages = {
     saving: "Зберігаю…",
     ownerNote: "OWNER призначається лише через OWNER_EMAIL у .env",
   },
+  Footer: {
+    brandName: "Flux Leads",
+    tagline:
+      "AI-генератор лідів для холодного outreach. Шукай локальний бізнес, артистів і компанії через Gemini + Google Search.",
+    projectsTitle: "Наші проєкти",
+    accountTitle: "Акаунт",
+    companyTitle: "NeoFlux Software",
+    linkFluxId: "Flux ID",
+    linkMarketplace: "Flux MarketPlace",
+    linkSocial: "Fluxy Social",
+    linkFluxPay: "Flux Pay",
+    badgeSoon: "SOON",
+    linkPricing: "Тарифи",
+    linkSettings: "Налаштування",
+    linkLogin: "Увійти",
+    linkPolicy: "Політика конфіденційності",
+    socialTelegram: "Telegram",
+    socialYoutube: "YouTube",
+    socialTiktok: "TikTok",
+    rightsReserved: "Усі права захищено.",
+  },
 } satisfies AbstractIntlMessages;
 
 export default messages;
