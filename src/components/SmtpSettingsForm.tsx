@@ -1,9 +1,9 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { saveSmtpSettings } from "@/src/actions/userActions";
+import { saveSmtpSettings, sendTestEmail } from "@/src/actions/userActions";
 
-type Mode = "platform" | "custom";
+type Mode = "platform" | "custom" | "test";
 
 interface SmtpSettingsFormProps {
   user: {
@@ -76,146 +76,161 @@ export default function SmtpSettingsForm({ user }: SmtpSettingsFormProps) {
     });
   }
 
+  const savedMode: "platform" | "custom" = user.usePlatformSmtp
+    ? "platform"
+    : "custom";
+  const hasSavedConfig =
+    savedMode === "platform"
+      ? !!user.fromEmail
+      : !!user.smtpHost &&
+        !!user.smtpPort &&
+        !!user.smtpUser &&
+        user.hasSmtpPass &&
+        !!user.fromEmail;
+
   return (
-    <form
-      onSubmit={handleSubmit}
-      className="space-y-5 rounded-xl border border-zinc-200 bg-white p-6 shadow-sm dark:border-flux-border dark:bg-flux-card"
-    >
+    <div className="space-y-5 rounded-xl border border-zinc-200 bg-white p-6 shadow-sm dark:border-flux-border dark:bg-flux-card">
       <ModeTabs mode={mode} onChange={setMode} disabled={isPending} />
 
-      {isPlatform ? (
-        <PlatformBanner />
+      {mode === "test" ? (
+        <TestPanel
+          defaultEmail={user.fromEmail ?? ""}
+          hasSavedConfig={hasSavedConfig}
+          savedMode={savedMode}
+        />
       ) : (
-        <CustomBanner />
-      )}
-
-      <div className="grid gap-5 sm:grid-cols-2">
-        <Field
-          label="Ім'я відправника"
-          hint={
-            isPlatform
-              ? "як підписатись в листах; показується замість email"
-              : "опційно — показується замість email"
-          }
-        >
-          <input
-            type="text"
-            value={fromName}
-            onChange={(e) => setFromName(e.target.value)}
-            placeholder="Sales Team"
-            className={inputClass}
-            disabled={isPending}
-          />
-        </Field>
-        <Field
-          label={isPlatform ? "Email для відповідей" : "From Email"}
-          hint={
-            isPlatform
-              ? "клієнти відповідатимуть саме сюди — це твій робочий інбокс"
-              : "адреса в заголовку From: твоїх листів"
-          }
-        >
-          <input
-            type="email"
-            value={fromEmail}
-            onChange={(e) => setFromEmail(e.target.value)}
-            required
-            placeholder="you@example.com"
-            className={inputClass}
-            disabled={isPending}
-          />
-        </Field>
-      </div>
-
-      {!isPlatform && (
-        <>
-          <Field
-            label="Host"
-            hint="напр. smtp.gmail.com або smtp.hostinger.com"
-          >
-            <input
-              type="text"
-              value={host}
-              onChange={(e) => setHost(e.target.value)}
-              required
-              autoComplete="off"
-              placeholder="smtp.example.com"
-              className={inputClass}
-              disabled={isPending}
-            />
-          </Field>
+        <form onSubmit={handleSubmit} className="space-y-5">
+          {isPlatform ? <PlatformBanner /> : <CustomBanner />}
 
           <div className="grid gap-5 sm:grid-cols-2">
-            <Field label="Port" hint="465 для SSL, 587 для STARTTLS">
+            <Field
+              label="Ім'я відправника"
+              hint={
+                isPlatform
+                  ? "як підписатись в листах; показується замість email"
+                  : "опційно — показується замість email"
+              }
+            >
               <input
-                type="number"
-                min={1}
-                max={65535}
-                value={port}
-                onChange={(e) => setPort(e.target.value)}
-                required
+                type="text"
+                value={fromName}
+                onChange={(e) => setFromName(e.target.value)}
+                placeholder="Sales Team"
                 className={inputClass}
                 disabled={isPending}
               />
             </Field>
-            <Field label="Username" hint="зазвичай — твій email">
+            <Field
+              label={isPlatform ? "Email для відповідей" : "From Email"}
+              hint={
+                isPlatform
+                  ? "клієнти відповідатимуть саме сюди — це твій робочий інбокс"
+                  : "адреса в заголовку From: твоїх листів"
+              }
+            >
               <input
-                type="text"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
+                type="email"
+                value={fromEmail}
+                onChange={(e) => setFromEmail(e.target.value)}
                 required
-                autoComplete="off"
+                placeholder="you@example.com"
                 className={inputClass}
                 disabled={isPending}
               />
             </Field>
           </div>
 
-          <Field
-            label="Password"
-            hint="App password або SMTP-токен. Зберігається зашифровано (AES-256-GCM)."
-          >
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              autoComplete="new-password"
-              placeholder={
-                user.hasSmtpPass ? "Не міняти існуючий" : "App password..."
-              }
-              className={inputClass}
+          {!isPlatform && (
+            <>
+              <Field
+                label="Host"
+                hint="напр. smtp.gmail.com або smtp.hostinger.com"
+              >
+                <input
+                  type="text"
+                  value={host}
+                  onChange={(e) => setHost(e.target.value)}
+                  required
+                  autoComplete="off"
+                  placeholder="smtp.example.com"
+                  className={inputClass}
+                  disabled={isPending}
+                />
+              </Field>
+
+              <div className="grid gap-5 sm:grid-cols-2">
+                <Field label="Port" hint="465 для SSL, 587 для STARTTLS">
+                  <input
+                    type="number"
+                    min={1}
+                    max={65535}
+                    value={port}
+                    onChange={(e) => setPort(e.target.value)}
+                    required
+                    className={inputClass}
+                    disabled={isPending}
+                  />
+                </Field>
+                <Field label="Username" hint="зазвичай — твій email">
+                  <input
+                    type="text"
+                    value={username}
+                    onChange={(e) => setUsername(e.target.value)}
+                    required
+                    autoComplete="off"
+                    className={inputClass}
+                    disabled={isPending}
+                  />
+                </Field>
+              </div>
+
+              <Field
+                label="Password"
+                hint="App password або SMTP-токен. Зберігається зашифровано (AES-256-GCM)."
+              >
+                <input
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  autoComplete="new-password"
+                  placeholder={
+                    user.hasSmtpPass ? "Не міняти існуючий" : "App password..."
+                  }
+                  className={inputClass}
+                  disabled={isPending}
+                />
+              </Field>
+            </>
+          )}
+
+          <div className="flex items-center justify-between gap-4 border-t border-zinc-100 pt-4 dark:border-flux-border">
+            <p className="text-xs text-zinc-500 dark:text-zinc-400">
+              Кожен лист, відправлений з Flux Leads, отримує невеликий підпис із
+              посиланням на сервіс.
+            </p>
+            <button
+              type="submit"
               disabled={isPending}
-            />
-          </Field>
-        </>
-      )}
+              className="inline-flex items-center justify-center gap-2 rounded-lg bg-zinc-900 px-4 py-2 text-sm font-medium text-white shadow-sm transition hover:bg-zinc-800 disabled:opacity-60 dark:bg-flux-purple dark:shadow-[0_4px_20px_rgba(106,0,255,0.4)] dark:hover:bg-flux-purple-hover"
+            >
+              {isPending ? "Зберігаю..." : "Зберегти"}
+            </button>
+          </div>
 
-      <div className="flex items-center justify-between gap-4 border-t border-zinc-100 pt-4 dark:border-flux-border">
-        <p className="text-xs text-zinc-500 dark:text-zinc-400">
-          Кожен лист, відправлений з Flux Leads, отримує невеликий підпис із
-          посиланням на сервіс.
-        </p>
-        <button
-          type="submit"
-          disabled={isPending}
-          className="inline-flex items-center justify-center gap-2 rounded-lg bg-zinc-900 px-4 py-2 text-sm font-medium text-white shadow-sm transition hover:bg-zinc-800 disabled:opacity-60 dark:bg-flux-purple dark:shadow-[0_4px_20px_rgba(106,0,255,0.4)] dark:hover:bg-flux-purple-hover"
-        >
-          {isPending ? "Зберігаю..." : "Зберегти"}
-        </button>
-      </div>
-
-      {status && (
-        <div
-          className={`rounded-lg border px-3 py-2 text-sm ${
-            status.type === "success"
-              ? "border-green-200 bg-green-50 text-green-700 dark:border-emerald-500/30 dark:bg-emerald-500/10 dark:text-emerald-300"
-              : "border-red-200 bg-red-50 text-red-700 dark:border-red-500/30 dark:bg-red-500/10 dark:text-red-300"
-          }`}
-        >
-          {status.msg}
-        </div>
+          {status && (
+            <div
+              className={`rounded-lg border px-3 py-2 text-sm ${
+                status.type === "success"
+                  ? "border-green-200 bg-green-50 text-green-700 dark:border-emerald-500/30 dark:bg-emerald-500/10 dark:text-emerald-300"
+                  : "border-red-200 bg-red-50 text-red-700 dark:border-red-500/30 dark:bg-red-500/10 dark:text-red-300"
+              }`}
+            >
+              {status.msg}
+            </div>
+          )}
+        </form>
       )}
-    </form>
+    </div>
   );
 }
 
@@ -247,6 +262,13 @@ function ModeTabs({
         disabled={disabled}
         label="Розширений режим"
         sublabel="Власний SMTP"
+      />
+      <ModeTab
+        active={mode === "test"}
+        onClick={() => onChange("test")}
+        disabled={disabled}
+        label="Тест"
+        sublabel="Надіслати лист собі"
       />
     </div>
   );
@@ -345,5 +367,114 @@ function Field({
         </span>
       )}
     </label>
+  );
+}
+
+/**
+ * Тестова відправка. Користується ЗБЕРЕЖЕНИМИ налаштуваннями юзера
+ * (а не значеннями з форми вище), щоб тест відображав реальну поведінку
+ * outreach-листів. Якщо юзер ще не зберіг конфіг — вмикаємо disabled-стан
+ * і просимо спочатку Save у відповідній вкладці.
+ */
+function TestPanel({
+  defaultEmail,
+  hasSavedConfig,
+  savedMode,
+}: {
+  defaultEmail: string;
+  hasSavedConfig: boolean;
+  savedMode: "platform" | "custom";
+}) {
+  const [email, setEmail] = useState(defaultEmail);
+  const [status, setStatus] = useState<{
+    type: "success" | "error";
+    msg: string;
+  } | null>(null);
+  const [isPending, startTransition] = useTransition();
+
+  function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    setStatus(null);
+    const trimmed = email.trim();
+    if (!trimmed) {
+      setStatus({ type: "error", msg: "Введіть email одержувача" });
+      return;
+    }
+    startTransition(async () => {
+      const result = await sendTestEmail(trimmed);
+      if (result.success) {
+        setStatus({
+          type: "success",
+          msg: `Тестовий лист відправлено на ${trimmed}. Перевір інбокс (та Спам).`,
+        });
+      } else {
+        let msg = result.error ?? "Не вдалося відправити тестовий лист";
+        if (result.code === "NO_SMTP") {
+          msg = `${msg}\n\nСпочатку збережіть налаштування у вкладці "${savedMode === "platform" ? "Простий" : "Розширений"} режим".`;
+        } else if (result.code === "PLATFORM_NOT_CONFIGURED") {
+          msg = `${msg}\n\nЦе налаштовує адмін сервера (PLATFORM_SMTP_* у .env). Або переключіться у "Розширений режим" і вкажіть свій SMTP.`;
+        }
+        setStatus({ type: "error", msg });
+      }
+    });
+  }
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-5">
+      <div className="rounded-lg border border-purple-200 bg-purple-50/60 px-4 py-3 text-sm dark:border-flux-purple-ring dark:bg-flux-purple-tint">
+        <p className="font-semibold text-purple-900 dark:text-flux-purple-soft">
+          Тестова відправка
+        </p>
+        <p className="mt-1 text-xs text-purple-800/90 dark:text-flux-purple-soft/85">
+          Лист піде через {savedMode === "platform"
+            ? "платформений SMTP (як у Простому режимі)"
+            : "твій власний SMTP (як у Розширеному)"}
+          {" — те, що збережено зараз у БД."}{" "}
+          {hasSavedConfig
+            ? "Конфіг готовий — натискай Надіслати."
+            : "Конфіг ще не збережено повністю — спочатку заповни і збережи відповідну вкладку."}
+        </p>
+      </div>
+
+      <Field
+        label="Email одержувача"
+        hint="можна вказати свій email або будь-яку іншу адресу для перевірки доставки"
+      >
+        <input
+          type="email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          required
+          placeholder="you@example.com"
+          className={inputClass}
+          disabled={isPending}
+        />
+      </Field>
+
+      <div className="flex items-center justify-between gap-4 border-t border-zinc-100 pt-4 dark:border-flux-border">
+        <p className="text-xs text-zinc-500 dark:text-zinc-400">
+          Тестовий лист має невеликий підпис Flux Leads — як і всі outreach-листи.
+        </p>
+        <button
+          type="submit"
+          disabled={isPending || !hasSavedConfig}
+          className="inline-flex items-center justify-center gap-2 rounded-lg bg-zinc-900 px-4 py-2 text-sm font-medium text-white shadow-sm transition hover:bg-zinc-800 disabled:cursor-not-allowed disabled:opacity-60 dark:bg-flux-purple dark:shadow-[0_4px_20px_rgba(106,0,255,0.4)] dark:hover:bg-flux-purple-hover"
+        >
+          {isPending ? "Відправляю..." : "Надіслати тестовий лист"}
+        </button>
+      </div>
+
+      {status && (
+        <div
+          className={`whitespace-pre-line rounded-lg border px-3 py-2 text-sm ${
+            status.type === "success"
+              ? "border-green-200 bg-green-50 text-green-700 dark:border-emerald-500/30 dark:bg-emerald-500/10 dark:text-emerald-300"
+              : "border-red-200 bg-red-50 text-red-700 dark:border-red-500/30 dark:bg-red-500/10 dark:text-red-300"
+          }`}
+        >
+          {status.msg}
+        </div>
+      )}
+    </form>
   );
 }

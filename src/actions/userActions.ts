@@ -2,6 +2,7 @@
 
 import { revalidateLocalizedPath } from "@/src/i18n/revalidateLocalized";
 import { encrypt } from "@/src/lib/crypto";
+import { sendUserEmail } from "@/src/lib/mailer";
 import { prisma } from "@/src/lib/prisma";
 import { getRequestUserId } from "@/src/lib/session";
 
@@ -108,4 +109,51 @@ export async function saveSmtpSettings(
       error: error instanceof Error ? error.message : "Не вдалось зберегти",
     };
   }
+}
+
+export interface SendTestEmailResult {
+  success: boolean;
+  error?: string;
+  /** "NO_SMTP" | "PLATFORM_NOT_CONFIGURED" — пробрасуємо з mailer для UX-хінтів. */
+  code?: string;
+  messageId?: string;
+}
+
+/**
+ * Надсилає тестовий лист на вказану адресу, використовуючи поточні **збережені**
+ * налаштування юзера (платформа або BYOSMTP — те, що активне у БД).
+ *
+ * НЕ використовує локальні значення форми: ціль тесту — перевірити, що саме
+ * та конфігурація, з якою юзер реально слатиме листи, працює end-to-end.
+ * Якщо юзер не зберіг налаштування — повертаємо помилку з кодом NO_SMTP, щоб
+ * на UI підказати "спочатку збережіть".
+ */
+export async function sendTestEmail(
+  to: string,
+): Promise<SendTestEmailResult> {
+  const userId = await getRequestUserId();
+  if (!userId) return { success: false, error: "Не авторизовано" };
+
+  const target = (to ?? "").trim();
+  if (!target || !EMAIL_REGEX.test(target)) {
+    return { success: false, error: "Невалідний email одержувача" };
+  }
+
+  const subject = "Flux Leads — тестовий лист";
+  const body = [
+    "Привіт!",
+    "",
+    "Якщо ти бачиш цей лист — налаштування пошти у Flux Leads працюють.",
+    "Якщо ти у Простому режимі — натисни Reply і перевір, що відповідь приходить тобі в інбокс.",
+    "Якщо у Розширеному (власний SMTP) — переконайся, що лист не потрапив у Спам.",
+    "",
+    "— Flux Leads",
+  ].join("\n");
+
+  const result = await sendUserEmail(userId, target, subject, body);
+
+  if (result.success) {
+    return { success: true, messageId: result.messageId };
+  }
+  return { success: false, error: result.error, code: result.code };
 }
