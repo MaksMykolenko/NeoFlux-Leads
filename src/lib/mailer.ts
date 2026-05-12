@@ -2,6 +2,7 @@ import "server-only";
 import nodemailer, { type Transporter } from "nodemailer";
 import { decrypt } from "@/src/lib/crypto";
 import { prisma } from "@/src/lib/prisma";
+import { getEnvSiteHref } from "@/src/lib/siteOrigin";
 
 /**
  * Гібридний мейлер з двома режимами:
@@ -27,23 +28,8 @@ const SMTP_TIMEOUTS = {
   socketTimeout: 15_000,
 } as const;
 
-function publicSiteHref(): string {
-  const raw = process.env.NEXT_PUBLIC_SITE_URL?.trim();
-  if (raw) {
-    try {
-      return new URL(raw).origin;
-    } catch {
-      /* fall through */
-    }
-  }
-  if (process.env.VERCEL_URL) {
-    return `https://${process.env.VERCEL_URL}`;
-  }
-  return "http://localhost:3000";
-}
-
 function watermarkText(): string {
-  const href = publicSiteHref();
+  const href = getEnvSiteHref();
   return `---\nSent via Flux Leads — Automate your cold outreach.\n${href}`;
 }
 
@@ -55,7 +41,7 @@ function escapeAttr(s: string): string {
 }
 
 function watermarkHtml(): string {
-  const href = publicSiteHref();
+  const href = getEnvSiteHref();
   return `<hr style="margin:24px 0 8px;border:none;border-top:1px solid #e5e7eb" />
 <p style="font:12px/1.5 -apple-system,BlinkMacSystemFont,Inter,sans-serif;color:#9ca3af;margin:0">
   Sent via <a href="${escapeAttr(href)}" style="color:#6a00ff;text-decoration:none;font-weight:600">Flux Leads</a>

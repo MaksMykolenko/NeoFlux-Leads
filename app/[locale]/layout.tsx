@@ -8,6 +8,7 @@ import { routing } from "@/src/i18n/routing";
 import AuthHeader from "@/src/components/AuthHeader";
 import Footer from "@/src/components/Footer";
 import ThemeProvider from "@/src/components/ThemeProvider";
+import { getEnvSiteHref } from "@/src/lib/siteOrigin";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -21,13 +22,7 @@ const geistMono = Geist_Mono({
 
 function resolveMetadataBase(): URL | undefined {
   try {
-    if (process.env.NEXT_PUBLIC_SITE_URL?.trim()) {
-      return new URL(process.env.NEXT_PUBLIC_SITE_URL.trim());
-    }
-    if (process.env.VERCEL_URL) {
-      return new URL(`https://${process.env.VERCEL_URL}`);
-    }
-    return new URL("http://localhost:3000");
+    return new URL(getEnvSiteHref());
   } catch {
     return undefined;
   }
