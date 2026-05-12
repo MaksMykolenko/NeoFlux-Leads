@@ -13,6 +13,11 @@ const messages = {
     uk: "Українська",
     en: "English",
   },
+  ThemeToggle: {
+    toggle: "Перемкнути тему",
+    switchToLight: "Світла тема",
+    switchToDark: "Темна тема",
+  },
   AuthHeader: {
     productName: "NeoFlux Lead Engine",
     admin: "Адмін",

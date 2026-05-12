@@ -41,7 +41,7 @@ export default function BrandMark({
       <Link
         id={id}
         href={href}
-        className={`inline-flex shrink-0 rounded-xl text-purple-700 transition hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-500 focus-visible:ring-offset-2 ${className}`}
+        className={`inline-flex shrink-0 rounded-xl text-cyan-700 transition hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500 focus-visible:ring-offset-2 ${className}`}
         aria-label={t("homeAria")}
       >
         {svg}

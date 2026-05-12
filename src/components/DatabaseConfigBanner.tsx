@@ -12,40 +12,40 @@ export default function DatabaseConfigBanner({
   return (
     <div
       role="alert"
-      className="mb-8 rounded-xl border border-amber-300 bg-amber-50 px-4 py-4 text-sm text-amber-950 shadow-sm"
+      className="mb-8 rounded-md border border-amber-300 bg-amber-50 px-4 py-4 text-sm text-amber-950 shadow-sm dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-200"
     >
-      <p className="font-semibold text-amber-900">
+      <p className="font-semibold text-amber-900 dark:text-amber-200">
         {variant === "missing_env"
           ? "База даних не підключена на цьому середовищі"
           : "Не вдалося зчитати ліди з бази"}
       </p>
-      <p className="mt-2 text-amber-900/90">
+      <p className="mt-2 text-amber-900/90 dark:text-amber-200/90">
         Для Vercel відкрийте{" "}
         <strong>Project → Settings → Environment Variables</strong> і додайте
         обовʼязково{" "}
-        <code className="rounded bg-amber-100/80 px-1 py-0.5 text-xs">
+        <code className="rounded bg-amber-100/80 px-1 py-0.5 text-xs dark:bg-amber-500/20">
           DATABASE_URL
         </code>{" "}
         та{" "}
-        <code className="rounded bg-amber-100/80 px-1 py-0.5 text-xs">
+        <code className="rounded bg-amber-100/80 px-1 py-0.5 text-xs dark:bg-amber-500/20">
           DIRECT_URL
         </code>{" "}
         (як у локальному <code className="text-xs">.env</code> / Supabase).
         Потім зробіть <strong>Redeploy</strong>.
       </p>
-      <p className="mt-2 text-amber-900/90">
+      <p className="mt-2 text-amber-900/90 dark:text-amber-200/90">
         Одноразово застосуйте схему до продакшен-БД:{" "}
-        <code className="rounded bg-amber-100/80 px-1.5 py-0.5 text-xs">
+        <code className="rounded bg-amber-100/80 px-1.5 py-0.5 text-xs dark:bg-amber-500/20">
           npx prisma db push
         </code>{" "}
         з <code className="text-xs">DATABASE_URL</code> на прод.
       </p>
       {variant === "query_failed" && detail && (
-        <pre className="mt-3 max-h-32 overflow-auto rounded-md border border-amber-200 bg-white/60 p-2 text-xs text-amber-950/80">
+        <pre className="mt-3 max-h-32 overflow-auto rounded-md border border-amber-200 bg-white/60 p-2 text-xs text-amber-950/80 dark:border-amber-500/30 dark:bg-zinc-900/60 dark:text-amber-200/80">
           {detail}
         </pre>
       )}
-      <p className="mt-3 text-xs text-amber-800/80">
+      <p className="mt-3 text-xs text-amber-800/80 dark:text-amber-300/80">
         Детальні логи: Vercel → Deployments → виберіть деплой →{" "}
         <strong>Runtime Logs</strong> / <strong>Functions</strong>.
       </p>

@@ -25,15 +25,17 @@ export default async function LoginPage({
   const errorMessage = formatLoginError(t, code, detail);
 
   return (
-    <main className="flex min-h-screen items-center justify-center bg-gradient-to-br from-gray-50 via-white to-purple-50 px-4 py-12 sm:px-6 lg:px-8">
+    <main className="flex min-h-screen items-center justify-center bg-gradient-to-br from-zinc-50 via-white to-cyan-50 px-4 py-12 dark:from-zinc-950 dark:via-zinc-950 dark:to-zinc-900 sm:px-6 lg:px-8">
       <div className="w-full max-w-md">
-        <div className="rounded-2xl bg-white p-8 shadow-lg ring-1 ring-gray-200/70 sm:p-10">
+        <div className="rounded-md bg-white p-8 shadow-lg ring-1 ring-zinc-200/70 dark:bg-zinc-900 dark:ring-zinc-800 sm:p-10">
           <div className="flex flex-col items-center text-center">
             <BrandMark href="/" className="h-14 w-14" />
-            <h1 className="mt-5 text-2xl font-semibold tracking-tight text-gray-900">
+            <h1 className="mt-5 text-2xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
               {t("title")}
             </h1>
-            <p className="mt-2 text-sm text-gray-500">{t("subtitle")}</p>
+            <p className="mt-2 text-sm text-zinc-500 dark:text-zinc-400">
+              {t("subtitle")}
+            </p>
           </div>
 
           <div className="mt-4 flex justify-center">
@@ -41,7 +43,7 @@ export default async function LoginPage({
           </div>
 
           {errorMessage && (
-            <div className="mt-6 flex items-start gap-3 rounded-lg border border-red-200 bg-red-50 p-3">
+            <div className="mt-6 flex items-start gap-3 rounded-md border border-red-200 bg-red-50 p-3 dark:border-red-500/30 dark:bg-red-500/10">
               <svg
                 className="mt-0.5 h-4 w-4 flex-shrink-0 text-red-500"
                 viewBox="0 0 20 20"
@@ -53,7 +55,7 @@ export default async function LoginPage({
                   clipRule="evenodd"
                 />
               </svg>
-              <p className="whitespace-pre-line text-xs leading-relaxed text-red-700">
+              <p className="whitespace-pre-line text-xs leading-relaxed text-red-700 dark:text-red-300">
                 {errorMessage}
               </p>
             </div>
@@ -64,7 +66,7 @@ export default async function LoginPage({
           {/* eslint-disable-next-line @next/next/no-html-link-for-pages */}
           <a
             href="/api/auth/flux/login"
-            className="mt-8 inline-flex w-full items-center justify-center gap-2 rounded-lg bg-gray-900 px-4 py-3 text-sm font-medium text-white shadow-sm transition hover:bg-gray-800 active:bg-black"
+            className="mt-8 inline-flex w-full items-center justify-center gap-2 rounded-md bg-cyan-500 px-4 py-3 text-sm font-medium text-white shadow-sm transition-all duration-200 hover:bg-cyan-600 active:scale-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-zinc-900"
           >
             <svg
               className="h-4 w-4"
@@ -82,16 +84,18 @@ export default async function LoginPage({
             {t("fluxCta")}
           </a>
 
-          <p className="mt-6 text-center text-xs text-gray-400">{t("fluxFooter")}</p>
+          <p className="mt-6 text-center text-xs text-zinc-400 dark:text-zinc-500">
+            {t("fluxFooter")}
+          </p>
         </div>
 
-        <p className="mt-6 text-center text-xs text-gray-400">
+        <p className="mt-6 text-center text-xs text-zinc-400 dark:text-zinc-500">
           {t("noAccount")}{" "}
           <a
             href="https://fluxid.fluxmarketplace.store/auth/sign-up.html"
             target="_blank"
             rel="noopener noreferrer"
-            className="font-medium text-gray-600 hover:text-gray-900 hover:underline"
+            className="font-medium text-zinc-600 hover:text-zinc-900 hover:underline dark:text-zinc-400 dark:hover:text-zinc-200"
           >
             {t("register")}
           </a>

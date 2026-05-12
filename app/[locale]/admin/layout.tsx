@@ -14,13 +14,13 @@ export default async function AdminLayout({
   const t = await getTranslations("AdminLayout");
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="border-b border-gray-200 bg-white">
+    <div className="min-h-screen bg-zinc-50">
+      <div className="border-b border-zinc-200 bg-white">
         <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-3 sm:px-6 lg:px-8">
           <div className="flex items-center gap-3">
             <Link
               href="/"
-              className="flex items-center gap-1.5 text-sm font-medium text-gray-500 transition-colors hover:text-gray-900"
+              className="flex items-center gap-1.5 text-sm font-medium text-zinc-500 transition-colors hover:text-zinc-900"
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -36,15 +36,15 @@ export default async function AdminLayout({
               </svg>
               {t("backToWorkspace")}
             </Link>
-            <span className="text-gray-300">|</span>
-            <span className="text-sm font-semibold text-gray-900">
+            <span className="text-zinc-300">|</span>
+            <span className="text-sm font-semibold text-zinc-900">
               {t("centerTitle")}
             </span>
           </div>
           <div className="flex items-center gap-2">
             <Link
               href="/admin/users"
-              className="rounded-md px-3 py-1.5 text-xs font-medium text-gray-700 transition hover:bg-gray-100"
+              className="rounded-md px-3 py-1.5 text-xs font-medium text-zinc-700 transition hover:bg-zinc-100"
             >
               {t("navUsers")}
             </Link>
@@ -52,7 +52,7 @@ export default async function AdminLayout({
               className={`rounded-full px-2.5 py-1 text-xs font-semibold ${
                 role === "OWNER"
                   ? "bg-amber-100 text-amber-800"
-                  : "bg-purple-100 text-purple-800"
+                  : "bg-cyan-100 text-cyan-800"
               }`}
             >
               {role}

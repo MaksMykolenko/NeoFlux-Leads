@@ -17,7 +17,7 @@ export default function LanguageSwitcher() {
     <div
       role="group"
       aria-label={t("label")}
-      className="inline-flex h-8 items-center gap-0.5 rounded-md border border-gray-200 bg-gray-50 p-0.5"
+      className="inline-flex h-8 items-center gap-0.5 rounded-md border border-zinc-200 bg-zinc-50 p-0.5 dark:border-zinc-800 dark:bg-zinc-900"
     >
       <LangLink
         href={pathname}
@@ -50,10 +50,10 @@ function LangLink({
     <Link
       href={href}
       locale={locale}
-      className={`inline-flex h-7 min-w-[28px] items-center justify-center rounded px-2 text-[11px] font-medium uppercase tracking-wider transition ${
+      className={`inline-flex h-7 min-w-[28px] items-center justify-center rounded px-2 text-[11px] font-medium uppercase tracking-wider transition-all duration-200 ${
         active
-          ? "bg-white text-gray-900 shadow-sm"
-          : "text-gray-500 hover:text-gray-900"
+          ? "bg-white text-zinc-900 shadow-sm dark:bg-zinc-800 dark:text-zinc-100"
+          : "text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100"
       }`}
     >
       {label}

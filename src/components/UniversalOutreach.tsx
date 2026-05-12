@@ -37,7 +37,7 @@ export default function UniversalOutreach() {
       <form onSubmit={handleSubmit} className="space-y-3">
         <label
           htmlFor="universal-prompt"
-          className="block text-sm font-medium text-gray-700"
+          className="block text-sm font-medium text-zinc-700"
         >
           {t("promptLabel")}
         </label>
@@ -48,7 +48,7 @@ export default function UniversalOutreach() {
           rows={6}
           disabled={pending}
           placeholder={t("promptPlaceholder")}
-          className="block w-full rounded-lg border border-gray-200 bg-white px-4 py-3 text-sm text-gray-900 shadow-sm placeholder:text-gray-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100 disabled:bg-gray-50 disabled:text-gray-500"
+          className="block w-full rounded-lg border border-zinc-200 bg-white px-4 py-3 text-sm text-zinc-900 shadow-sm placeholder:text-zinc-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100 disabled:bg-zinc-50 disabled:text-zinc-500"
         />
         <div className="flex flex-wrap items-center gap-3">
           <button
@@ -59,7 +59,7 @@ export default function UniversalOutreach() {
             {pending ? t("busyInternet") : t("ctaScan")}
           </button>
           {pending && (
-            <span className="text-xs text-gray-500">{t("googleWait")}</span>
+            <span className="text-xs text-zinc-500">{t("googleWait")}</span>
           )}
         </div>
       </form>
@@ -79,7 +79,7 @@ export default function UniversalOutreach() {
         </p>
       )}
 
-      <p className="text-[11px] leading-relaxed text-gray-400">{t("footerNote")}</p>
+      <p className="text-[11px] leading-relaxed text-zinc-400">{t("footerNote")}</p>
     </div>
   );
 }

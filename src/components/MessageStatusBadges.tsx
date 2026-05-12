@@ -16,10 +16,14 @@ import {
 } from "@/src/lib/replyStatus";
 
 const REPLY_STATUS_STYLES: Record<ReplyStatus, string> = {
-  "No Reply": "bg-gray-100 text-gray-600 hover:bg-gray-200",
-  Replied: "bg-green-100 text-green-700 hover:bg-green-200",
-  Interested: "bg-purple-100 text-purple-700 hover:bg-purple-200",
-  Bounced: "bg-red-100 text-red-700 hover:bg-red-200",
+  "No Reply":
+    "bg-zinc-100 text-zinc-600 hover:bg-zinc-200 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700",
+  Replied:
+    "bg-rose-100 text-rose-700 hover:bg-rose-200 dark:bg-rose-500/15 dark:text-rose-300 dark:hover:bg-rose-500/25",
+  Interested:
+    "bg-cyan-100 text-cyan-700 hover:bg-cyan-200 dark:bg-cyan-500/15 dark:text-cyan-300 dark:hover:bg-cyan-500/25",
+  Bounced:
+    "bg-red-100 text-red-700 hover:bg-red-200 dark:bg-red-500/15 dark:text-red-300 dark:hover:bg-red-500/25",
 };
 
 const STATUS_LABEL_KEYS: Record<ReplyStatus, string> = {
@@ -125,7 +129,7 @@ export function ReplyStatusEditor({
       </button>
       {open && (
         <div
-          className="absolute left-0 top-full z-20 mt-1 min-w-[140px] overflow-hidden rounded-md border border-gray-200 bg-white shadow-lg"
+          className="absolute left-0 top-full z-20 mt-1 min-w-[140px] overflow-hidden rounded-md border border-zinc-200 bg-white shadow-lg dark:border-zinc-800 dark:bg-zinc-900"
           onClick={stopPropagationDetails}
         >
           {REPLY_STATUSES.map((s) => {
@@ -138,14 +142,16 @@ export function ReplyStatusEditor({
                   stopPropagationDetails(e);
                   apply(s);
                 }}
-                className={`flex w-full items-center justify-between gap-2 px-3 py-1.5 text-left text-xs transition hover:bg-gray-50 ${
-                  isCurrent ? "font-semibold text-purple-700" : "text-gray-700"
+                className={`flex w-full items-center justify-between gap-2 px-3 py-1.5 text-left text-xs transition-colors hover:bg-zinc-50 dark:hover:bg-zinc-800 ${
+                  isCurrent
+                    ? "font-semibold text-cyan-600 dark:text-cyan-400"
+                    : "text-zinc-700 dark:text-zinc-300"
                 }`}
               >
                 <span>{t(STATUS_LABEL_KEYS[s])}</span>
                 {isCurrent && (
                   <svg
-                    className="h-3 w-3 text-purple-600"
+                    className="h-3 w-3 text-cyan-600"
                     viewBox="0 0 20 20"
                     fill="currentColor"
                     aria-hidden="true"
@@ -167,9 +173,11 @@ export function ReplyStatusEditor({
 }
 
 const DELIVERY_STYLES: Record<string, string> = {
-  SENT: "bg-emerald-50 text-emerald-700 ring-emerald-200",
-  FAILED: "bg-red-50 text-red-700 ring-red-200",
-  DRAFT: "bg-gray-50 text-gray-600 ring-gray-200",
+  SENT: "bg-emerald-50 text-emerald-700 ring-emerald-200 dark:bg-emerald-500/10 dark:text-emerald-300 dark:ring-emerald-500/30",
+  FAILED:
+    "bg-red-50 text-red-700 ring-red-200 dark:bg-red-500/10 dark:text-red-300 dark:ring-red-500/30",
+  DRAFT:
+    "bg-zinc-50 text-zinc-600 ring-zinc-200 dark:bg-zinc-800 dark:text-zinc-400 dark:ring-zinc-700",
 };
 
 export function DeliveryStatusBadge({
@@ -202,7 +210,7 @@ export function DeliveryStatusBadge({
       >
         {normalized === "SENT" && <DotIcon className="text-emerald-500" />}
         {normalized === "FAILED" && <DotIcon className="text-red-500" />}
-        {normalized === "DRAFT" && <DotIcon className="text-gray-400" />}
+        {normalized === "DRAFT" && <DotIcon className="text-zinc-400" />}
         {label}
         {isFailedWithLog && (
           <button
@@ -213,7 +221,7 @@ export function DeliveryStatusBadge({
               stopPropagationDetails(e);
               setShowError(true);
             }}
-            className="-mr-0.5 ml-0.5 inline-flex h-3.5 w-3.5 items-center justify-center rounded-full bg-red-100 text-red-700 transition hover:bg-red-200"
+            className="-mr-0.5 ml-0.5 inline-flex h-3.5 w-3.5 items-center justify-center rounded-full bg-red-100 text-red-700 transition-colors hover:bg-red-200 dark:bg-red-500/20 dark:text-red-300 dark:hover:bg-red-500/30"
           >
             <svg
               viewBox="0 0 20 20"
@@ -264,17 +272,17 @@ function ErrorLogDialog({
       }}
     >
       <div
-        className="w-full max-w-lg overflow-hidden rounded-xl bg-white shadow-xl"
+        className="w-full max-w-lg overflow-hidden rounded-md bg-white shadow-xl dark:bg-zinc-900"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="flex items-start justify-between gap-3 border-b border-gray-200 px-5 py-3">
-          <h3 className="text-sm font-semibold text-gray-900">
+        <div className="flex items-start justify-between gap-3 border-b border-zinc-200 px-5 py-3 dark:border-zinc-800">
+          <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-50">
             {t("deliveryErrorTitle")}
           </h3>
           <button
             type="button"
             onClick={onClose}
-            className="rounded-md p-1 text-gray-400 transition hover:bg-gray-100 hover:text-gray-700"
+            className="rounded-md p-1 text-zinc-400 transition-colors hover:bg-zinc-100 hover:text-zinc-700 dark:hover:bg-zinc-800 dark:hover:text-zinc-200"
             aria-label={t("deliveryErrorClose")}
           >
             <svg
@@ -287,7 +295,7 @@ function ErrorLogDialog({
             </svg>
           </button>
         </div>
-        <pre className="max-h-[60vh] overflow-auto whitespace-pre-wrap break-words px-5 py-4 font-mono text-xs leading-relaxed text-gray-700">
+        <pre className="max-h-[60vh] overflow-auto whitespace-pre-wrap break-words px-5 py-4 font-mono text-xs leading-relaxed text-zinc-700 dark:text-zinc-300">
           {message}
         </pre>
       </div>

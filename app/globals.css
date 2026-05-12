@@ -1,8 +1,29 @@
 @import "tailwindcss";
 
+/* Dark mode через next-themes (attribute="class"). Tailwind v4 за замовчуванням
+   використовує media-query, але ми хочемо явне керування — щоб юзер міг обрати
+   тему, а не залежати від OS preference. Selector узгоджений з next-themes:
+   <html class="light"> або <html class="dark">. */
+@custom-variant dark (&:where(.dark, .dark *));
+
 @theme inline {
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+}
+
+/* Базові кольори оболонки. Решта поверхонь керується Tailwind utility-класами
+   на елементах, але body має джерело фону, щоб transition між темами не
+   "блимав" білим. */
+html,
+body {
+  background-color: #ffffff;
+  color: #18181b; /* zinc-900 */
+}
+
+html.dark,
+html.dark body {
+  background-color: #09090b; /* zinc-950 */
+  color: #d4d4d8; /* zinc-300 */
 }
 
 body {

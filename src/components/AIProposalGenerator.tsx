@@ -182,15 +182,15 @@ export default function AIProposalGenerator({
   }
 
   return (
-    <section className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+    <section className="bg-white rounded-xl shadow-sm border border-zinc-200 p-6">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-wider text-gray-500">
+          <p className="text-xs font-semibold uppercase tracking-wider text-zinc-500">
             {t("sectionLabel")}
           </p>
-          <h2 className="mt-1 text-base font-semibold text-gray-900">{t("title")}</h2>
-          <p className="mt-1 text-sm text-gray-500">{t("description")}</p>
-          <p className="mt-2 text-xs text-gray-500">{t("emailOnlyNote")}</p>
+          <h2 className="mt-1 text-base font-semibold text-zinc-900">{t("title")}</h2>
+          <p className="mt-1 text-sm text-zinc-500">{t("description")}</p>
+          <p className="mt-2 text-xs text-zinc-500">{t("emailOnlyNote")}</p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
           <button
@@ -208,7 +208,7 @@ export default function AIProposalGenerator({
             type="button"
             onClick={handleGenerate}
             disabled={isGenerating || isSaving}
-            className="inline-flex items-center gap-2 rounded-lg bg-purple-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-purple-700 disabled:cursor-wait disabled:opacity-60 focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-500 focus-visible:ring-offset-2"
+            className="inline-flex items-center gap-2 rounded-lg bg-cyan-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-cyan-700 disabled:cursor-wait disabled:opacity-60 focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500 focus-visible:ring-offset-2"
           >
             <SparkleIcon className="w-4 h-4" />
             {isGenerating
@@ -231,7 +231,7 @@ export default function AIProposalGenerator({
                 onClick={() => handlePickStep(s.step)}
                 className={`flex-1 rounded px-3 py-2 text-xs font-medium transition ${
                   activeStep === s.step
-                    ? "bg-purple-600 text-white"
+                    ? "bg-cyan-600 text-white"
                     : "text-zinc-400 hover:bg-zinc-800 hover:text-zinc-100"
                 }`}
               >
@@ -250,7 +250,7 @@ export default function AIProposalGenerator({
             <div>
               <label
                 htmlFor="ai-proposal-subject"
-                className="block text-xs font-semibold uppercase tracking-wider text-gray-500 mb-1.5"
+                className="block text-xs font-semibold uppercase tracking-wider text-zinc-500 mb-1.5"
               >
                 {t("subjectLabel")}
               </label>
@@ -260,14 +260,14 @@ export default function AIProposalGenerator({
                 value={subject}
                 onChange={(event) => setSubject(event.target.value)}
                 placeholder={t("subjectPlaceholder", { company: companyName })}
-                className="block w-full rounded-lg border border-gray-200 bg-gray-50 px-4 py-2.5 text-sm text-gray-900 focus:border-purple-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-purple-100"
+                className="block w-full rounded-lg border border-zinc-200 bg-zinc-50 px-4 py-2.5 text-sm text-zinc-900 focus:border-cyan-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-cyan-100"
               />
             </div>
 
             <div>
               <label
                 htmlFor="ai-proposal-body"
-                className="block text-xs font-semibold uppercase tracking-wider text-gray-500 mb-1.5"
+                className="block text-xs font-semibold uppercase tracking-wider text-zinc-500 mb-1.5"
               >
                 {t("bodyLabel")}
               </label>
@@ -276,13 +276,13 @@ export default function AIProposalGenerator({
                 value={text}
                 onChange={(event) => setText(event.target.value)}
                 rows={Math.min(Math.max(text.split("\n").length + 1, 8), 18)}
-                className="block w-full resize-y rounded-lg border border-gray-200 bg-gray-50 px-4 py-3 text-sm leading-relaxed text-gray-900 shadow-inner focus:border-purple-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-purple-100"
+                className="block w-full resize-y rounded-lg border border-zinc-200 bg-zinc-50 px-4 py-3 text-sm leading-relaxed text-zinc-900 shadow-inner focus:border-cyan-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-cyan-100"
               />
             </div>
 
             {/* Re-writer: 3 строгі пласкі кнопки в кіберпанк-палітрі */}
             <div className="flex flex-wrap items-center gap-2 pt-1">
-              <span className="text-[10px] font-semibold uppercase tracking-wider text-gray-400">
+              <span className="text-[10px] font-semibold uppercase tracking-wider text-zinc-400">
                 {t("rewriteLabel")}
               </span>
               {REWRITE_OPTIONS.map((opt) => (
@@ -291,7 +291,7 @@ export default function AIProposalGenerator({
                   type="button"
                   onClick={() => handleRewrite(opt)}
                   disabled={isRewriting || isGenerating || isSaving}
-                  className={`inline-flex items-center gap-1.5 rounded-md border border-purple-700 bg-purple-700 px-2.5 py-1 text-[11px] font-medium text-white transition hover:bg-purple-800 hover:border-purple-800 disabled:opacity-60 ${
+                  className={`inline-flex items-center gap-1.5 rounded-md border border-cyan-700 bg-cyan-700 px-2.5 py-1 text-[11px] font-medium text-white transition hover:bg-cyan-800 hover:border-cyan-800 disabled:opacity-60 ${
                     pendingTone === opt && isRewriting ? "opacity-70" : ""
                   }`}
                 >
@@ -304,7 +304,7 @@ export default function AIProposalGenerator({
             </div>
 
             <div className="flex flex-wrap items-center justify-between gap-3 pt-1">
-              <span className="text-xs text-gray-400">{t("editHint")}</span>
+              <span className="text-xs text-zinc-400">{t("editHint")}</span>
               <div className="flex items-center gap-2">
                 <button
                   type="button"
@@ -312,7 +312,7 @@ export default function AIProposalGenerator({
                   className={`inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium transition-colors ${
                     copied
                       ? "bg-green-50 text-green-700 ring-1 ring-inset ring-green-200"
-                      : "bg-gray-50 text-gray-700 ring-1 ring-inset ring-gray-200 hover:bg-gray-100"
+                      : "bg-zinc-50 text-zinc-700 ring-1 ring-inset ring-zinc-200 hover:bg-zinc-100"
                   }`}
                 >
                   {copied ? (
@@ -331,7 +331,7 @@ export default function AIProposalGenerator({
                   type="button"
                   onClick={handleSave}
                   disabled={isSaving || isAlreadySaved || !subject.trim()}
-                  className="inline-flex items-center gap-1.5 rounded-md bg-gray-100 px-3 py-1.5 text-xs font-medium text-gray-800 ring-1 ring-inset ring-gray-200 transition-colors hover:bg-gray-200 disabled:cursor-not-allowed disabled:opacity-60"
+                  className="inline-flex items-center gap-1.5 rounded-md bg-zinc-100 px-3 py-1.5 text-xs font-medium text-zinc-800 ring-1 ring-inset ring-zinc-200 transition-colors hover:bg-zinc-200 disabled:cursor-not-allowed disabled:opacity-60"
                 >
                   <SaveIcon className="w-3.5 h-3.5" />
                   {isSaving
@@ -351,7 +351,7 @@ export default function AIProposalGenerator({
                     !subject.trim()
                   }
                   title={!canSendEmail ? t("noEmailHint") : undefined}
-                  className="inline-flex items-center gap-1.5 rounded-md bg-purple-600 px-3 py-1.5 text-xs font-medium text-white shadow-sm transition hover:bg-purple-700 disabled:cursor-not-allowed disabled:bg-purple-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-500"
+                  className="inline-flex items-center gap-1.5 rounded-md bg-cyan-600 px-3 py-1.5 text-xs font-medium text-white shadow-sm transition hover:bg-cyan-700 disabled:cursor-not-allowed disabled:bg-cyan-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500"
                 >
                   {isSending ? (
                     <>
@@ -370,8 +370,8 @@ export default function AIProposalGenerator({
           </div>
         ) : (
           <div className="flex flex-col items-center justify-center text-center py-8">
-            <SparkleIcon className="w-8 h-8 text-gray-300" />
-            <p className="mt-3 text-sm text-gray-500">{t("emptyState")}</p>
+            <SparkleIcon className="w-8 h-8 text-zinc-300" />
+            <p className="mt-3 text-sm text-zinc-500">{t("emptyState")}</p>
           </div>
         )}
       </div>
@@ -415,7 +415,7 @@ export default function AIProposalGenerator({
       )}
 
       {!canSendEmail && hasText && (
-        <p className="mt-3 text-xs text-gray-400">{t("noEmailHint")}</p>
+        <p className="mt-3 text-xs text-zinc-400">{t("noEmailHint")}</p>
       )}
     </section>
   );
@@ -423,10 +423,10 @@ export default function AIProposalGenerator({
 
 function SkeletonLoader({ label }: { label: string }) {
   return (
-    <div className="rounded-lg border border-gray-200 bg-gray-50 p-4">
-      <div className="flex items-center gap-2 text-sm text-gray-500">
+    <div className="rounded-lg border border-zinc-200 bg-zinc-50 p-4">
+      <div className="flex items-center gap-2 text-sm text-zinc-500">
         <svg
-          className="h-4 w-4 animate-spin text-purple-600"
+          className="h-4 w-4 animate-spin text-cyan-600"
           xmlns="http://www.w3.org/2000/svg"
           fill="none"
           viewBox="0 0 24 24"
@@ -448,11 +448,11 @@ function SkeletonLoader({ label }: { label: string }) {
         {label}
       </div>
       <div className="mt-4 space-y-2.5">
-        <div className="h-3 w-3/5 animate-pulse rounded bg-gray-200" />
-        <div className="h-3 w-full animate-pulse rounded bg-gray-200" />
-        <div className="h-3 w-11/12 animate-pulse rounded bg-gray-200" />
-        <div className="h-3 w-4/5 animate-pulse rounded bg-gray-200" />
-        <div className="h-3 w-2/3 animate-pulse rounded bg-gray-200" />
+        <div className="h-3 w-3/5 animate-pulse rounded bg-zinc-200" />
+        <div className="h-3 w-full animate-pulse rounded bg-zinc-200" />
+        <div className="h-3 w-11/12 animate-pulse rounded bg-zinc-200" />
+        <div className="h-3 w-4/5 animate-pulse rounded bg-zinc-200" />
+        <div className="h-3 w-2/3 animate-pulse rounded bg-zinc-200" />
       </div>
     </div>
   );

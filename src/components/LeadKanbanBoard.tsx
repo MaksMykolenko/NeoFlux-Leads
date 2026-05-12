@@ -141,7 +141,7 @@ function KanbanColumn({
             {...provided.droppableProps}
             className={`flex min-h-[120px] flex-col gap-2 rounded-md border p-2 transition-colors ${
               snapshot.isDraggingOver
-                ? "border-purple-600 bg-purple-950/30"
+                ? "border-cyan-600 bg-cyan-950/30"
                 : "border-zinc-800 bg-zinc-900/40"
             }`}
           >
@@ -160,7 +160,7 @@ function KanbanColumn({
                     style={provided.draggableProps.style}
                     className={`select-none rounded-md border bg-zinc-900 p-3 text-sm transition-colors ${
                       snapshot.isDragging
-                        ? "border-purple-500"
+                        ? "border-cyan-500"
                         : "border-zinc-800 hover:border-zinc-700"
                     }`}
                   >
@@ -199,7 +199,7 @@ function KanbanCard({ lead }: { lead: KanbanLead }) {
         <ModeBadge mode={lead.mode} />
         <a
           href={`/leads/${lead.id}`}
-          className="text-[10px] font-medium uppercase tracking-wider text-zinc-500 transition hover:text-purple-400"
+          className="text-[10px] font-medium uppercase tracking-wider text-zinc-500 transition hover:text-cyan-400"
         >
           →
         </a>
@@ -242,7 +242,7 @@ function ModeBadge({ mode }: { mode: LeadMode }) {
     },
     BEATS: {
       label: "BEATS",
-      className: "bg-purple-950 text-purple-300 ring-purple-800",
+      className: "bg-cyan-950 text-cyan-300 ring-cyan-800",
     },
     UNIVERSAL: {
       label: "UNIVERSAL",

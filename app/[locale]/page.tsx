@@ -125,7 +125,7 @@ export default async function Home({
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950">
       <div className="mx-auto max-w-4xl px-4 py-12 sm:px-6 lg:px-8">
         {showCheckoutSuccess && <CheckoutSuccessBanner />}
         {missingDbEnv && (
@@ -142,10 +142,10 @@ export default async function Home({
             className="h-9 w-9 flex-shrink-0"
           />
           <div id="tour-page-title" className="min-w-0">
-            <h1 className="text-2xl font-semibold text-gray-900 tracking-tight">
+            <h1 className="text-2xl font-semibold text-zinc-900 dark:text-zinc-50 tracking-tight">
               {t("title")}
             </h1>
-            <p className="mt-1 text-sm text-gray-500">
+            <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
               {isBeats
                 ? t("subtitleBeats")
                 : isUniversal
@@ -187,7 +187,7 @@ export default async function Home({
           {isBoard ? (
             <div>
               <div className="mb-4 flex items-center justify-between gap-3">
-                <h2 className="text-base font-medium text-gray-900">
+                <h2 className="text-base font-medium text-zinc-900">
                   {t("boardTitle")}
                 </h2>
                 <LeadViewToggle active="board" />

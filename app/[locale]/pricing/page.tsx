@@ -26,11 +26,11 @@ export default async function PricingPage({
   const currentPlan = getPlanForUser(user);
 
   return (
-    <main className="min-h-screen bg-gradient-to-br from-gray-50 to-purple-50 py-12 sm:py-16">
+    <main className="min-h-screen bg-gradient-to-br from-zinc-50 to-cyan-50 py-12 dark:from-zinc-950 dark:to-zinc-900 sm:py-16">
       <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
         <Link
           href="/"
-          className="inline-flex items-center gap-1.5 text-sm font-medium text-gray-500 transition-colors hover:text-gray-900"
+          className="inline-flex items-center gap-1.5 text-sm font-medium text-zinc-500 transition-all duration-200 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -48,17 +48,21 @@ export default async function PricingPage({
         </Link>
 
         <header className="mt-8 text-center">
-          <h1 className="text-4xl font-semibold tracking-tight text-gray-900 sm:text-5xl">
+          <h1 className="text-4xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50 sm:text-5xl">
             {t("title")}
           </h1>
-          <p className="mt-4 text-lg text-gray-600">{t("subtitle")}</p>
-          <p className="mt-2 text-sm text-gray-500">
+          <p className="mt-4 text-lg text-zinc-600 dark:text-zinc-300">
+            {t("subtitle")}
+          </p>
+          <p className="mt-2 text-sm text-zinc-500 dark:text-zinc-400">
             {t("current")}{" "}
-            <span className="font-medium text-gray-900">{currentPlan.name}</span>
+            <span className="font-medium text-zinc-900 dark:text-zinc-100">
+              {currentPlan.name}
+            </span>
           </p>
         </header>
 
-        <div className="mt-12 grid gap-6 lg:grid-cols-3">
+        <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {PLAN_ORDER.map((id) => (
             <PlanCard
               key={id}
@@ -70,7 +74,7 @@ export default async function PricingPage({
           ))}
         </div>
 
-        <p className="mt-12 text-center text-xs text-gray-500">
+        <p className="mt-12 text-center text-xs text-zinc-500 dark:text-zinc-400">
           {t("paymentNote")}
         </p>
       </div>
@@ -92,54 +96,69 @@ interface PlanCardProps {
 
 function PlanCard({ plan, isCurrent, locale, t }: PlanCardProps) {
   const isPro = plan.id === "PRO";
+  const isAgency = plan.id === "AGENCY";
+  const isPaid = isPro || isAgency;
   const unlimited = !Number.isFinite(plan.leadsPerMonth);
   const formatted = unlimited ? t("unlimitedWord") : String(plan.leadsPerMonth);
   const perMonthSuffix = unlimited ? "" : t("perMonthSuffix");
-  const upgradeClasses = `inline-flex w-full items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium shadow-sm transition ${
+
+  // Картки: чіткі лінії + малий радіус. Glow тільки у dark mode на платних.
+  const cardClasses = [
+    "relative flex flex-col rounded-md border bg-white p-8 transition-all duration-200 dark:bg-zinc-900",
     isPro
-      ? "bg-purple-600 text-white hover:bg-purple-700"
-      : "bg-gray-900 text-white hover:bg-gray-800"
+      ? "border-cyan-200 shadow-lg ring-2 ring-cyan-500 dark:border-cyan-500/40 dark:shadow-[0_0_15px_rgba(0,176,255,0.15)] lg:scale-[1.02]"
+      : isAgency
+        ? "border-zinc-200 shadow-md dark:border-zinc-800 dark:shadow-[0_0_15px_rgba(0,176,255,0.08)]"
+        : "border-zinc-200 shadow-sm dark:border-zinc-800",
+  ].join(" ");
+
+  const upgradeClasses = `inline-flex w-full items-center justify-center gap-2 rounded-md px-4 py-2.5 text-sm font-medium transition-all duration-200 active:scale-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500 ${
+    isPaid
+      ? "bg-cyan-500 text-white shadow-sm hover:bg-cyan-600 dark:hover:bg-cyan-400"
+      : "bg-zinc-900 text-white shadow-sm hover:bg-zinc-800 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-200"
   }`;
 
   return (
-    <div
-      className={`relative flex flex-col rounded-2xl border bg-white p-8 shadow-sm transition ${
-        isPro
-          ? "border-purple-200 ring-2 ring-purple-500 lg:scale-[1.02]"
-          : "border-gray-200"
-      }`}
-    >
+    <div className={cardClasses}>
       {isPro && (
-        <span className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-purple-600 px-3 py-1 text-xs font-semibold uppercase tracking-wider text-white shadow">
+        <span className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-cyan-500 px-3 py-1 text-xs font-semibold uppercase tracking-wider text-white shadow">
           {t("popular")}
         </span>
       )}
 
       <div>
-        <h2 className="text-lg font-semibold text-gray-900">{plan.name}</h2>
-        <p className="mt-1 text-sm text-gray-500">{plan.tagline}</p>
+        <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-50">
+          {plan.name}
+        </h2>
+        <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
+          {plan.tagline}
+        </p>
       </div>
 
       <div className="mt-6 flex items-baseline gap-1">
-        <span className="text-5xl font-semibold tracking-tight text-gray-900">
+        <span className="text-5xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
           {formatPrice(plan.priceUsd)}
         </span>
-        <span className="text-base text-gray-500">{t("perMonth")}</span>
+        <span className="text-base text-zinc-500 dark:text-zinc-400">
+          {t("perMonth")}
+        </span>
       </div>
 
-      <p className="mt-4 text-sm text-gray-600">{plan.description}</p>
+      <p className="mt-4 text-sm text-zinc-600 dark:text-zinc-300">
+        {plan.description}
+      </p>
 
       <ul className="mt-6 space-y-3 text-sm">
         <li className="flex items-start gap-2">
           <CheckIcon />
-          <span className="text-gray-700">
+          <span className="text-zinc-700 dark:text-zinc-300">
             {t("leadsLine", { formatted, perMonthSuffix })}
           </span>
         </li>
         {plan.highlights.slice(1).map((h) => (
           <li key={h} className="flex items-start gap-2">
             <CheckIcon />
-            <span className="text-gray-700">{h}</span>
+            <span className="text-zinc-700 dark:text-zinc-300">{h}</span>
           </li>
         ))}
       </ul>
@@ -149,7 +168,7 @@ function PlanCard({ plan, isCurrent, locale, t }: PlanCardProps) {
           <button
             type="button"
             disabled
-            className="inline-flex w-full cursor-default items-center justify-center rounded-lg border border-gray-200 bg-gray-50 px-4 py-2.5 text-sm font-medium text-gray-500"
+            className="inline-flex w-full cursor-default items-center justify-center rounded-md border border-zinc-200 bg-zinc-50 px-4 py-2.5 text-sm font-medium text-zinc-500 dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-400"
           >
             {t("currentPlan")}
           </button>
@@ -164,7 +183,7 @@ function PlanCard({ plan, isCurrent, locale, t }: PlanCardProps) {
           <button
             type="button"
             disabled
-            className="inline-flex w-full cursor-default items-center justify-center rounded-lg border border-gray-200 bg-gray-50 px-4 py-2.5 text-sm font-medium text-gray-500"
+            className="inline-flex w-full cursor-default items-center justify-center rounded-md border border-zinc-200 bg-zinc-50 px-4 py-2.5 text-sm font-medium text-zinc-500 dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-400"
           >
             {t("currentPlan")}
           </button>
@@ -177,9 +196,10 @@ function PlanCard({ plan, isCurrent, locale, t }: PlanCardProps) {
 function CheckIcon() {
   return (
     <svg
-      className="mt-0.5 h-4 w-4 flex-shrink-0 text-purple-600"
+      className="mt-0.5 h-4 w-4 flex-shrink-0 text-cyan-500"
       viewBox="0 0 20 20"
       fill="currentColor"
+      aria-hidden="true"
     >
       <path
         fillRule="evenodd"

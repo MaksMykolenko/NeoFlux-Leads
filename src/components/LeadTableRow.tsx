@@ -77,8 +77,8 @@ export default function LeadTableRow({ lead, selection }: LeadRowProps) {
   return (
     <tr
       onClick={() => router.push(`/leads/${lead.id}`)}
-      className={`hover:bg-gray-50 transition-colors cursor-pointer ${
-        selection?.selected ? "bg-purple-50/50" : ""
+      className={`hover:bg-zinc-50 transition-colors cursor-pointer ${
+        selection?.selected ? "bg-cyan-50/50" : ""
       }`}
     >
       {selection && (
@@ -91,7 +91,7 @@ export default function LeadTableRow({ lead, selection }: LeadRowProps) {
             checked={selection.selected}
             onChange={(e) => selection.onToggle(lead.id, e.target.checked)}
             aria-label={`Select ${lead.companyName}`}
-            className="h-4 w-4 cursor-pointer rounded border-gray-300 text-purple-600 focus:ring-purple-500"
+            className="h-4 w-4 cursor-pointer rounded border-zinc-300 text-cyan-600 focus:ring-cyan-500"
           />
         </td>
       )}
@@ -99,12 +99,12 @@ export default function LeadTableRow({ lead, selection }: LeadRowProps) {
         <Link
           href={`/leads/${lead.id}`}
           onClick={stopPropagation}
-          className="text-gray-900 hover:text-purple-700 hover:underline transition-colors"
+          className="text-zinc-900 hover:text-cyan-700 hover:underline transition-colors"
         >
           {lead.companyName}
         </Link>
       </td>
-      <td className="px-6 py-4 text-sm text-gray-500 max-w-md">
+      <td className="px-6 py-4 text-sm text-zinc-500 max-w-md">
         {isUniversal ? (
           lead.notes ? (
             <span
@@ -114,13 +114,13 @@ export default function LeadTableRow({ lead, selection }: LeadRowProps) {
               {lead.notes}
             </span>
           ) : (
-            <span className="text-gray-400">—</span>
+            <span className="text-zinc-400">—</span>
           )
         ) : (
           <span className="whitespace-nowrap">
             {lead.category}
             {subtitle && (
-              <span className="text-gray-400"> · {subtitle}</span>
+              <span className="text-zinc-400"> · {subtitle}</span>
             )}
           </span>
         )}
@@ -137,7 +137,7 @@ export default function LeadTableRow({ lead, selection }: LeadRowProps) {
             {siteHref.replace(/^https?:\/\//, "").replace(/\/$/, "")}
           </a>
         ) : (
-          <span className="inline-flex items-center rounded-full bg-gray-100 px-2.5 py-0.5 text-xs font-medium text-gray-500">
+          <span className="inline-flex items-center rounded-full bg-zinc-100 px-2.5 py-0.5 text-xs font-medium text-zinc-500">
             {t("noLink")}
           </span>
         )}
@@ -169,7 +169,7 @@ export default function LeadTableRow({ lead, selection }: LeadRowProps) {
             issuesCount={lead.audit?.issues.length}
           />
         ) : (
-          <span className="text-xs text-gray-400">—</span>
+          <span className="text-xs text-zinc-400">—</span>
         )}
       </td>
     </tr>
@@ -188,12 +188,12 @@ function BeatsLastCell({
   seekingLabel: string;
 }) {
   if (followers == null && !lookingForType) {
-    return <span className="text-xs text-gray-400">—</span>;
+    return <span className="text-xs text-zinc-400">—</span>;
   }
   return (
     <div className="flex flex-col items-start gap-0.5">
       {followers != null && (
-        <span className="text-xs font-medium text-gray-700 tabular-nums">
+        <span className="text-xs font-medium text-zinc-700 tabular-nums">
           {followersLabel}
         </span>
       )}

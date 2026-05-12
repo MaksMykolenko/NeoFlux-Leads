@@ -5,6 +5,7 @@ import { getPlanForUser } from "@/src/lib/subscription";
 import { isAdmin } from "@/src/lib/admin";
 import BrandMark from "@/src/components/BrandMark";
 import LanguageSwitcher from "@/src/components/LanguageSwitcher";
+import ThemeToggle from "@/src/components/ThemeToggle";
 
 /**
  * Хедер після авторизації. Структура:
@@ -27,12 +28,12 @@ export default async function AuthHeader() {
   const displayName = user.displayName || user.username || t("fallbackUser");
 
   return (
-    <header className="sticky top-0 z-30 border-b border-gray-200 bg-white/80 backdrop-blur supports-[backdrop-filter]:bg-white/70">
+    <header className="sticky top-0 z-30 border-b border-zinc-200 bg-white/80 backdrop-blur supports-[backdrop-filter]:bg-white/70 dark:border-zinc-800 dark:bg-zinc-950/80 dark:supports-[backdrop-filter]:bg-zinc-950/70">
       <div className="mx-auto flex h-14 max-w-6xl items-center justify-between gap-3 px-4 sm:px-6 lg:px-8">
         {/* ─── Brand ─── */}
         <Link
           href="/"
-          className="group flex flex-shrink-0 items-center gap-2.5 rounded-md py-1 text-gray-900 transition hover:opacity-80 focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-500"
+          className="group flex flex-shrink-0 items-center gap-2.5 rounded-md py-1 text-zinc-900 transition-all duration-200 hover:opacity-80 focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500 dark:text-zinc-100"
         >
           <BrandMark className="h-7 w-7" />
           <span className="hidden whitespace-nowrap text-sm font-semibold tracking-tight sm:inline">
@@ -42,6 +43,7 @@ export default async function AuthHeader() {
 
         {/* ─── Actions + profile ─── */}
         <div className="flex min-w-0 items-center gap-2">
+          <ThemeToggle />
           <LanguageSwitcher />
 
           {userIsAdmin && (
@@ -49,7 +51,7 @@ export default async function AuthHeader() {
               href="/admin/users"
               title={t("admin")}
               aria-label={t("admin")}
-              className="inline-flex h-8 items-center gap-1.5 rounded-md bg-amber-50 px-2.5 text-xs font-medium text-amber-800 ring-1 ring-inset ring-amber-200 transition hover:bg-amber-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-500"
+              className="inline-flex h-8 items-center gap-1.5 rounded-md bg-amber-50 px-2.5 text-xs font-medium text-amber-800 ring-1 ring-inset ring-amber-200 transition-all duration-200 hover:bg-amber-100 active:scale-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 dark:bg-amber-500/10 dark:text-amber-300 dark:ring-amber-500/30 dark:hover:bg-amber-500/20"
             >
               <LockIcon className="h-3.5 w-3.5" />
               <span className="hidden sm:inline">{t("admin")}</span>
@@ -59,27 +61,27 @@ export default async function AuthHeader() {
           <Link
             href="/pricing"
             title={plan.name}
-            className="hidden h-8 items-center gap-1.5 rounded-full border border-gray-200 bg-white px-3 text-xs font-medium text-gray-700 transition hover:border-purple-300 hover:bg-purple-50 hover:text-purple-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-500 md:inline-flex"
+            className="hidden h-8 items-center gap-1.5 rounded-full border border-zinc-200 bg-white px-3 text-xs font-medium text-zinc-700 transition-all duration-200 hover:border-cyan-300 hover:bg-cyan-50 hover:text-cyan-700 active:scale-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-300 dark:hover:border-cyan-700 dark:hover:bg-cyan-500/10 dark:hover:text-cyan-300 md:inline-flex"
           >
-            <span className="inline-flex h-1.5 w-1.5 rounded-full bg-purple-500" />
+            <span className="inline-flex h-1.5 w-1.5 rounded-full bg-cyan-500" />
             {plan.name}
           </Link>
 
-          <span className="mx-1 hidden h-5 w-px bg-gray-200 md:inline-block" />
+          <span className="mx-1 hidden h-5 w-px bg-zinc-200 dark:bg-zinc-800 md:inline-block" />
 
           {/* Profile — клік → /settings (швидкий шлях до налаштувань SMTP) */}
           <Link
             href="/settings"
             title={t("openProfile")}
-            className="group flex min-w-0 items-center gap-2 rounded-md py-1 pl-1 pr-1.5 text-left transition hover:bg-gray-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-500"
+            className="group flex min-w-0 items-center gap-2 rounded-md py-1 pl-1 pr-1.5 text-left transition-all duration-200 hover:bg-zinc-100 active:scale-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500 dark:hover:bg-zinc-800"
           >
             <Avatar user={user} fallback={displayName} />
             <div className="hidden min-w-0 lg:block">
-              <div className="truncate text-sm font-medium leading-tight text-gray-900">
+              <div className="truncate text-sm font-medium leading-tight text-zinc-900 dark:text-zinc-100">
                 {displayName}
               </div>
               {user.email && (
-                <div className="truncate text-[11px] leading-tight text-gray-500">
+                <div className="truncate text-[11px] leading-tight text-zinc-500 dark:text-zinc-400">
                   {user.email}
                 </div>
               )}
@@ -90,7 +92,7 @@ export default async function AuthHeader() {
             href="/settings"
             title={t("settings")}
             aria-label={t("settings")}
-            className="inline-flex h-8 w-8 items-center justify-center rounded-md text-gray-500 transition hover:bg-gray-100 hover:text-gray-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-500"
+            className="inline-flex h-8 w-8 items-center justify-center rounded-md text-zinc-500 transition-all duration-200 hover:bg-zinc-100 hover:text-zinc-900 active:scale-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-zinc-100"
           >
             <GearIcon className="h-4 w-4" />
           </Link>
@@ -100,7 +102,7 @@ export default async function AuthHeader() {
               type="submit"
               title={t("signOut")}
               aria-label={t("signOut")}
-              className="inline-flex h-8 items-center gap-1.5 rounded-md px-2 text-xs font-medium text-gray-500 transition hover:bg-red-50 hover:text-red-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-400 sm:px-3 sm:text-gray-700"
+              className="inline-flex h-8 items-center gap-1.5 rounded-md px-2 text-xs font-medium text-zinc-500 transition-all duration-200 hover:bg-red-50 hover:text-red-600 active:scale-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-400 dark:text-zinc-400 dark:hover:bg-red-500/10 dark:hover:text-red-400 sm:px-3 sm:text-zinc-700 sm:dark:text-zinc-300"
             >
               <LogoutIcon className="h-4 w-4" />
               <span className="hidden sm:inline">{t("signOut")}</span>
@@ -128,12 +130,12 @@ function Avatar({
       <img
         src={user.avatarUrl}
         alt=""
-        className="h-7 w-7 flex-shrink-0 rounded-full object-cover ring-1 ring-gray-200"
+        className="h-7 w-7 flex-shrink-0 rounded-full object-cover ring-1 ring-zinc-200"
       />
     );
   }
   return (
-    <div className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full bg-purple-100 text-[11px] font-semibold uppercase text-purple-700 ring-1 ring-purple-200">
+    <div className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full bg-cyan-100 text-[11px] font-semibold uppercase text-cyan-700 ring-1 ring-cyan-200 dark:bg-cyan-500/10 dark:text-cyan-300 dark:ring-cyan-500/30">
       {initials(fallback || user.email || "U")}
     </div>
   );

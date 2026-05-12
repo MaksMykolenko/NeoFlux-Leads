@@ -28,9 +28,9 @@ export default function CheckoutSuccessBanner() {
   if (!visible) return null;
 
   return (
-    <div className="mb-6 flex items-start gap-3 rounded-lg border border-emerald-200 bg-emerald-50 p-4">
+    <div className="mb-6 flex items-start gap-3 rounded-md border border-emerald-200 bg-emerald-50 p-4 dark:border-emerald-500/30 dark:bg-emerald-500/10">
       <svg
-        className="mt-0.5 h-5 w-5 flex-shrink-0 text-emerald-600"
+        className="mt-0.5 h-5 w-5 flex-shrink-0 text-emerald-600 dark:text-emerald-400"
         viewBox="0 0 20 20"
         fill="currentColor"
         aria-hidden="true"
@@ -42,10 +42,10 @@ export default function CheckoutSuccessBanner() {
         />
       </svg>
       <div className="min-w-0 flex-1">
-        <p className="text-sm font-semibold text-emerald-900">
+        <p className="text-sm font-semibold text-emerald-900 dark:text-emerald-200">
           {t("checkoutSuccessTitle")}
         </p>
-        <p className="mt-0.5 text-xs text-emerald-800">
+        <p className="mt-0.5 text-xs text-emerald-800 dark:text-emerald-300">
           {t("checkoutSuccessBody")}
         </p>
       </div>
@@ -53,7 +53,7 @@ export default function CheckoutSuccessBanner() {
         type="button"
         onClick={() => setVisible(false)}
         aria-label={t("checkoutSuccessClose")}
-        className="ml-1 inline-flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-md text-emerald-700 transition hover:bg-emerald-100"
+        className="ml-1 inline-flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-md text-emerald-700 transition-all duration-200 hover:bg-emerald-100 active:scale-95 dark:text-emerald-300 dark:hover:bg-emerald-500/20"
       >
         <svg
           viewBox="0 0 20 20"

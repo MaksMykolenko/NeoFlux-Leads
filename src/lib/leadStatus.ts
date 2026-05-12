@@ -13,16 +13,22 @@ export function isLeadStatus(value: string): value is LeadStatus {
   return (LEAD_STATUSES as readonly string[]).includes(value);
 }
 
+// Світла + темна теми. Кожен ключ декларує обидва варіанти, щоб у dark mode
+// не вилазили світло-пастельні бекграунди. Replied — rose (warm),
+// розрізняється з primary brand cyan.
 const STATUS_STYLES: Record<LeadStatus, string> = {
-  New: "bg-blue-50 text-blue-700 ring-blue-200",
-  Qualified: "bg-violet-50 text-violet-700 ring-violet-200",
-  Contacted: "bg-amber-50 text-amber-700 ring-amber-200",
-  Replied: "bg-purple-50 text-purple-700 ring-purple-200",
-  Won: "bg-green-50 text-green-700 ring-green-200",
-  Lost: "bg-red-50 text-red-700 ring-red-200",
+  New: "bg-blue-50 text-blue-700 ring-blue-200 dark:bg-blue-500/10 dark:text-blue-300 dark:ring-blue-500/30",
+  Qualified:
+    "bg-violet-50 text-violet-700 ring-violet-200 dark:bg-violet-500/10 dark:text-violet-300 dark:ring-violet-500/30",
+  Contacted:
+    "bg-amber-50 text-amber-700 ring-amber-200 dark:bg-amber-500/10 dark:text-amber-300 dark:ring-amber-500/30",
+  Replied:
+    "bg-rose-50 text-rose-700 ring-rose-200 dark:bg-rose-500/10 dark:text-rose-300 dark:ring-rose-500/30",
+  Won: "bg-emerald-50 text-emerald-700 ring-emerald-200 dark:bg-emerald-500/10 dark:text-emerald-300 dark:ring-emerald-500/30",
+  Lost: "bg-red-50 text-red-700 ring-red-200 dark:bg-red-500/10 dark:text-red-300 dark:ring-red-500/30",
 };
 
 export function getStatusClasses(status: string): string {
   if (isLeadStatus(status)) return STATUS_STYLES[status];
-  return "bg-gray-50 text-gray-700 ring-gray-200";
+  return "bg-zinc-100 text-zinc-700 ring-zinc-200 dark:bg-zinc-800 dark:text-zinc-300 dark:ring-zinc-700";
 }

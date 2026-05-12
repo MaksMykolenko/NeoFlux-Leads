@@ -32,10 +32,10 @@ export default async function AdminUsersPage({
   return (
     <main className="mx-auto max-w-6xl px-4 py-8 sm:px-6 lg:px-8">
       <header>
-        <h1 className="text-2xl font-semibold tracking-tight text-gray-900">
+        <h1 className="text-2xl font-semibold tracking-tight text-zinc-900">
           {t("title")}
         </h1>
-        <p className="mt-1 text-sm text-gray-500">{t("subtitle")}</p>
+        <p className="mt-1 text-sm text-zinc-500">{t("subtitle")}</p>
       </header>
 
       {stats && (
@@ -129,20 +129,20 @@ function StatCard({
   return (
     <div
       className={`rounded-xl border bg-white p-5 shadow-sm ${
-        accent ? "border-purple-200 ring-1 ring-purple-100" : "border-gray-200"
+        accent ? "border-cyan-200 ring-1 ring-cyan-100" : "border-zinc-200"
       }`}
     >
-      <p className="text-xs font-semibold uppercase tracking-wider text-gray-500">
+      <p className="text-xs font-semibold uppercase tracking-wider text-zinc-500">
         {label}
       </p>
       <p
         className={`mt-2 text-3xl font-semibold tracking-tight ${
-          accent ? "text-purple-700" : "text-gray-900"
+          accent ? "text-cyan-700" : "text-zinc-900"
         }`}
       >
         {value}
       </p>
-      {hint && <p className="mt-1 text-xs text-gray-400">{hint}</p>}
+      {hint && <p className="mt-1 text-xs text-zinc-400">{hint}</p>}
     </div>
   );
 }
@@ -160,14 +160,14 @@ function PlanDistributionCard({
 }) {
   const percent = total > 0 ? Math.round((count / total) * 100) : 0;
   return (
-    <div className="rounded-lg border border-gray-200 bg-white p-4">
+    <div className="rounded-lg border border-zinc-200 bg-white p-4">
       <div className="flex items-baseline justify-between gap-2 text-sm">
-        <span className="font-medium text-gray-700">{planName}</span>
-        <span className="tabular-nums text-gray-500">
+        <span className="font-medium text-zinc-700">{planName}</span>
+        <span className="tabular-nums text-zinc-500">
           {count} ({percent}%)
         </span>
       </div>
-      <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-gray-100">
+      <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-zinc-100">
         <div
           className={`h-full rounded-full ${accentClass}`}
           style={{ width: `${percent}%` }}
@@ -180,10 +180,10 @@ function PlanDistributionCard({
 function planAccent(plan: PlanId): string {
   switch (plan) {
     case "PRO":
-      return "bg-purple-500";
+      return "bg-cyan-500";
     case "AGENCY":
       return "bg-amber-500";
     default:
-      return "bg-gray-400";
+      return "bg-zinc-400";
   }
 }

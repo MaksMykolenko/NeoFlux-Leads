@@ -145,12 +145,12 @@ export default function LeadsTableSection({
   }
 
   return (
-    <div className="bg-white shadow-sm rounded-lg border border-gray-200 overflow-hidden">
-      <div className="px-6 py-4 border-b border-gray-200 flex items-center justify-between gap-3">
-        <h2 className="text-base font-medium text-gray-900">{title}</h2>
+    <div className="bg-white shadow-sm rounded-lg border border-zinc-200 overflow-hidden">
+      <div className="px-6 py-4 border-b border-zinc-200 flex items-center justify-between gap-3">
+        <h2 className="text-base font-medium text-zinc-900">{title}</h2>
         <div className="flex items-center gap-3">
           {leads.length > 0 && (
-            <span className="inline-flex items-center rounded-full bg-gray-100 px-2.5 py-0.5 text-xs font-medium text-gray-600">
+            <span className="inline-flex items-center rounded-full bg-zinc-100 px-2.5 py-0.5 text-xs font-medium text-zinc-600">
               {leads.length}
             </span>
           )}
@@ -159,15 +159,15 @@ export default function LeadsTableSection({
       </div>
 
       {selectedCount > 0 && (
-        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-purple-200 bg-purple-50 px-6 py-2.5">
+        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-cyan-200 bg-cyan-50 px-6 py-2.5">
           <div className="flex items-center gap-3 text-sm">
-            <span className="font-medium text-purple-900">
+            <span className="font-medium text-cyan-900">
               {t("selected", { count: selectedCount })}
             </span>
             <button
               type="button"
               onClick={clearSelection}
-              className="text-xs text-purple-700 hover:text-purple-900 hover:underline"
+              className="text-xs text-cyan-700 hover:text-cyan-900 hover:underline"
             >
               {t("clear")}
             </button>
@@ -178,7 +178,7 @@ export default function LeadsTableSection({
                 type="button"
                 onClick={runBulkAudit}
                 disabled={isPending}
-                className="inline-flex items-center gap-1.5 rounded-md bg-white px-3 py-1.5 text-xs font-medium text-purple-700 ring-1 ring-inset ring-purple-300 transition hover:bg-purple-100 disabled:opacity-60"
+                className="inline-flex items-center gap-1.5 rounded-md bg-white px-3 py-1.5 text-xs font-medium text-cyan-700 ring-1 ring-inset ring-cyan-300 transition hover:bg-cyan-100 disabled:opacity-60"
               >
                 {t("auditSelected")}
               </button>
@@ -211,7 +211,7 @@ export default function LeadsTableSection({
       {leads.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-16 text-center">
           <svg
-            className="h-12 w-12 text-gray-300"
+            className="h-12 w-12 text-zinc-300"
             fill="none"
             viewBox="0 0 24 24"
             stroke="currentColor"
@@ -223,16 +223,16 @@ export default function LeadsTableSection({
               d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"
             />
           </svg>
-          <p className="mt-3 text-sm font-medium text-gray-500">
+          <p className="mt-3 text-sm font-medium text-zinc-500">
             {isBeats ? tHome("emptyTitleBeats") : tHome("emptyTitleOther")}
           </p>
-          <p className="mt-1 text-sm text-gray-400">{tHome("emptyHint")}</p>
+          <p className="mt-1 text-sm text-zinc-400">{tHome("emptyHint")}</p>
         </div>
       ) : (
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
-              <tr className="border-b border-gray-100">
+              <tr className="border-b border-zinc-100">
                 <th className="px-4 py-3 text-left">
                   <input
                     type="checkbox"
@@ -242,35 +242,35 @@ export default function LeadsTableSection({
                     }}
                     onChange={toggleAll}
                     aria-label={t("selectAll")}
-                    className="h-4 w-4 cursor-pointer rounded border-gray-300 text-purple-600 focus:ring-purple-500"
+                    className="h-4 w-4 cursor-pointer rounded border-zinc-300 text-cyan-600 focus:ring-cyan-500"
                   />
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-zinc-500 uppercase tracking-wider">
                   {isBeats
                     ? tHome("colArtist")
                     : isUniversal
                       ? tHome("colName")
                       : tHome("colCompany")}
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-zinc-500 uppercase tracking-wider">
                   {isBeats
                     ? tHome("colGenre")
                     : isUniversal
                       ? tHome("colDesc")
                       : tHome("colCategory")}
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-zinc-500 uppercase tracking-wider">
                   {isBeats ? tHome("colProfile") : tHome("colSite")}
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-zinc-500 uppercase tracking-wider">
                   {tHome("colStatus")}
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-zinc-500 uppercase tracking-wider">
                   {isBeats ? tHome("colAudience") : tHome("colAudit")}
                 </th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-100">
+            <tbody className="divide-y divide-zinc-100">
               {leads.map((lead) => (
                 <LeadTableRow
                   key={lead.id}
@@ -309,7 +309,7 @@ function StatusDropdown({
           }
         }}
         defaultValue=""
-        className="appearance-none rounded-md border border-purple-300 bg-white px-3 py-1.5 pr-7 text-xs font-medium text-purple-700 transition hover:bg-purple-100 disabled:opacity-60"
+        className="appearance-none rounded-md border border-cyan-300 bg-white px-3 py-1.5 pr-7 text-xs font-medium text-cyan-700 transition hover:bg-cyan-100 disabled:opacity-60"
       >
         <option value="" disabled>
           {t("changeStatus")}

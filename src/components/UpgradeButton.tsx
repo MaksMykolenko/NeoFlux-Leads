@@ -39,7 +39,7 @@ export default function UpgradeButton({
         type="button"
         onClick={onClick}
         disabled={isPending}
-        className={`${className ?? ""} disabled:cursor-progress disabled:opacity-70`}
+        className={`${className ?? ""} active:scale-95 disabled:cursor-progress disabled:opacity-70`}
       >
         {isPending ? (
           <span className="inline-flex items-center gap-2">
@@ -51,7 +51,9 @@ export default function UpgradeButton({
         )}
       </button>
       {error && (
-        <p className="mt-2 text-center text-xs text-red-600">{error}</p>
+        <p className="mt-2 text-center text-xs text-red-600 dark:text-red-400">
+          {error}
+        </p>
       )}
     </div>
   );

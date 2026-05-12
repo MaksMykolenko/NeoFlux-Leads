@@ -45,12 +45,12 @@ export default function StatusPicker({
           onChange={handleChange}
           disabled={isPending}
           aria-label="Статус ліда"
-          className={`appearance-none cursor-pointer rounded-full pl-3.5 pr-9 py-1.5 text-xs font-medium ring-1 ring-inset transition-colors focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-purple-500 disabled:cursor-wait disabled:opacity-60 ${getStatusClasses(
+          className={`appearance-none cursor-pointer rounded-full pl-3.5 pr-9 py-1.5 text-xs font-medium ring-1 ring-inset transition-colors focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-cyan-500 disabled:cursor-wait disabled:opacity-60 ${getStatusClasses(
             status
           )}`}
         >
           {LEAD_STATUSES.map((value) => (
-            <option key={value} value={value} className="bg-white text-gray-900">
+            <option key={value} value={value} className="bg-white text-zinc-900">
               {value}
             </option>
           ))}
