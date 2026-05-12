@@ -32,10 +32,10 @@ export default async function AdminUsersPage({
   return (
     <main className="mx-auto max-w-6xl px-4 py-8 sm:px-6 lg:px-8">
       <header>
-        <h1 className="text-2xl font-semibold tracking-tight text-zinc-900">
+        <h1 className="text-2xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
           {t("title")}
         </h1>
-        <p className="mt-1 text-sm text-zinc-500">{t("subtitle")}</p>
+        <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">{t("subtitle")}</p>
       </header>
 
       {stats && (
@@ -132,7 +132,7 @@ function StatCard({
         accent ? "border-cyan-200 ring-1 ring-cyan-100" : "border-zinc-200"
       }`}
     >
-      <p className="text-xs font-semibold uppercase tracking-wider text-zinc-500">
+      <p className="text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
         {label}
       </p>
       <p
@@ -142,7 +142,7 @@ function StatCard({
       >
         {value}
       </p>
-      {hint && <p className="mt-1 text-xs text-zinc-400">{hint}</p>}
+      {hint && <p className="mt-1 text-xs text-zinc-400 dark:text-zinc-500">{hint}</p>}
     </div>
   );
 }
@@ -160,14 +160,14 @@ function PlanDistributionCard({
 }) {
   const percent = total > 0 ? Math.round((count / total) * 100) : 0;
   return (
-    <div className="rounded-lg border border-zinc-200 bg-white p-4">
+    <div className="rounded-lg border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-900">
       <div className="flex items-baseline justify-between gap-2 text-sm">
-        <span className="font-medium text-zinc-700">{planName}</span>
-        <span className="tabular-nums text-zinc-500">
+        <span className="font-medium text-zinc-700 dark:text-zinc-300">{planName}</span>
+        <span className="tabular-nums text-zinc-500 dark:text-zinc-400">
           {count} ({percent}%)
         </span>
       </div>
-      <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-zinc-100">
+      <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-zinc-100 dark:bg-zinc-800">
         <div
           className={`h-full rounded-full ${accentClass}`}
           style={{ width: `${percent}%` }}

@@ -26,18 +26,18 @@ export default function AdminUsersTable({
 }: AdminUsersTableProps) {
   if (users.length === 0) {
     return (
-      <div className="rounded-xl border border-zinc-200 bg-white p-12 text-center text-sm text-zinc-500">
+      <div className="rounded-xl border border-zinc-200 bg-white p-12 text-center text-sm text-zinc-500 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-400">
         Користувачів ще немає.
       </div>
     );
   }
 
   return (
-    <div className="overflow-hidden rounded-xl border border-zinc-200 bg-white shadow-sm">
+    <div className="overflow-hidden rounded-xl border border-zinc-200 bg-white shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
       <div className="overflow-x-auto">
         <table className="w-full text-sm">
           <thead>
-            <tr className="border-b border-zinc-100 bg-zinc-50/50">
+            <tr className="border-b border-zinc-100 bg-zinc-50/50 dark:border-zinc-800">
               <Th>Користувач</Th>
               <Th>Роль</Th>
               <Th>План</Th>
@@ -46,7 +46,7 @@ export default function AdminUsersTable({
               <Th>Останній вхід</Th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-zinc-100">
+          <tbody className="divide-y divide-zinc-100 dark:divide-zinc-800">
             {users.map((u) => (
               <UserRow
                 key={u.id}
@@ -118,7 +118,7 @@ function UserRow({
             <img
               src={user.avatarUrl}
               alt=""
-              className="h-8 w-8 flex-shrink-0 rounded-full object-cover ring-1 ring-zinc-200"
+              className="h-8 w-8 flex-shrink-0 rounded-full object-cover ring-1 ring-zinc-200 dark:ring-zinc-700"
             />
           ) : (
             <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-cyan-100 text-xs font-medium text-cyan-700">
@@ -128,10 +128,10 @@ function UserRow({
             </div>
           )}
           <div className="min-w-0">
-            <div className="truncate font-medium text-zinc-900">
+            <div className="truncate font-medium text-zinc-900 dark:text-zinc-50">
               {user.displayName || user.username || "—"}
             </div>
-            <div className="truncate text-xs text-zinc-500">
+            <div className="truncate text-xs text-zinc-500 dark:text-zinc-400">
               {user.email ?? "немає email"}
             </div>
           </div>
@@ -145,7 +145,7 @@ function UserRow({
             value={role}
             onChange={(e) => handleRoleChange(e.target.value as Role)}
             disabled={isPending}
-            className="rounded-md border border-zinc-200 bg-white px-2 py-1 text-xs font-medium text-zinc-700 shadow-sm transition focus:border-cyan-500 focus:outline-none focus:ring-1 focus:ring-cyan-500 disabled:opacity-60"
+            className="rounded-md border border-zinc-200 bg-white px-2 py-1 text-xs font-medium text-zinc-700 shadow-sm transition focus:border-cyan-500 focus:outline-none focus:ring-1 focus:ring-cyan-500 disabled:opacity-60 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-300"
           >
             {ROLES.map((r) => (
               <option key={r} value={r}>
@@ -163,7 +163,7 @@ function UserRow({
           value={plan}
           onChange={(e) => handlePlanChange(e.target.value as PlanId)}
           disabled={isPending}
-          className="rounded-md border border-zinc-200 bg-white px-2 py-1 text-xs font-medium text-zinc-700 shadow-sm transition focus:border-cyan-500 focus:outline-none focus:ring-1 focus:ring-cyan-500 disabled:opacity-60"
+          className="rounded-md border border-zinc-200 bg-white px-2 py-1 text-xs font-medium text-zinc-700 shadow-sm transition focus:border-cyan-500 focus:outline-none focus:ring-1 focus:ring-cyan-500 disabled:opacity-60 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-300"
         >
           {PLAN_ORDER.map((id) => (
             <option key={id} value={id}>
@@ -178,10 +178,10 @@ function UserRow({
       </Td>
 
       <Td align="right">
-        <span className="tabular-nums text-zinc-500">
+        <span className="tabular-nums text-zinc-500 dark:text-zinc-400">
           {user.leadsProcessedCount}
           {Number.isFinite(PLANS[plan].leadsPerMonth) && (
-            <span className="text-zinc-300">
+            <span className="text-zinc-300 dark:text-zinc-600">
               {" "}
               / {PLANS[plan].leadsPerMonth}
             </span>
@@ -191,9 +191,9 @@ function UserRow({
 
       <Td>
         {user.lastLoginAt ? (
-          <span className="text-zinc-500">{formatDate(user.lastLoginAt)}</span>
+          <span className="text-zinc-500 dark:text-zinc-400">{formatDate(user.lastLoginAt)}</span>
         ) : (
-          <span className="text-zinc-300">—</span>
+          <span className="text-zinc-300 dark:text-zinc-600">—</span>
         )}
       </Td>
     </tr>

@@ -85,16 +85,16 @@ export default function LeadKanbanBoard({ leads }: LeadKanbanBoardProps) {
 
   if (optimisticLeads.length === 0) {
     return (
-      <div className="rounded-lg border border-zinc-800 bg-zinc-950 p-12 text-center">
-        <p className="text-sm text-zinc-400">{t("empty")}</p>
+      <div className="rounded-md border border-zinc-200 bg-white p-12 text-center dark:border-zinc-800 dark:bg-zinc-900">
+        <p className="text-sm text-zinc-500 dark:text-zinc-400">{t("empty")}</p>
       </div>
     );
   }
 
   return (
-    <div className="rounded-lg border border-zinc-800 bg-[#1a1a1a]">
+    <div className="rounded-md border border-zinc-200 bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-900">
       {error && (
-        <div className="border-b border-red-900 bg-red-950 px-4 py-2 text-xs text-red-300">
+        <div className="border-b border-red-200 bg-red-50 px-4 py-2 text-xs text-red-700 dark:border-red-500/30 dark:bg-red-500/10 dark:text-red-300">
           {error}
         </div>
       )}
@@ -127,10 +127,10 @@ function KanbanColumn({
   return (
     <div className="flex w-72 flex-shrink-0 flex-col">
       <div className="flex items-center justify-between gap-2 px-2 py-2">
-        <h3 className="text-xs font-semibold uppercase tracking-wider text-zinc-300">
+        <h3 className="text-xs font-semibold uppercase tracking-wider text-zinc-700 dark:text-zinc-300">
           {t(`status.${status}`)}
         </h3>
-        <span className="inline-flex h-5 min-w-[20px] items-center justify-center rounded-full bg-zinc-800 px-1.5 text-[10px] font-medium tabular-nums text-zinc-400">
+        <span className="inline-flex h-5 min-w-[20px] items-center justify-center rounded-full bg-zinc-200 px-1.5 text-[10px] font-medium tabular-nums text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400 ">
           {leads.length}
         </span>
       </div>
@@ -141,8 +141,8 @@ function KanbanColumn({
             {...provided.droppableProps}
             className={`flex min-h-[120px] flex-col gap-2 rounded-md border p-2 transition-colors ${
               snapshot.isDraggingOver
-                ? "border-cyan-600 bg-cyan-950/30"
-                : "border-zinc-800 bg-zinc-900/40"
+                ? "border-cyan-400 bg-cyan-50 dark:border-cyan-500/60 dark:bg-cyan-500/10"
+                : "border-zinc-200 bg-white/60 dark:border-zinc-800 dark:bg-zinc-950/40"
             }`}
           >
             {leads.map((lead, index) => (
@@ -158,10 +158,10 @@ function KanbanColumn({
                     {...provided.draggableProps}
                     {...provided.dragHandleProps}
                     style={provided.draggableProps.style}
-                    className={`select-none rounded-md border bg-zinc-900 p-3 text-sm transition-colors ${
+                    className={`select-none rounded-md border bg-white p-3 text-sm shadow-sm transition-colors dark:bg-zinc-900 ${
                       snapshot.isDragging
-                        ? "border-cyan-500"
-                        : "border-zinc-800 hover:border-zinc-700"
+                        ? "border-cyan-500 ring-2 ring-cyan-500/20"
+                        : "border-zinc-200 hover:border-zinc-300 dark:border-zinc-800 dark:hover:border-zinc-700"
                     }`}
                   >
                     <KanbanCard lead={lead} />
@@ -172,7 +172,9 @@ function KanbanColumn({
             {provided.placeholder}
             {leads.length === 0 && !snapshot.isDraggingOver && (
               <div className="flex flex-1 items-center justify-center py-4">
-                <span className="text-[11px] text-zinc-600">{t("dropHere")}</span>
+                <span className="text-[11px] text-zinc-400 dark:text-zinc-600 ">
+                  {t("dropHere")}
+                </span>
               </div>
             )}
           </div>
@@ -187,19 +189,21 @@ function KanbanCard({ lead }: { lead: KanbanLead }) {
   return (
     <div className="flex flex-col gap-2">
       <div className="flex items-start justify-between gap-2">
-        <p className="line-clamp-2 text-sm font-medium leading-snug text-zinc-100">
+        <p className="line-clamp-2 text-sm font-medium leading-snug text-zinc-900 dark:text-zinc-100 ">
           {lead.companyName}
         </p>
         <ScoreIndicator score={lead.score} />
       </div>
       {subtitle && (
-        <p className="line-clamp-1 text-xs text-zinc-500">{subtitle}</p>
+        <p className="line-clamp-1 text-xs text-zinc-500 dark:text-zinc-400">
+          {subtitle}
+        </p>
       )}
       <div className="flex items-center justify-between gap-2 pt-1">
         <ModeBadge mode={lead.mode} />
         <a
           href={`/leads/${lead.id}`}
-          className="text-[10px] font-medium uppercase tracking-wider text-zinc-500 transition hover:text-cyan-400"
+          className="text-[10px] font-medium uppercase tracking-wider text-zinc-500 transition-colors hover:text-cyan-600 dark:text-zinc-400 dark:hover:text-cyan-400"
         >
           →
         </a>
@@ -219,10 +223,10 @@ function ScoreIndicator({ score }: { score: number }) {
         : "bg-red-500";
   const textClass =
     tone === "score-high"
-      ? "text-emerald-400"
+      ? "text-emerald-600 dark:text-emerald-400"
       : tone === "score-mid"
-        ? "text-amber-400"
-        : "text-red-400";
+        ? "text-amber-600 dark:text-amber-400"
+        : "text-red-600 dark:text-red-400";
 
   return (
     <span className="inline-flex flex-shrink-0 items-center gap-1">
@@ -238,15 +242,18 @@ function ModeBadge({ mode }: { mode: LeadMode }) {
   const config: Record<LeadMode, { label: string; className: string }> = {
     LOCAL: {
       label: "LOCAL",
-      className: "bg-zinc-800 text-zinc-300 ring-zinc-700",
+      className:
+        "bg-zinc-100 text-zinc-700 ring-zinc-200 dark:bg-zinc-800 dark:text-zinc-300 dark:ring-zinc-700",
     },
     BEATS: {
       label: "BEATS",
-      className: "bg-cyan-950 text-cyan-300 ring-cyan-800",
+      className:
+        "bg-cyan-50 text-cyan-700 ring-cyan-200 dark:bg-cyan-500/15 dark:text-cyan-300 dark:ring-cyan-500/30",
     },
     UNIVERSAL: {
       label: "UNIVERSAL",
-      className: "bg-zinc-800 text-zinc-400 ring-zinc-700",
+      className:
+        "bg-zinc-100 text-zinc-600 ring-zinc-200 dark:bg-zinc-800 dark:text-zinc-400 dark:ring-zinc-700",
     },
   };
   const { label, className } = config[mode];

@@ -249,7 +249,7 @@ const messages = {
     current: "Current plan:",
     perMonth: "/mo",
     paymentNote:
-      "Billing is not integrated yet. To change plans, contact the NeoFlux team on Telegram.",
+      "Secure payments via Stripe. Cancel or change plan anytime under Manage subscription.",
     popular: "Most popular",
     leadsLine:
       "{formatted} new leads{perMonthSuffix}",

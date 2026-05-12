@@ -44,7 +44,7 @@ export default function UsageMeter({ status, plan }: UsageMeterProps) {
     <div className={`rounded-md border px-4 py-2.5 ${trackColor}`}>
       <div className="flex items-center justify-between gap-3 text-sm">
         <div className="min-w-0">
-          <span className="font-medium text-zinc-900 dark:text-zinc-100">
+          <span className="font-medium text-zinc-900 dark:text-zinc-100 ">
             {plan.name}
           </span>
           <span className="text-zinc-600 dark:text-zinc-400">

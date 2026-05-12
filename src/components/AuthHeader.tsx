@@ -33,7 +33,7 @@ export default async function AuthHeader() {
         {/* ─── Brand ─── */}
         <Link
           href="/"
-          className="group flex flex-shrink-0 items-center gap-2.5 rounded-md py-1 text-zinc-900 transition-all duration-200 hover:opacity-80 focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500 dark:text-zinc-100"
+          className="group flex flex-shrink-0 items-center gap-2.5 rounded-md py-1 text-zinc-900 transition-all duration-200 hover:opacity-80 focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500 dark:text-zinc-100 "
         >
           <BrandMark className="h-7 w-7" />
           <span className="hidden whitespace-nowrap text-sm font-semibold tracking-tight sm:inline">
@@ -67,7 +67,7 @@ export default async function AuthHeader() {
             {plan.name}
           </Link>
 
-          <span className="mx-1 hidden h-5 w-px bg-zinc-200 dark:bg-zinc-800 md:inline-block" />
+          <span className="mx-1 hidden h-5 w-px bg-zinc-200 dark:bg-zinc-800 md:inline-block " />
 
           {/* Profile — клік → /settings (швидкий шлях до налаштувань SMTP) */}
           <Link
@@ -77,7 +77,7 @@ export default async function AuthHeader() {
           >
             <Avatar user={user} fallback={displayName} />
             <div className="hidden min-w-0 lg:block">
-              <div className="truncate text-sm font-medium leading-tight text-zinc-900 dark:text-zinc-100">
+              <div className="truncate text-sm font-medium leading-tight text-zinc-900 dark:text-zinc-100 ">
                 {displayName}
               </div>
               {user.email && (
@@ -130,7 +130,7 @@ function Avatar({
       <img
         src={user.avatarUrl}
         alt=""
-        className="h-7 w-7 flex-shrink-0 rounded-full object-cover ring-1 ring-zinc-200"
+        className="h-7 w-7 flex-shrink-0 rounded-full object-cover ring-1 ring-zinc-200 dark:ring-zinc-700"
       />
     );
   }

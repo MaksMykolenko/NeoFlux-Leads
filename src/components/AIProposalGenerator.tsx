@@ -182,15 +182,15 @@ export default function AIProposalGenerator({
   }
 
   return (
-    <section className="bg-white rounded-xl shadow-sm border border-zinc-200 p-6">
+    <section className="bg-white rounded-xl shadow-sm border border-zinc-200 p-6 dark:bg-zinc-900 dark:border-zinc-800">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-wider text-zinc-500">
+          <p className="text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
             {t("sectionLabel")}
           </p>
-          <h2 className="mt-1 text-base font-semibold text-zinc-900">{t("title")}</h2>
-          <p className="mt-1 text-sm text-zinc-500">{t("description")}</p>
-          <p className="mt-2 text-xs text-zinc-500">{t("emailOnlyNote")}</p>
+          <h2 className="mt-1 text-base font-semibold text-zinc-900 dark:text-zinc-50">{t("title")}</h2>
+          <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">{t("description")}</p>
+          <p className="mt-2 text-xs text-zinc-500 dark:text-zinc-400">{t("emailOnlyNote")}</p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
           <button
@@ -250,7 +250,7 @@ export default function AIProposalGenerator({
             <div>
               <label
                 htmlFor="ai-proposal-subject"
-                className="block text-xs font-semibold uppercase tracking-wider text-zinc-500 mb-1.5"
+                className="block text-xs font-semibold uppercase tracking-wider text-zinc-500 mb-1.5 dark:text-zinc-400"
               >
                 {t("subjectLabel")}
               </label>
@@ -260,14 +260,14 @@ export default function AIProposalGenerator({
                 value={subject}
                 onChange={(event) => setSubject(event.target.value)}
                 placeholder={t("subjectPlaceholder", { company: companyName })}
-                className="block w-full rounded-lg border border-zinc-200 bg-zinc-50 px-4 py-2.5 text-sm text-zinc-900 focus:border-cyan-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-cyan-100"
+                className="block w-full rounded-lg border border-zinc-200 bg-zinc-50 px-4 py-2.5 text-sm text-zinc-900 focus:border-cyan-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-cyan-100 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-50 dark:focus:bg-zinc-900"
               />
             </div>
 
             <div>
               <label
                 htmlFor="ai-proposal-body"
-                className="block text-xs font-semibold uppercase tracking-wider text-zinc-500 mb-1.5"
+                className="block text-xs font-semibold uppercase tracking-wider text-zinc-500 mb-1.5 dark:text-zinc-400"
               >
                 {t("bodyLabel")}
               </label>
@@ -276,13 +276,13 @@ export default function AIProposalGenerator({
                 value={text}
                 onChange={(event) => setText(event.target.value)}
                 rows={Math.min(Math.max(text.split("\n").length + 1, 8), 18)}
-                className="block w-full resize-y rounded-lg border border-zinc-200 bg-zinc-50 px-4 py-3 text-sm leading-relaxed text-zinc-900 shadow-inner focus:border-cyan-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-cyan-100"
+                className="block w-full resize-y rounded-lg border border-zinc-200 bg-zinc-50 px-4 py-3 text-sm leading-relaxed text-zinc-900 shadow-inner focus:border-cyan-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-cyan-100 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-50 dark:focus:bg-zinc-900"
               />
             </div>
 
             {/* Re-writer: 3 строгі пласкі кнопки в кіберпанк-палітрі */}
             <div className="flex flex-wrap items-center gap-2 pt-1">
-              <span className="text-[10px] font-semibold uppercase tracking-wider text-zinc-400">
+              <span className="text-[10px] font-semibold uppercase tracking-wider text-zinc-400 dark:text-zinc-500">
                 {t("rewriteLabel")}
               </span>
               {REWRITE_OPTIONS.map((opt) => (
@@ -304,7 +304,7 @@ export default function AIProposalGenerator({
             </div>
 
             <div className="flex flex-wrap items-center justify-between gap-3 pt-1">
-              <span className="text-xs text-zinc-400">{t("editHint")}</span>
+              <span className="text-xs text-zinc-400 dark:text-zinc-500">{t("editHint")}</span>
               <div className="flex items-center gap-2">
                 <button
                   type="button"
@@ -331,7 +331,7 @@ export default function AIProposalGenerator({
                   type="button"
                   onClick={handleSave}
                   disabled={isSaving || isAlreadySaved || !subject.trim()}
-                  className="inline-flex items-center gap-1.5 rounded-md bg-zinc-100 px-3 py-1.5 text-xs font-medium text-zinc-800 ring-1 ring-inset ring-zinc-200 transition-colors hover:bg-zinc-200 disabled:cursor-not-allowed disabled:opacity-60"
+                  className="inline-flex items-center gap-1.5 rounded-md bg-zinc-100 px-3 py-1.5 text-xs font-medium text-zinc-800 ring-1 ring-inset ring-zinc-200 transition-colors hover:bg-zinc-200 disabled:cursor-not-allowed disabled:opacity-60 dark:bg-zinc-800 dark:text-zinc-100 dark:ring-zinc-700 dark:hover:bg-zinc-700"
                 >
                   <SaveIcon className="w-3.5 h-3.5" />
                   {isSaving
@@ -370,8 +370,8 @@ export default function AIProposalGenerator({
           </div>
         ) : (
           <div className="flex flex-col items-center justify-center text-center py-8">
-            <SparkleIcon className="w-8 h-8 text-zinc-300" />
-            <p className="mt-3 text-sm text-zinc-500">{t("emptyState")}</p>
+            <SparkleIcon className="w-8 h-8 text-zinc-300 dark:text-zinc-600" />
+            <p className="mt-3 text-sm text-zinc-500 dark:text-zinc-400">{t("emptyState")}</p>
           </div>
         )}
       </div>
@@ -415,7 +415,7 @@ export default function AIProposalGenerator({
       )}
 
       {!canSendEmail && hasText && (
-        <p className="mt-3 text-xs text-zinc-400">{t("noEmailHint")}</p>
+        <p className="mt-3 text-xs text-zinc-400 dark:text-zinc-500">{t("noEmailHint")}</p>
       )}
     </section>
   );
@@ -423,8 +423,8 @@ export default function AIProposalGenerator({
 
 function SkeletonLoader({ label }: { label: string }) {
   return (
-    <div className="rounded-lg border border-zinc-200 bg-zinc-50 p-4">
-      <div className="flex items-center gap-2 text-sm text-zinc-500">
+    <div className="rounded-lg border border-zinc-200 bg-zinc-50 p-4 dark:border-zinc-800 dark:bg-zinc-900">
+      <div className="flex items-center gap-2 text-sm text-zinc-500 dark:text-zinc-400">
         <svg
           className="h-4 w-4 animate-spin text-cyan-600"
           xmlns="http://www.w3.org/2000/svg"
@@ -448,11 +448,11 @@ function SkeletonLoader({ label }: { label: string }) {
         {label}
       </div>
       <div className="mt-4 space-y-2.5">
-        <div className="h-3 w-3/5 animate-pulse rounded bg-zinc-200" />
-        <div className="h-3 w-full animate-pulse rounded bg-zinc-200" />
-        <div className="h-3 w-11/12 animate-pulse rounded bg-zinc-200" />
-        <div className="h-3 w-4/5 animate-pulse rounded bg-zinc-200" />
-        <div className="h-3 w-2/3 animate-pulse rounded bg-zinc-200" />
+        <div className="h-3 w-3/5 animate-pulse rounded bg-zinc-200 dark:bg-zinc-700" />
+        <div className="h-3 w-full animate-pulse rounded bg-zinc-200 dark:bg-zinc-700" />
+        <div className="h-3 w-11/12 animate-pulse rounded bg-zinc-200 dark:bg-zinc-700" />
+        <div className="h-3 w-4/5 animate-pulse rounded bg-zinc-200 dark:bg-zinc-700" />
+        <div className="h-3 w-2/3 animate-pulse rounded bg-zinc-200 dark:bg-zinc-700" />
       </div>
     </div>
   );

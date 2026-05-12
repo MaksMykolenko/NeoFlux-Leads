@@ -35,7 +35,7 @@ export default function AuditButton({
       <div className="flex flex-col items-start gap-0.5">
         <span className="text-xs font-medium text-green-700">Аудит пройдено</span>
         {issuesCount !== undefined && issuesCount > 0 && (
-          <span className="text-xs text-zinc-400">
+          <span className="text-xs text-zinc-400 dark:text-zinc-500">
             {issuesCount} {issuesCount === 1 ? "проблема" : issuesCount < 5 ? "проблеми" : "проблем"}
           </span>
         )}

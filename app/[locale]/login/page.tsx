@@ -95,7 +95,7 @@ export default async function LoginPage({
             href="https://fluxid.fluxmarketplace.store/auth/sign-up.html"
             target="_blank"
             rel="noopener noreferrer"
-            className="font-medium text-zinc-600 hover:text-zinc-900 hover:underline dark:text-zinc-400 dark:hover:text-zinc-200"
+            className="font-medium text-zinc-600 hover:text-zinc-900 hover:underline dark:text-zinc-400 dark:hover:text-zinc-200 "
           >
             {t("register")}
           </a>

@@ -30,11 +30,11 @@ export default async function SettingsPage({
   });
 
   return (
-    <main className="min-h-screen bg-zinc-50">
+    <main className="min-h-screen bg-zinc-50 dark:bg-zinc-900">
       <div className="mx-auto max-w-3xl px-4 py-10 sm:px-6 lg:px-8">
         <Link
           href="/"
-          className="inline-flex items-center gap-1.5 text-sm font-medium text-zinc-500 transition-colors hover:text-zinc-900"
+          className="inline-flex items-center gap-1.5 text-sm font-medium text-zinc-500 transition-colors hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -52,18 +52,18 @@ export default async function SettingsPage({
         </Link>
 
         <header className="mt-6">
-          <h1 className="text-2xl font-semibold tracking-tight text-zinc-900">
+          <h1 className="text-2xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
             {t("title")}
           </h1>
-          <p className="mt-1 text-sm text-zinc-500">{t("subtitle")}</p>
+          <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">{t("subtitle")}</p>
         </header>
 
         <section className="mt-8">
           <div className="mb-4">
-            <h2 className="text-base font-semibold text-zinc-900">
+            <h2 className="text-base font-semibold text-zinc-900 dark:text-zinc-50">
               {t("smtpSectionTitle")}
             </h2>
-            <p className="mt-1 text-sm text-zinc-500">{t("smtpSectionSubtitle")}</p>
+            <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">{t("smtpSectionSubtitle")}</p>
           </div>
           <SmtpSettingsForm
             user={{

@@ -14,13 +14,13 @@ export default async function AdminLayout({
   const t = await getTranslations("AdminLayout");
 
   return (
-    <div className="min-h-screen bg-zinc-50">
-      <div className="border-b border-zinc-200 bg-white">
+    <div className="min-h-screen bg-zinc-50 dark:bg-zinc-900">
+      <div className="border-b border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-900">
         <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-3 sm:px-6 lg:px-8">
           <div className="flex items-center gap-3">
             <Link
               href="/"
-              className="flex items-center gap-1.5 text-sm font-medium text-zinc-500 transition-colors hover:text-zinc-900"
+              className="flex items-center gap-1.5 text-sm font-medium text-zinc-500 transition-colors hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100"
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -36,15 +36,15 @@ export default async function AdminLayout({
               </svg>
               {t("backToWorkspace")}
             </Link>
-            <span className="text-zinc-300">|</span>
-            <span className="text-sm font-semibold text-zinc-900">
+            <span className="text-zinc-300 dark:text-zinc-600">|</span>
+            <span className="text-sm font-semibold text-zinc-900 dark:text-zinc-50">
               {t("centerTitle")}
             </span>
           </div>
           <div className="flex items-center gap-2">
             <Link
               href="/admin/users"
-              className="rounded-md px-3 py-1.5 text-xs font-medium text-zinc-700 transition hover:bg-zinc-100"
+              className="rounded-md px-3 py-1.5 text-xs font-medium text-zinc-700 transition hover:bg-zinc-100 dark:text-zinc-300 dark:hover:bg-zinc-800"
             >
               {t("navUsers")}
             </Link>

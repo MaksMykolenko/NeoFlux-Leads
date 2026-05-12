@@ -98,13 +98,17 @@ export default function CsvUploader() {
   }
 
   return (
-    <div className="rounded-xl border border-zinc-200 bg-white p-5 shadow-sm">
+    <div className="rounded-md border border-zinc-200 bg-white p-5 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
       <div className="flex items-start justify-between gap-3">
         <div>
-          <h3 className="text-sm font-semibold text-zinc-900">{t("title")}</h3>
-          <p className="mt-1 text-xs text-zinc-500">{t("subtitle")}</p>
+          <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-50">
+            {t("title")}
+          </h3>
+          <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
+            {t("subtitle")}
+          </p>
         </div>
-        <span className="inline-flex items-center rounded-full bg-cyan-100 px-2 py-0.5 text-[10px] font-medium uppercase tracking-wider text-cyan-700">
+        <span className="inline-flex items-center rounded-full bg-cyan-100 px-2 py-0.5 text-[10px] font-medium uppercase tracking-wider text-cyan-700 dark:bg-cyan-500/15 dark:text-cyan-300">
           UNIVERSAL
         </span>
       </div>
@@ -113,15 +117,17 @@ export default function CsvUploader() {
         onDragOver={(e) => e.preventDefault()}
         onDrop={onDrop}
         onClick={() => fileRef.current?.click()}
-        className={`mt-4 flex cursor-pointer flex-col items-center justify-center gap-1 rounded-lg border-2 border-dashed border-zinc-300 bg-zinc-50 px-4 py-6 text-center transition hover:border-cyan-400 hover:bg-cyan-50/40 ${
+        className={`mt-4 flex cursor-pointer flex-col items-center justify-center gap-1 rounded-md border-2 border-dashed border-zinc-300 bg-zinc-50 px-4 py-6 text-center transition-all duration-200 hover:border-cyan-400 hover:bg-cyan-50/40 dark:border-zinc-700 dark:bg-zinc-950 dark:hover:border-cyan-500 dark:hover:bg-cyan-500/5 ${
           isPending ? "opacity-60" : ""
         }`}
       >
-        <CsvIcon className="h-7 w-7 text-zinc-400" />
-        <p className="mt-1 text-sm font-medium text-zinc-700">
+        <CsvIcon className="h-7 w-7 text-zinc-400 dark:text-zinc-500" />
+        <p className="mt-1 text-sm font-medium text-zinc-700 dark:text-zinc-300">
           {isPending ? t("importing") : t("dropOrClick")}
         </p>
-        <p className="text-xs text-zinc-400">{t("expectedColumns")}</p>
+        <p className="text-xs text-zinc-400 dark:text-zinc-500">
+          {t("expectedColumns")}
+        </p>
       </div>
 
       <input
@@ -137,10 +143,10 @@ export default function CsvUploader() {
         <div
           className={`mt-3 rounded-md border px-3 py-2 text-xs ${
             feedback.type === "success"
-              ? "border-green-200 bg-green-50 text-green-700"
+              ? "border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-500/30 dark:bg-emerald-500/10 dark:text-emerald-300"
               : feedback.type === "error"
-                ? "border-red-200 bg-red-50 text-red-700"
-                : "border-zinc-200 bg-zinc-50 text-zinc-700"
+                ? "border-red-200 bg-red-50 text-red-700 dark:border-red-500/30 dark:bg-red-500/10 dark:text-red-300"
+                : "border-zinc-200 bg-zinc-50 text-zinc-700 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-300"
           }`}
         >
           {feedback.msg}

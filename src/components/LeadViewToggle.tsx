@@ -37,7 +37,7 @@ export default function LeadViewToggle({ active }: { active: LeadView }) {
     <div
       role="tablist"
       aria-label={t("ariaLabel")}
-      className="inline-flex items-center rounded-md border border-zinc-200 bg-white p-0.5 text-xs"
+      className="inline-flex items-center rounded-md border border-zinc-200 bg-white p-0.5 text-xs dark:border-zinc-800 dark:bg-zinc-900"
     >
       <ToggleButton
         label={t("table")}
@@ -77,10 +77,10 @@ function ToggleButton({
       aria-selected={active}
       onClick={onClick}
       disabled={disabled}
-      className={`inline-flex items-center gap-1.5 rounded px-2.5 py-1 font-medium transition ${
+      className={`inline-flex items-center gap-1.5 rounded px-2.5 py-1 font-medium transition-all duration-200 ${
         active
-          ? "bg-cyan-600 text-white"
-          : "text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900"
+          ? "bg-cyan-500 text-white"
+          : "text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-zinc-100"
       } disabled:cursor-wait disabled:opacity-60`}
     >
       {icon}

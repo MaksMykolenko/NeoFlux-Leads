@@ -124,7 +124,7 @@ export default function BeatOutreach() {
           active={selectedProspects.length > 0}
         >
         {selectedProspects.length === 0 ? (
-          <p className="text-sm text-zinc-400">{t("selectFirst")}</p>
+          <p className="text-sm text-zinc-400 dark:text-zinc-500">{t("selectFirst")}</p>
         ) : (
           <DemoUploader
             demo={demo}
@@ -143,10 +143,10 @@ export default function BeatOutreach() {
           active={!!(selectedProspects.length && demo)}
         >
         {!demo || !selectedProspects.length ? (
-          <p className="text-sm text-zinc-400">{t("selectAndDemo")}</p>
+          <p className="text-sm text-zinc-400 dark:text-zinc-500">{t("selectAndDemo")}</p>
         ) : (
           <div className="space-y-3">
-            <p className="rounded-md border border-zinc-100 bg-zinc-50 px-3 py-2 text-xs text-zinc-600">
+            <p className="rounded-md border border-zinc-100 bg-zinc-50 px-3 py-2 text-xs text-zinc-600 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-400">
               {t("flowNoteBefore")}
               <Link
                 href="/settings"
@@ -229,7 +229,7 @@ function ArtistSearch({
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           disabled={pending}
-          className="flex-1 rounded-lg border border-zinc-300 bg-zinc-50 px-4 py-2.5 text-sm focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:opacity-60"
+          className="flex-1 rounded-lg border border-zinc-300 bg-zinc-50 px-4 py-2.5 text-sm focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:opacity-60 dark:border-zinc-700 dark:bg-zinc-900 dark:focus:bg-zinc-900"
         />
         <button
           type="submit"
@@ -240,7 +240,7 @@ function ArtistSearch({
           <span>{pending ? t("aiSearching") : t("findBuyers")}</span>
         </button>
       </form>
-      <p className="mt-2 text-[11px] text-zinc-400">{t("searchFooter")}</p>
+      <p className="mt-2 text-[11px] text-zinc-400 dark:text-zinc-500">{t("searchFooter")}</p>
     </div>
   );
 }
@@ -263,8 +263,8 @@ function SearchResults({
   const t = useTranslations("BeatOutreach");
   if (!searched) {
     return (
-      <div className="mt-4 rounded-lg border border-dashed border-zinc-300 bg-zinc-50 px-6 py-10 text-center">
-        <div className="mx-auto flex h-10 w-10 items-center justify-center rounded-full bg-white text-zinc-400 shadow-sm">
+      <div className="mt-4 rounded-lg border border-dashed border-zinc-300 bg-zinc-50 px-6 py-10 text-center dark:border-zinc-700 dark:bg-zinc-900">
+        <div className="mx-auto flex h-10 w-10 items-center justify-center rounded-full bg-white text-zinc-400 shadow-sm dark:bg-zinc-900 dark:text-zinc-500">
           <svg
             xmlns="http://www.w3.org/2000/svg"
             viewBox="0 0 20 20"
@@ -279,8 +279,8 @@ function SearchResults({
             />
           </svg>
         </div>
-        <p className="mt-3 text-sm font-medium text-zinc-700">{t("idleTitle")}</p>
-        <p className="mt-1 text-xs text-zinc-500">{t("idleHint")}</p>
+        <p className="mt-3 text-sm font-medium text-zinc-700 dark:text-zinc-300">{t("idleTitle")}</p>
+        <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">{t("idleHint")}</p>
       </div>
     );
   }
@@ -295,7 +295,7 @@ function SearchResults({
 
   if (results.length === 0) {
     return (
-      <div className="mt-4 rounded-lg border border-zinc-200 bg-zinc-50 px-4 py-3 text-sm text-zinc-600">
+      <div className="mt-4 rounded-lg border border-zinc-200 bg-zinc-50 px-4 py-3 text-sm text-zinc-600 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-400">
         {t("noResultsAlt")}
       </div>
     );
@@ -352,7 +352,7 @@ function ArtistCard({ artist, selected, onToggle }: ArtistCardProps) {
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2">
-            <span className="text-sm font-semibold text-zinc-900 truncate">
+            <span className="text-sm font-semibold text-zinc-900 truncate dark:text-zinc-50">
               {artist.handle}
             </span>
             {artist.lookingForType && (
@@ -361,10 +361,10 @@ function ArtistCard({ artist, selected, onToggle }: ArtistCardProps) {
               </span>
             )}
           </div>
-          <p className="text-xs text-zinc-500 mt-0.5">
+          <p className="text-xs text-zinc-500 mt-0.5 dark:text-zinc-400">
             {artist.realName} · {artist.genre}
           </p>
-          <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-zinc-500">
+          <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-zinc-500 dark:text-zinc-400">
             {profileHref ? (
               <a
                 href={profileHref}
@@ -378,7 +378,7 @@ function ArtistCard({ artist, selected, onToggle }: ArtistCardProps) {
             ) : (
               <span>{artist.platform}</span>
             )}
-            <span className="text-zinc-300 hidden sm:inline">·</span>
+            <span className="text-zinc-300 hidden sm:inline dark:text-zinc-600">·</span>
             <span className="tabular-nums">
               {t("cardFollowers", { count: fmtFollowers(artist.followers) })}
             </span>
@@ -407,7 +407,7 @@ function ArtistCard({ artist, selected, onToggle }: ArtistCardProps) {
                 target={def.key === "phone" || def.key === "email" ? undefined : "_blank"}
                 rel={def.key === "phone" || def.key === "email" ? undefined : "noopener noreferrer"}
                 onClick={(e) => e.stopPropagation()}
-                className="inline-flex items-center gap-1 rounded-md bg-zinc-100 px-1.5 py-0.5 text-[10px] font-medium text-zinc-700 hover:bg-zinc-200 hover:text-zinc-900 transition-colors"
+                className="inline-flex items-center gap-1 rounded-md bg-zinc-100 px-1.5 py-0.5 text-[10px] font-medium text-zinc-700 hover:bg-zinc-200 hover:text-zinc-900 transition-colors dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700 dark:hover:text-zinc-100"
               >
                 <def.Icon className="w-3 h-3" />
                 {ui.label}
@@ -487,7 +487,7 @@ function DemoUploader({
           className="hidden"
           onChange={(e) => handleFile(e.target.files?.[0] ?? undefined)}
         />
-        <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-white text-zinc-400 shadow-sm">
+        <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-white text-zinc-400 shadow-sm dark:bg-zinc-900 dark:text-zinc-500">
           <svg
             xmlns="http://www.w3.org/2000/svg"
             viewBox="0 0 24 24"
@@ -504,8 +504,8 @@ function DemoUploader({
             />
           </svg>
         </div>
-        <p className="mt-3 text-sm font-medium text-zinc-900">{t("dropzoneTitle")}</p>
-        <p className="mt-1 text-xs text-zinc-500">{t("dropzoneHint")}</p>
+        <p className="mt-3 text-sm font-medium text-zinc-900 dark:text-zinc-50">{t("dropzoneTitle")}</p>
+        <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">{t("dropzoneHint")}</p>
       </div>
     );
   }
@@ -513,7 +513,7 @@ function DemoUploader({
   const set = (patch: Partial<DemoState>) => onChange({ ...demo, ...patch });
 
   return (
-    <div className="rounded-xl border border-zinc-200 bg-white p-4 space-y-4">
+    <div className="rounded-xl border border-zinc-200 bg-white p-4 space-y-4 dark:border-zinc-800 dark:bg-zinc-900">
       <div className="flex items-start gap-3">
         <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg bg-violet-100 text-violet-700">
           <svg
@@ -527,31 +527,31 @@ function DemoUploader({
           </svg>
         </div>
         <div className="min-w-0 flex-1">
-          <p className="text-sm font-semibold text-zinc-900 truncate">
+          <p className="text-sm font-semibold text-zinc-900 truncate dark:text-zinc-50">
             {demo.name}
           </p>
-          <p className="text-xs text-zinc-500">{fmtBytes(demo.bytes)}</p>
+          <p className="text-xs text-zinc-500 dark:text-zinc-400">{fmtBytes(demo.bytes)}</p>
         </div>
         <button
           type="button"
           onClick={() => onChange(null)}
-          className="p-1.5 rounded-md text-zinc-400 hover:text-red-600 hover:bg-red-50 transition-colors"
+          className="p-1.5 rounded-md text-zinc-400 hover:text-red-600 hover:bg-red-50 transition-colors dark:text-zinc-500"
           aria-label={t("removeDemoAria")}
         >
           <XIcon className="w-4 h-4" />
         </button>
       </div>
       <WatermarkedAudio src={demo.url} watermark={watermark} />
-      <label className="flex items-center gap-2 text-xs text-zinc-600 cursor-pointer">
+      <label className="flex items-center gap-2 text-xs text-zinc-600 cursor-pointer dark:text-zinc-400">
         <input
           type="checkbox"
           checked={watermark}
           onChange={(e) => onWatermarkChange(e.target.checked)}
-          className="h-3.5 w-3.5 rounded border-zinc-300 text-violet-600 focus:ring-violet-500"
+          className="h-3.5 w-3.5 rounded border-zinc-300 text-violet-600 focus:ring-violet-500 dark:border-zinc-700"
         />
         <span>
           <span className="font-medium">{t("voiceTagLabel")}</span>
-          <span className="text-zinc-400">{" "}{t("voiceTagHint")}</span>
+          <span className="text-zinc-400 dark:text-zinc-500">{" "}{t("voiceTagHint")}</span>
         </span>
       </label>
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
@@ -603,7 +603,7 @@ function MetaInput({
 }: MetaInputProps) {
   return (
     <div>
-      <label className="block text-[10px] uppercase tracking-wider text-zinc-400 mb-1">
+      <label className="block text-[10px] uppercase tracking-wider text-zinc-400 mb-1 dark:text-zinc-500">
         {label}
       </label>
       <input
@@ -611,7 +611,7 @@ function MetaInput({
         value={value}
         placeholder={placeholder}
         onChange={(e) => onChange(e.target.value)}
-        className="w-full rounded-md border border-zinc-200 bg-zinc-50 px-2.5 py-1.5 text-sm focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+        className="w-full rounded-md border border-zinc-200 bg-zinc-50 px-2.5 py-1.5 text-sm focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-zinc-800 dark:bg-zinc-900 dark:focus:bg-zinc-900"
       />
     </div>
   );
@@ -895,10 +895,10 @@ function MessageReview({
   const openedCount = openedChannels.size;
 
   return (
-    <div className="rounded-lg border border-zinc-200 bg-white">
-      <div className="flex items-center justify-between gap-3 px-4 py-3 border-b border-zinc-100 bg-zinc-50/60">
+    <div className="rounded-lg border border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-900">
+      <div className="flex items-center justify-between gap-3 px-4 py-3 border-b border-zinc-100 bg-zinc-50/60 dark:border-zinc-800">
         <div>
-          <p className="text-sm font-semibold text-zinc-900">
+          <p className="text-sm font-semibold text-zinc-900 dark:text-zinc-50">
             {profileHref ? (
               <a
                 href={profileHref}
@@ -912,7 +912,7 @@ function MessageReview({
               artist.handle
             )}
           </p>
-          <p className="text-xs text-zinc-500">
+          <p className="text-xs text-zinc-500 dark:text-zinc-400">
             {available.length > 0
               ? t("channelsAvailable", { count: available.length })
               : t("noPublicContacts", { platform: artist.platform })}
@@ -922,7 +922,7 @@ function MessageReview({
           <button
             type="button"
             onClick={onRemove}
-            className="text-xs text-zinc-400 hover:text-red-600 transition-colors"
+            className="text-xs text-zinc-400 hover:text-red-600 transition-colors dark:text-zinc-500"
           >
             {t("remove")}
           </button>
@@ -935,8 +935,8 @@ function MessageReview({
             <CheckIcon className="w-5 h-5" />
           </div>
           <div>
-            <p className="text-sm font-semibold text-zinc-900">{t("savedHeading")}</p>
-            <p className="text-xs text-zinc-500">
+            <p className="text-sm font-semibold text-zinc-900 dark:text-zinc-50">{t("savedHeading")}</p>
+            <p className="text-xs text-zinc-500 dark:text-zinc-400">
               {t("savedBody")}
               {openedCount > 0 && (
                 <>
@@ -954,25 +954,25 @@ function MessageReview({
       ) : (
         <div className="p-4 space-y-3">
           <div>
-            <label className="block text-[10px] uppercase tracking-wider text-zinc-500 mb-1">
+            <label className="block text-[10px] uppercase tracking-wider text-zinc-500 mb-1 dark:text-zinc-400">
               {t("reviewSubject")}
             </label>
             <input
               type="text"
               value={subject}
               onChange={(e) => setSubject(e.target.value)}
-              className="block w-full rounded-md border border-zinc-200 bg-zinc-50 px-3 py-2 text-sm focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="block w-full rounded-md border border-zinc-200 bg-zinc-50 px-3 py-2 text-sm focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-zinc-800 dark:bg-zinc-900 dark:focus:bg-zinc-900"
             />
           </div>
           <div>
-            <label className="block text-[10px] uppercase tracking-wider text-zinc-500 mb-1">
+            <label className="block text-[10px] uppercase tracking-wider text-zinc-500 mb-1 dark:text-zinc-400">
               {t("letterBody")}
             </label>
             <textarea
               value={body}
               rows={9}
               onChange={(e) => setBody(e.target.value)}
-              className="block w-full resize-y rounded-md border border-zinc-200 bg-zinc-50 px-3 py-2 text-sm leading-relaxed focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="block w-full resize-y rounded-md border border-zinc-200 bg-zinc-50 px-3 py-2 text-sm leading-relaxed focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-zinc-800 dark:bg-zinc-900 dark:focus:bg-zinc-900"
             />
           </div>
 
@@ -1021,12 +1021,12 @@ function MessageReview({
           </div>
 
           {available.length > 0 && (
-            <div className="space-y-2 pt-2 border-t border-zinc-100">
+            <div className="space-y-2 pt-2 border-t border-zinc-100 dark:border-zinc-800">
               <div className="flex items-center justify-between">
-                <p className="text-[10px] uppercase tracking-wider text-zinc-500">
+                <p className="text-[10px] uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
                   {t("channelsHeadingLower")}
                 </p>
-                <p className="text-[10px] text-zinc-400">
+                <p className="text-[10px] text-zinc-400 dark:text-zinc-500">
                   {openedCount > 0
                     ? t("openedCount", { count: openedCount })
                     : t("clickToOpenMessenger")}
@@ -1052,7 +1052,7 @@ function MessageReview({
                       <span className="flex items-center gap-2 min-w-0">
                         <def.Icon className="w-3.5 h-3.5 flex-shrink-0" />
                         <span className="font-medium">{ui.label}</span>
-                        <span className="text-zinc-400 truncate">
+                        <span className="text-zinc-400 truncate dark:text-zinc-500">
                           {value.length > 24 ? `${value.slice(0, 24)}…` : value}
                         </span>
                       </span>
@@ -1067,12 +1067,12 @@ function MessageReview({
                   );
                 })}
               </div>
-              <p className="text-[11px] text-zinc-400">{t("noPrefillHint")}</p>
+              <p className="text-[11px] text-zinc-400 dark:text-zinc-500">{t("noPrefillHint")}</p>
             </div>
           )}
 
-          <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-zinc-100">
-            <p className="text-[11px] text-zinc-500">
+          <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-zinc-100 dark:border-zinc-800">
+            <p className="text-[11px] text-zinc-500 dark:text-zinc-400">
               {openedCount === 0
                 ? t("saveHintNoChannel")
                 : t("saveHintChannels", {
@@ -1159,7 +1159,7 @@ function StepCard({
         >
           {n}
         </span>
-        <h2 className="text-base font-semibold text-zinc-900">{title}</h2>
+        <h2 className="text-base font-semibold text-zinc-900 dark:text-zinc-50">{title}</h2>
       </header>
       <div>{children}</div>
     </section>

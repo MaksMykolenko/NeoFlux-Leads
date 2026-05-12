@@ -59,7 +59,7 @@ export default function SmtpSettingsForm({ user }: SmtpSettingsFormProps) {
   return (
     <form
       onSubmit={handleSubmit}
-      className="space-y-5 rounded-xl border border-zinc-200 bg-white p-6 shadow-sm"
+      className="space-y-5 rounded-xl border border-zinc-200 bg-white p-6 shadow-sm dark:border-zinc-800 dark:bg-zinc-900"
     >
       <Field
         label="Host"
@@ -142,8 +142,8 @@ export default function SmtpSettingsForm({ user }: SmtpSettingsFormProps) {
         </Field>
       </div>
 
-      <div className="flex items-center justify-between gap-4 border-t border-zinc-100 pt-4">
-        <p className="text-xs text-zinc-500">
+      <div className="flex items-center justify-between gap-4 border-t border-zinc-100 pt-4 dark:border-zinc-800">
+        <p className="text-xs text-zinc-500 dark:text-zinc-400">
           Кожен лист, відправлений з NeoFlux, отримує невеликий підпис із
           посиланням на сервіс.
         </p>
@@ -185,11 +185,11 @@ function Field({
 }) {
   return (
     <label className="block">
-      <span className="block text-xs font-semibold uppercase tracking-wider text-zinc-500">
+      <span className="block text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
         {label}
       </span>
       <div className="mt-1.5">{children}</div>
-      {hint && <span className="mt-1 block text-xs text-zinc-400">{hint}</span>}
+      {hint && <span className="mt-1 block text-xs text-zinc-400 dark:text-zinc-500">{hint}</span>}
     </label>
   );
 }

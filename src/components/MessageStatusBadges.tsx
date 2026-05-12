@@ -210,7 +210,7 @@ export function DeliveryStatusBadge({
       >
         {normalized === "SENT" && <DotIcon className="text-emerald-500" />}
         {normalized === "FAILED" && <DotIcon className="text-red-500" />}
-        {normalized === "DRAFT" && <DotIcon className="text-zinc-400" />}
+        {normalized === "DRAFT" && <DotIcon className="text-zinc-400 dark:text-zinc-500" />}
         {label}
         {isFailedWithLog && (
           <button
@@ -282,7 +282,7 @@ function ErrorLogDialog({
           <button
             type="button"
             onClick={onClose}
-            className="rounded-md p-1 text-zinc-400 transition-colors hover:bg-zinc-100 hover:text-zinc-700 dark:hover:bg-zinc-800 dark:hover:text-zinc-200"
+            className="rounded-md p-1 text-zinc-400 transition-colors hover:bg-zinc-100 hover:text-zinc-700 dark:hover:bg-zinc-800 dark:hover:text-zinc-200 dark:text-zinc-500"
             aria-label={t("deliveryErrorClose")}
           >
             <svg

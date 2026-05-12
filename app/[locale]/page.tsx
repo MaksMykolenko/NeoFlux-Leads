@@ -125,7 +125,7 @@ export default async function Home({
   }
 
   return (
-    <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950">
+    <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950 ">
       <div className="mx-auto max-w-4xl px-4 py-12 sm:px-6 lg:px-8">
         {showCheckoutSuccess && <CheckoutSuccessBanner />}
         {missingDbEnv && (
@@ -187,7 +187,7 @@ export default async function Home({
           {isBoard ? (
             <div>
               <div className="mb-4 flex items-center justify-between gap-3">
-                <h2 className="text-base font-medium text-zinc-900">
+                <h2 className="text-base font-medium text-zinc-900 dark:text-zinc-50">
                   {t("boardTitle")}
                 </h2>
                 <LeadViewToggle active="board" />

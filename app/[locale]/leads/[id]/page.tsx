@@ -126,11 +126,11 @@ export default async function LeadDetailPage({
         : null;
 
   return (
-    <div className="min-h-screen bg-zinc-50">
+    <div className="min-h-screen bg-zinc-50 dark:bg-zinc-900">
       <div className="mx-auto max-w-5xl px-4 py-10 sm:px-6 lg:px-8">
         <Link
           href={backHref}
-          className="inline-flex items-center gap-1.5 text-sm font-medium text-zinc-500 hover:text-zinc-900 transition-colors"
+          className="inline-flex items-center gap-1.5 text-sm font-medium text-zinc-500 hover:text-zinc-900 transition-colors dark:text-zinc-400 dark:hover:text-zinc-100"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -149,12 +149,12 @@ export default async function LeadDetailPage({
 
         <header className="mt-5 flex flex-wrap items-start justify-between gap-4">
           <div className="min-w-0">
-            <h1 className="text-3xl font-semibold tracking-tight text-zinc-900">
+            <h1 className="text-3xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
               {lead.companyName}
             </h1>
             {isBeats ? (
               (lead.realName || lead.category || lead.source) && (
-                <p className="mt-1.5 text-sm text-zinc-500">
+                <p className="mt-1.5 text-sm text-zinc-500 dark:text-zinc-400">
                   {[lead.realName, lead.category, lead.source]
                     .filter(Boolean)
                     .join(" · ")}
@@ -162,13 +162,13 @@ export default async function LeadDetailPage({
               )
             ) : isUniversal ? (
               lead.notes && (
-                <p className="mt-1.5 text-sm text-zinc-500 line-clamp-3">
+                <p className="mt-1.5 text-sm text-zinc-500 line-clamp-3 dark:text-zinc-400">
                   {lead.notes}
                 </p>
               )
             ) : (
               (lead.category || lead.city) && (
-                <p className="mt-1.5 text-sm text-zinc-500">
+                <p className="mt-1.5 text-sm text-zinc-500 dark:text-zinc-400">
                   {[lead.category, lead.city].filter(Boolean).join(" · ")}
                 </p>
               )
@@ -227,7 +227,7 @@ export default async function LeadDetailPage({
               isBeats ? "" : "lg:col-span-2"
             }`}
           >
-            <h2 className="text-base font-semibold text-zinc-900">
+            <h2 className="text-base font-semibold text-zinc-900 dark:text-zinc-50">
               {t("systemInfoTitle")}
             </h2>
             <dl className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-3">
@@ -279,13 +279,13 @@ function OpportunityScoreCard({
   scoreTitle: string;
 }) {
   return (
-    <section className="bg-white rounded-xl shadow-sm border border-zinc-200 p-6">
+    <section className="bg-white rounded-xl shadow-sm border border-zinc-200 p-6 dark:bg-zinc-900 dark:border-zinc-800">
       <div className="flex items-start justify-between gap-4">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-wider text-zinc-500">
+          <p className="text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
             {scoreHeading}
           </p>
-          <h2 className="mt-1 text-base font-semibold text-zinc-900">
+          <h2 className="mt-1 text-base font-semibold text-zinc-900 dark:text-zinc-50">
             {scoreTitle}
           </h2>
         </div>
@@ -303,20 +303,20 @@ function OpportunityScoreCard({
           >
             {score}
           </span>
-          <span className="text-base text-zinc-400">/ 100</span>
+          <span className="text-base text-zinc-400 dark:text-zinc-500">/ 100</span>
         </div>
         <p className={`text-sm font-medium ${ctx.textColor}`}>{scoreDescription}</p>
       </div>
 
       <div className="mt-6">
-        <div className="h-2 w-full overflow-hidden rounded-full bg-zinc-100">
+        <div className="h-2 w-full overflow-hidden rounded-full bg-zinc-100 dark:bg-zinc-800">
           <div
             className={`h-full rounded-full transition-all ${ctx.barColor}`}
             style={{ width: `${score}%` }}
           />
         </div>
         {footnote ? (
-          <p className="mt-3 text-xs text-zinc-500">{footnote}</p>
+          <p className="mt-3 text-xs text-zinc-500 dark:text-zinc-400">{footnote}</p>
         ) : null}
       </div>
     </section>
@@ -364,18 +364,18 @@ function ContactsCard({
     const channels = getAvailableChannels(parsedContacts);
 
     return (
-      <section className="bg-white rounded-xl shadow-sm border border-zinc-200 p-6">
+      <section className="bg-white rounded-xl shadow-sm border border-zinc-200 p-6 dark:bg-zinc-900 dark:border-zinc-800">
         <div className="flex items-start justify-between gap-3">
-          <h2 className="text-base font-semibold text-zinc-900">{t("contactsTitle")}</h2>
+          <h2 className="text-base font-semibold text-zinc-900 dark:text-zinc-50">{t("contactsTitle")}</h2>
           {channels.length > 0 && (
-            <span className="inline-flex items-center rounded-full bg-zinc-100 px-2.5 py-0.5 text-xs font-medium text-zinc-600">
+            <span className="inline-flex items-center rounded-full bg-zinc-100 px-2.5 py-0.5 text-xs font-medium text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400">
               {channels.length}{" "}
               {channels.length === 1 ? t("channelsOne") : t("channelsMany")}
             </span>
           )}
         </div>
 
-        <dl className="mt-4 divide-y divide-zinc-100 text-sm">
+        <dl className="mt-4 divide-y divide-zinc-100 text-sm dark:divide-zinc-800">
           <ContactRow label={t("realName")} value={lead.realName} emptyLabel={t("notProvided")} />
           <ContactRow label={t("genre")} value={lead.category} emptyLabel={t("notProvided")} />
           <ContactRow label={t("platform")} value={lead.source} emptyLabel={t("notProvided")} />
@@ -385,7 +385,7 @@ function ContactsCard({
             emptyLabel={t("notProvided")}
           >
             {lead.followers != null && (
-              <span className="text-zinc-900 tabular-nums">
+              <span className="text-zinc-900 tabular-nums dark:text-zinc-50">
                 {t("followersFmt", { count: fmtFollowers(lead.followers) })}
               </span>
             )}
@@ -400,14 +400,14 @@ function ContactsCard({
                 {t("seekingBadge")}
               </span>
             ) : (
-              <span className="text-zinc-500">{t("notSeekingPublic")}</span>
+              <span className="text-zinc-500 dark:text-zinc-400">{t("notSeekingPublic")}</span>
             )}
           </ContactRow>
         </dl>
 
         {channels.length > 0 ? (
-          <div className="mt-5 border-t border-zinc-100 pt-5">
-            <h3 className="text-xs font-semibold uppercase tracking-wider text-zinc-500 mb-3">
+          <div className="mt-5 border-t border-zinc-100 pt-5 dark:border-zinc-800">
+            <h3 className="text-xs font-semibold uppercase tracking-wider text-zinc-500 mb-3 dark:text-zinc-400">
               {t("channelsHeading")}
             </h3>
             <div className="grid gap-2 sm:grid-cols-2">
@@ -419,20 +419,20 @@ function ContactsCard({
                     href={def.buildHref(value)}
                     target={def.key === "phone" || def.key === "email" ? undefined : "_blank"}
                     rel="noopener noreferrer"
-                    className="flex items-center gap-2 rounded-md border border-zinc-200 bg-white px-3 py-2 text-xs transition-colors hover:border-zinc-300 hover:bg-zinc-50"
+                    className="flex items-center gap-2 rounded-md border border-zinc-200 bg-white px-3 py-2 text-xs transition-colors hover:border-zinc-300 hover:bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-900 dark:hover:bg-zinc-800"
                   >
-                    <def.Icon className="w-3.5 h-3.5 flex-shrink-0 text-zinc-500" />
-                    <span className="font-medium text-zinc-900 flex-shrink-0">
+                    <def.Icon className="w-3.5 h-3.5 flex-shrink-0 text-zinc-500 dark:text-zinc-400" />
+                    <span className="font-medium text-zinc-900 flex-shrink-0 dark:text-zinc-50">
                       {ui.label}
                     </span>
-                    <span className="text-zinc-500 truncate">{value}</span>
+                    <span className="text-zinc-500 truncate dark:text-zinc-400">{value}</span>
                   </a>
                 );
               })}
             </div>
           </div>
         ) : (
-          <p className="mt-5 border-t border-zinc-100 pt-5 text-sm text-zinc-400">
+          <p className="mt-5 border-t border-zinc-100 pt-5 text-sm text-zinc-400 dark:border-zinc-800 dark:text-zinc-500">
             {t("noChannels")}
           </p>
         )}
@@ -443,12 +443,12 @@ function ContactsCard({
   if (isUniversal) {
     const socialRows = universalSocialLinkRows(lead.socialLinks);
     return (
-      <section className="bg-white rounded-xl shadow-sm border border-zinc-200 p-6">
-        <h2 className="text-base font-semibold text-zinc-900">{t("contactsTitle")}</h2>
-        <dl className="mt-4 divide-y divide-zinc-100 text-sm">
+      <section className="bg-white rounded-xl shadow-sm border border-zinc-200 p-6 dark:bg-zinc-900 dark:border-zinc-800">
+        <h2 className="text-base font-semibold text-zinc-900 dark:text-zinc-50">{t("contactsTitle")}</h2>
+        <dl className="mt-4 divide-y divide-zinc-100 text-sm dark:divide-zinc-800">
           <ContactRow label={t("universalDesc")} value={lead.notes} emptyLabel={t("notProvided")}>
             {lead.notes ? (
-              <span className="text-zinc-900 whitespace-pre-wrap text-right text-xs max-w-[70%]">
+              <span className="text-zinc-900 whitespace-pre-wrap text-right text-xs max-w-[70%] dark:text-zinc-50">
                 {lead.notes}
               </span>
             ) : undefined}
@@ -479,7 +479,7 @@ function ContactsCard({
             {lead.phone && (
               <a
                 href={`tel:${lead.phone.replace(/\s+/g, "")}`}
-                className="text-zinc-900 hover:text-blue-600 transition-colors"
+                className="text-zinc-900 hover:text-blue-600 transition-colors dark:text-zinc-50"
               >
                 {lead.phone}
               </a>
@@ -488,8 +488,8 @@ function ContactsCard({
         </dl>
 
         {socialRows.length > 0 ? (
-          <div className="mt-5 border-t border-zinc-100 pt-5">
-            <h3 className="text-xs font-semibold uppercase tracking-wider text-zinc-500 mb-3">
+          <div className="mt-5 border-t border-zinc-100 pt-5 dark:border-zinc-800">
+            <h3 className="text-xs font-semibold uppercase tracking-wider text-zinc-500 mb-3 dark:text-zinc-400">
               {t("socialHeading")}
             </h3>
             <div className="grid gap-2 sm:grid-cols-2">
@@ -499,16 +499,16 @@ function ContactsCard({
                   href={row.href}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center gap-2 rounded-md border border-zinc-200 bg-white px-3 py-2 text-xs transition-colors hover:border-zinc-300 hover:bg-zinc-50"
+                  className="flex items-center gap-2 rounded-md border border-zinc-200 bg-white px-3 py-2 text-xs transition-colors hover:border-zinc-300 hover:bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-900 dark:hover:bg-zinc-800"
                 >
-                  <span className="font-medium text-zinc-900">{row.label}</span>
-                  <span className="text-zinc-500 truncate">{row.display}</span>
+                  <span className="font-medium text-zinc-900 dark:text-zinc-50">{row.label}</span>
+                  <span className="text-zinc-500 truncate dark:text-zinc-400">{row.display}</span>
                 </a>
               ))}
             </div>
           </div>
         ) : (
-          <p className="mt-5 border-t border-zinc-100 pt-5 text-sm text-zinc-400">
+          <p className="mt-5 border-t border-zinc-100 pt-5 text-sm text-zinc-400 dark:border-zinc-800 dark:text-zinc-500">
             {t("noSocialExtra")}
           </p>
         )}
@@ -517,16 +517,16 @@ function ContactsCard({
   }
 
   return (
-    <section className="bg-white rounded-xl shadow-sm border border-zinc-200 p-6">
-      <h2 className="text-base font-semibold text-zinc-900">{t("contactsTitle")}</h2>
-      <dl className="mt-4 divide-y divide-zinc-100 text-sm">
+    <section className="bg-white rounded-xl shadow-sm border border-zinc-200 p-6 dark:bg-zinc-900 dark:border-zinc-800">
+      <h2 className="text-base font-semibold text-zinc-900 dark:text-zinc-50">{t("contactsTitle")}</h2>
+      <dl className="mt-4 divide-y divide-zinc-100 text-sm dark:divide-zinc-800">
         <ContactRow label={t("category")} value={lead.category} emptyLabel={t("notProvided")} />
         <ContactRow label={t("city")} value={lead.city} emptyLabel={t("notProvided")} />
         <ContactRow label={t("phone")} value={lead.phone} emptyLabel={t("notProvided")}>
           {lead.phone && (
             <a
               href={`tel:${lead.phone.replace(/\s+/g, "")}`}
-              className="text-zinc-900 hover:text-blue-600 transition-colors"
+              className="text-zinc-900 hover:text-blue-600 transition-colors dark:text-zinc-50"
             >
               {lead.phone}
             </a>
@@ -571,12 +571,12 @@ function ContactRow({
   emptyLabel: string;
 }) {
   const display = value
-    ? children ?? <span className="text-zinc-900">{value}</span>
-    : <span className="text-zinc-400">{emptyLabel}</span>;
+    ? children ?? <span className="text-zinc-900 dark:text-zinc-50">{value}</span>
+    : <span className="text-zinc-400 dark:text-zinc-500">{emptyLabel}</span>;
 
   return (
     <div className="flex items-center justify-between gap-4 py-3 first:pt-0 last:pb-0">
-      <dt className="text-zinc-500">{label}</dt>
+      <dt className="text-zinc-500 dark:text-zinc-400">{label}</dt>
       <dd className="text-right truncate max-w-[60%]">{display}</dd>
     </div>
   );
@@ -596,19 +596,19 @@ interface AuditCardProps {
 
 function AuditCard({ audit, leadId, hasWebsite, t }: AuditCardProps) {
   return (
-    <section className="bg-white rounded-xl shadow-sm border border-zinc-200 p-6">
-      <h2 className="text-base font-semibold text-zinc-900">{t("auditTitle")}</h2>
+    <section className="bg-white rounded-xl shadow-sm border border-zinc-200 p-6 dark:bg-zinc-900 dark:border-zinc-800">
+      <h2 className="text-base font-semibold text-zinc-900 dark:text-zinc-50">{t("auditTitle")}</h2>
 
       {!audit ? (
         <div className="mt-4 flex flex-col items-center justify-center text-center py-8">
-          <div className="flex h-12 w-12 items-center justify-center rounded-full bg-zinc-100">
+          <div className="flex h-12 w-12 items-center justify-center rounded-full bg-zinc-100 dark:bg-zinc-800">
             <svg
               xmlns="http://www.w3.org/2000/svg"
               fill="none"
               viewBox="0 0 24 24"
               strokeWidth={1.5}
               stroke="currentColor"
-              className="w-6 h-6 text-zinc-400"
+              className="w-6 h-6 text-zinc-400 dark:text-zinc-500"
             >
               <path
                 strokeLinecap="round"
@@ -617,10 +617,10 @@ function AuditCard({ audit, leadId, hasWebsite, t }: AuditCardProps) {
               />
             </svg>
           </div>
-          <p className="mt-3 text-sm font-medium text-zinc-700">
+          <p className="mt-3 text-sm font-medium text-zinc-700 dark:text-zinc-300">
             {t("auditEmptyTitle")}
           </p>
-          <p className="mt-1 text-xs text-zinc-500">
+          <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
             {hasWebsite ? t("auditEmptyHintWeb") : t("auditEmptyHintNoSite")}
           </p>
           {hasWebsite && (
@@ -639,7 +639,7 @@ function AuditCard({ audit, leadId, hasWebsite, t }: AuditCardProps) {
             >
               {audit.performanceScore ?? "—"}
             </span>
-            <span className="text-sm text-zinc-400">/ 100</span>
+            <span className="text-sm text-zinc-400 dark:text-zinc-500">/ 100</span>
           </div>
 
           <div className="mt-5 grid grid-cols-2 gap-3">
@@ -648,17 +648,17 @@ function AuditCard({ audit, leadId, hasWebsite, t }: AuditCardProps) {
           </div>
 
           <div className="mt-6">
-            <h3 className="text-xs font-semibold uppercase tracking-wider text-zinc-500 mb-2">
+            <h3 className="text-xs font-semibold uppercase tracking-wider text-zinc-500 mb-2 dark:text-zinc-400">
               {t("issuesHeading")}
             </h3>
             {audit.issues.length === 0 ? (
-              <p className="text-sm text-zinc-500">{t("issuesNone")}</p>
+              <p className="text-sm text-zinc-500 dark:text-zinc-400">{t("issuesNone")}</p>
             ) : (
               <ul className="space-y-2">
                 {audit.issues.map((issue, i) => (
                   <li
                     key={i}
-                    className="flex items-start gap-2 text-sm text-zinc-700"
+                    className="flex items-start gap-2 text-sm text-zinc-700 dark:text-zinc-300"
                   >
                     <span className="mt-1.5 h-1 w-1 flex-shrink-0 rounded-full bg-zinc-400" />
                     <span>{issue}</span>
@@ -730,11 +730,11 @@ function SystemField({
   const fallback = emptyLabel ?? "—";
   return (
     <div>
-      <dt className="text-xs font-semibold uppercase tracking-wider text-zinc-500">
+      <dt className="text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
         {label}
       </dt>
-      <dd className="mt-1.5 text-sm text-zinc-900">
-        {value ?? <span className="text-zinc-400">{fallback}</span>}
+      <dd className="mt-1.5 text-sm text-zinc-900 dark:text-zinc-50">
+        {value ?? <span className="text-zinc-400 dark:text-zinc-500">{fallback}</span>}
       </dd>
     </div>
   );
@@ -800,19 +800,19 @@ function MessageHistoryFeed({
 }) {
   if (messages.length === 0) {
     return (
-      <section className="bg-white rounded-xl shadow-sm border border-zinc-200 p-6">
-        <h2 className="text-base font-semibold text-zinc-900">
+      <section className="bg-white rounded-xl shadow-sm border border-zinc-200 p-6 dark:bg-zinc-900 dark:border-zinc-800">
+        <h2 className="text-base font-semibold text-zinc-900 dark:text-zinc-50">
           {t("messagesTitle")}
         </h2>
         <div className="flex flex-col items-center justify-center text-center py-8">
-          <div className="flex h-12 w-12 items-center justify-center rounded-full bg-zinc-100">
+          <div className="flex h-12 w-12 items-center justify-center rounded-full bg-zinc-100 dark:bg-zinc-800">
             <svg
               xmlns="http://www.w3.org/2000/svg"
               fill="none"
               viewBox="0 0 24 24"
               strokeWidth={1.5}
               stroke="currentColor"
-              className="w-6 h-6 text-zinc-400"
+              className="w-6 h-6 text-zinc-400 dark:text-zinc-500"
             >
               <path
                 strokeLinecap="round"
@@ -821,10 +821,10 @@ function MessageHistoryFeed({
               />
             </svg>
           </div>
-          <p className="mt-3 text-sm font-medium text-zinc-700">
+          <p className="mt-3 text-sm font-medium text-zinc-700 dark:text-zinc-300">
             {t("messagesEmptyTitle")}
           </p>
-          <p className="mt-1 text-xs text-zinc-500">
+          <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
             {t("messagesEmptyHint")}
           </p>
         </div>
@@ -833,12 +833,12 @@ function MessageHistoryFeed({
   }
 
   return (
-    <section className="bg-white rounded-xl shadow-sm border border-zinc-200 p-6">
+    <section className="bg-white rounded-xl shadow-sm border border-zinc-200 p-6 dark:bg-zinc-900 dark:border-zinc-800">
       <div className="flex items-center justify-between gap-3">
-        <h2 className="text-base font-semibold text-zinc-900">
+        <h2 className="text-base font-semibold text-zinc-900 dark:text-zinc-50">
           {t("messagesTitle")}
         </h2>
-        <span className="inline-flex items-center rounded-full bg-zinc-100 px-2.5 py-0.5 text-xs font-medium text-zinc-600">
+        <span className="inline-flex items-center rounded-full bg-zinc-100 px-2.5 py-0.5 text-xs font-medium text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400">
           {messages.length}
         </span>
       </div>
@@ -847,15 +847,15 @@ function MessageHistoryFeed({
         {messages.map((msg) => (
           <details
             key={msg.id}
-            className="group rounded-lg border border-zinc-200 transition-colors hover:border-zinc-300 open:border-cyan-200 open:bg-cyan-50/40"
+            className="group rounded-lg border border-zinc-200 transition-colors hover:border-zinc-300 open:border-cyan-200 open:bg-cyan-50/40 dark:border-zinc-800"
           >
             <summary className="flex cursor-pointer list-none items-start justify-between gap-3 px-4 py-3">
               <div className="min-w-0 flex-1">
-                <div className="flex flex-wrap items-center gap-2 text-xs text-zinc-500">
+                <div className="flex flex-wrap items-center gap-2 text-xs text-zinc-500 dark:text-zinc-400">
                   <time dateTime={msg.sentAt.toISOString()}>
                     {formatDate(msg.sentAt)}
                   </time>
-                  <span className="text-zinc-300">·</span>
+                  <span className="text-zinc-300 dark:text-zinc-600">·</span>
                   <DeliveryStatusBadge
                     status={msg.deliveryStatus}
                     errorLog={msg.errorLog}
@@ -865,7 +865,7 @@ function MessageHistoryFeed({
                     initialStatus={msg.replyStatus}
                   />
                 </div>
-                <h3 className="mt-1 text-sm font-medium text-zinc-900 truncate">
+                <h3 className="mt-1 text-sm font-medium text-zinc-900 truncate dark:text-zinc-50">
                   {msg.subject}
                 </h3>
               </div>
@@ -873,7 +873,7 @@ function MessageHistoryFeed({
                 xmlns="http://www.w3.org/2000/svg"
                 viewBox="0 0 20 20"
                 fill="currentColor"
-                className="w-4 h-4 mt-1 flex-shrink-0 text-zinc-400 transition-transform group-open:rotate-180"
+                className="w-4 h-4 mt-1 flex-shrink-0 text-zinc-400 transition-transform group-open:rotate-180 dark:text-zinc-500"
                 aria-hidden="true"
               >
                 <path
@@ -883,7 +883,7 @@ function MessageHistoryFeed({
                 />
               </svg>
             </summary>
-            <div className="border-t border-zinc-100 bg-zinc-50 px-4 py-3 text-sm leading-relaxed text-zinc-700 whitespace-pre-wrap">
+            <div className="border-t border-zinc-100 bg-zinc-50 px-4 py-3 text-sm leading-relaxed text-zinc-700 whitespace-pre-wrap dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-300">
               {msg.body}
               <MessageAttachmentBadge attachment={asAttachment(msg.attachment)} />
               <MessageChannelsBadge channels={asChannels(msg.channels)} tc={tc} t={t} />
@@ -934,7 +934,7 @@ function MessageChannelsBadge({
   if (channels.length === 0) return null;
   return (
     <div className="mt-3 flex flex-wrap items-center gap-1.5 not-prose">
-      <span className="text-[10px] uppercase tracking-wider text-zinc-500">
+      <span className="text-[10px] uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
         {t("sentVia")}
       </span>
       {channels.map((key) => {

@@ -145,12 +145,14 @@ export default function LeadsTableSection({
   }
 
   return (
-    <div className="bg-white shadow-sm rounded-lg border border-zinc-200 overflow-hidden">
-      <div className="px-6 py-4 border-b border-zinc-200 flex items-center justify-between gap-3">
-        <h2 className="text-base font-medium text-zinc-900">{title}</h2>
+    <div className="overflow-hidden rounded-md border border-zinc-200 bg-white shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
+      <div className="flex items-center justify-between gap-3 border-b border-zinc-200 px-6 py-4 dark:border-zinc-800">
+        <h2 className="text-base font-medium text-zinc-900 dark:text-zinc-50">
+          {title}
+        </h2>
         <div className="flex items-center gap-3">
           {leads.length > 0 && (
-            <span className="inline-flex items-center rounded-full bg-zinc-100 px-2.5 py-0.5 text-xs font-medium text-zinc-600">
+            <span className="inline-flex items-center rounded-full bg-zinc-100 px-2.5 py-0.5 text-xs font-medium text-zinc-600 dark:bg-zinc-800 dark:text-zinc-300 ">
               {leads.length}
             </span>
           )}
@@ -159,15 +161,15 @@ export default function LeadsTableSection({
       </div>
 
       {selectedCount > 0 && (
-        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-cyan-200 bg-cyan-50 px-6 py-2.5">
+        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-cyan-200 bg-cyan-50 px-6 py-2.5 dark:border-cyan-500/30 dark:bg-cyan-500/10">
           <div className="flex items-center gap-3 text-sm">
-            <span className="font-medium text-cyan-900">
+            <span className="font-medium text-cyan-900 dark:text-cyan-200">
               {t("selected", { count: selectedCount })}
             </span>
             <button
               type="button"
               onClick={clearSelection}
-              className="text-xs text-cyan-700 hover:text-cyan-900 hover:underline"
+              className="text-xs text-cyan-700 hover:text-cyan-900 hover:underline dark:text-cyan-300 dark:hover:text-cyan-200"
             >
               {t("clear")}
             </button>
@@ -178,7 +180,7 @@ export default function LeadsTableSection({
                 type="button"
                 onClick={runBulkAudit}
                 disabled={isPending}
-                className="inline-flex items-center gap-1.5 rounded-md bg-white px-3 py-1.5 text-xs font-medium text-cyan-700 ring-1 ring-inset ring-cyan-300 transition hover:bg-cyan-100 disabled:opacity-60"
+                className="inline-flex items-center gap-1.5 rounded-md bg-white px-3 py-1.5 text-xs font-medium text-cyan-700 ring-1 ring-inset ring-cyan-300 transition-all duration-200 hover:bg-cyan-100 active:scale-95 disabled:opacity-60 dark:bg-zinc-900 dark:text-cyan-300 dark:ring-cyan-500/40 dark:hover:bg-cyan-500/10"
               >
                 {t("auditSelected")}
               </button>
@@ -188,7 +190,7 @@ export default function LeadsTableSection({
               type="button"
               onClick={runBulkDelete}
               disabled={isPending}
-              className="inline-flex items-center gap-1.5 rounded-md bg-red-600 px-3 py-1.5 text-xs font-medium text-white shadow-sm transition hover:bg-red-700 disabled:opacity-60"
+              className="inline-flex items-center gap-1.5 rounded-md bg-red-600 px-3 py-1.5 text-xs font-medium text-white shadow-sm transition-all duration-200 hover:bg-red-700 active:scale-95 disabled:opacity-60 dark:bg-red-500 dark:hover:bg-red-600"
             >
               {t("delete")}
             </button>
@@ -200,8 +202,8 @@ export default function LeadsTableSection({
         <div
           className={`border-b px-6 py-2 text-sm ${
             feedback.type === "success"
-              ? "border-green-200 bg-green-50 text-green-700"
-              : "border-red-200 bg-red-50 text-red-700"
+              ? "border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-500/30 dark:bg-emerald-500/10 dark:text-emerald-300"
+              : "border-red-200 bg-red-50 text-red-700 dark:border-red-500/30 dark:bg-red-500/10 dark:text-red-300"
           }`}
         >
           {feedback.msg}
@@ -211,7 +213,7 @@ export default function LeadsTableSection({
       {leads.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-16 text-center">
           <svg
-            className="h-12 w-12 text-zinc-300"
+            className="h-12 w-12 text-zinc-300 dark:text-zinc-700 "
             fill="none"
             viewBox="0 0 24 24"
             stroke="currentColor"
@@ -223,16 +225,18 @@ export default function LeadsTableSection({
               d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"
             />
           </svg>
-          <p className="mt-3 text-sm font-medium text-zinc-500">
+          <p className="mt-3 text-sm font-medium text-zinc-500 dark:text-zinc-400">
             {isBeats ? tHome("emptyTitleBeats") : tHome("emptyTitleOther")}
           </p>
-          <p className="mt-1 text-sm text-zinc-400">{tHome("emptyHint")}</p>
+          <p className="mt-1 text-sm text-zinc-400 dark:text-zinc-500">
+            {tHome("emptyHint")}
+          </p>
         </div>
       ) : (
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
-              <tr className="border-b border-zinc-100">
+              <tr className="border-b border-zinc-100 dark:border-zinc-800">
                 <th className="px-4 py-3 text-left">
                   <input
                     type="checkbox"
@@ -242,35 +246,35 @@ export default function LeadsTableSection({
                     }}
                     onChange={toggleAll}
                     aria-label={t("selectAll")}
-                    className="h-4 w-4 cursor-pointer rounded border-zinc-300 text-cyan-600 focus:ring-cyan-500"
+                    className="h-4 w-4 cursor-pointer rounded border-zinc-300 text-cyan-500 focus:ring-cyan-500 dark:border-zinc-700 dark:bg-zinc-900"
                   />
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-zinc-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
                   {isBeats
                     ? tHome("colArtist")
                     : isUniversal
                       ? tHome("colName")
                       : tHome("colCompany")}
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-zinc-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
                   {isBeats
                     ? tHome("colGenre")
                     : isUniversal
                       ? tHome("colDesc")
                       : tHome("colCategory")}
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-zinc-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
                   {isBeats ? tHome("colProfile") : tHome("colSite")}
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-zinc-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
                   {tHome("colStatus")}
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-zinc-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
                   {isBeats ? tHome("colAudience") : tHome("colAudit")}
                 </th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-zinc-100">
+            <tbody className="divide-y divide-zinc-100 dark:divide-zinc-800">
               {leads.map((lead) => (
                 <LeadTableRow
                   key={lead.id}
@@ -309,7 +313,7 @@ function StatusDropdown({
           }
         }}
         defaultValue=""
-        className="appearance-none rounded-md border border-cyan-300 bg-white px-3 py-1.5 pr-7 text-xs font-medium text-cyan-700 transition hover:bg-cyan-100 disabled:opacity-60"
+        className="appearance-none rounded-md border border-cyan-300 bg-white px-3 py-1.5 pr-7 text-xs font-medium text-cyan-700 transition-all duration-200 hover:bg-cyan-100 disabled:opacity-60 dark:border-cyan-500/40 dark:bg-zinc-900 dark:text-cyan-300 dark:hover:bg-cyan-500/10"
       >
         <option value="" disabled>
           {t("changeStatus")}
