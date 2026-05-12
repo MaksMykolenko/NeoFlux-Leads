@@ -79,14 +79,16 @@ export default function SmtpSettingsForm({ user }: SmtpSettingsFormProps) {
   const savedMode: "platform" | "custom" = user.usePlatformSmtp
     ? "platform"
     : "custom";
-  const hasSavedConfig =
-    savedMode === "platform"
-      ? !!user.fromEmail
-      : !!user.smtpHost &&
-        !!user.smtpPort &&
-        !!user.smtpUser &&
-        user.hasSmtpPass &&
-        !!user.fromEmail;
+  // Перелічуємо саме ЧОГО бракує — банер у TestPanel покаже список,
+  // щоб юзер не вгадував, чому конфіг ще не «повний».
+  const missingFields: string[] = [];
+  if (!user.fromEmail) missingFields.push("From Email");
+  if (savedMode === "custom") {
+    if (!user.smtpHost) missingFields.push("SMTP Host");
+    if (!user.smtpPort) missingFields.push("SMTP Port");
+    if (!user.smtpUser) missingFields.push("SMTP Username");
+    if (!user.hasSmtpPass) missingFields.push("SMTP Password");
+  }
 
   return (
     <div className="space-y-5 rounded-xl border border-zinc-200 bg-white p-6 shadow-sm dark:border-flux-border dark:bg-flux-card">
@@ -95,7 +97,7 @@ export default function SmtpSettingsForm({ user }: SmtpSettingsFormProps) {
       {mode === "test" ? (
         <TestPanel
           defaultEmail={user.fromEmail ?? ""}
-          hasSavedConfig={hasSavedConfig}
+          missingFields={missingFields}
           savedMode={savedMode}
         />
       ) : (
@@ -373,16 +375,21 @@ function Field({
 /**
  * Тестова відправка. Користується ЗБЕРЕЖЕНИМИ налаштуваннями юзера
  * (а не значеннями з форми вище), щоб тест відображав реальну поведінку
- * outreach-листів. Якщо юзер ще не зберіг конфіг — вмикаємо disabled-стан
- * і просимо спочатку Save у відповідній вкладці.
+ * outreach-листів.
+ *
+ * Кнопка ЗАВЖДИ активна (окрім моменту самої відправки) — навмисно: краще
+ * хай юзер натисне і отримає чітке повідомлення з сервера ("збережи
+ * fromEmail" / "PLATFORM_SMTP_HOST не задано"), ніж бачить німо-disabled
+ * кнопку і гадає, чому. Список відсутніх полів показуємо у банері вгорі,
+ * щоб одразу було видно, що треба полагодити.
  */
 function TestPanel({
   defaultEmail,
-  hasSavedConfig,
+  missingFields,
   savedMode,
 }: {
   defaultEmail: string;
-  hasSavedConfig: boolean;
+  missingFields: string[];
   savedMode: "platform" | "custom";
 }) {
   const [email, setEmail] = useState(defaultEmail);
@@ -391,6 +398,8 @@ function TestPanel({
     msg: string;
   } | null>(null);
   const [isPending, startTransition] = useTransition();
+
+  const isReady = missingFields.length === 0;
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -410,7 +419,7 @@ function TestPanel({
       } else {
         let msg = result.error ?? "Не вдалося відправити тестовий лист";
         if (result.code === "NO_SMTP") {
-          msg = `${msg}\n\nСпочатку збережіть налаштування у вкладці "${savedMode === "platform" ? "Простий" : "Розширений"} режим".`;
+          msg = `${msg}\n\nПерейдіть на вкладку "${savedMode === "platform" ? "Простий" : "Розширений"} режим", заповніть поля і натисніть Зберегти.`;
         } else if (result.code === "PLATFORM_NOT_CONFIGURED") {
           msg = `${msg}\n\nЦе налаштовує адмін сервера (PLATFORM_SMTP_* у .env). Або переключіться у "Розширений режим" і вкажіть свій SMTP.`;
         }
@@ -421,20 +430,36 @@ function TestPanel({
 
   return (
     <form onSubmit={handleSubmit} className="space-y-5">
-      <div className="rounded-lg border border-purple-200 bg-purple-50/60 px-4 py-3 text-sm dark:border-flux-purple-ring dark:bg-flux-purple-tint">
-        <p className="font-semibold text-purple-900 dark:text-flux-purple-soft">
-          Тестова відправка
-        </p>
-        <p className="mt-1 text-xs text-purple-800/90 dark:text-flux-purple-soft/85">
-          Лист піде через {savedMode === "platform"
-            ? "платформений SMTP (як у Простому режимі)"
-            : "твій власний SMTP (як у Розширеному)"}
-          {" — те, що збережено зараз у БД."}{" "}
-          {hasSavedConfig
-            ? "Конфіг готовий — натискай Надіслати."
-            : "Конфіг ще не збережено повністю — спочатку заповни і збережи відповідну вкладку."}
-        </p>
-      </div>
+      {isReady ? (
+        <div className="rounded-lg border border-purple-200 bg-purple-50/60 px-4 py-3 text-sm dark:border-flux-purple-ring dark:bg-flux-purple-tint">
+          <p className="font-semibold text-purple-900 dark:text-flux-purple-soft">
+            Тестова відправка
+          </p>
+          <p className="mt-1 text-xs text-purple-800/90 dark:text-flux-purple-soft/85">
+            Лист піде через{" "}
+            {savedMode === "platform"
+              ? "платформений SMTP (як у Простому режимі)"
+              : "твій власний SMTP (як у Розширеному)"}{" "}
+            — те, що збережено зараз у БД. Натискай Надіслати.
+          </p>
+        </div>
+      ) : (
+        <div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm dark:border-amber-500/30 dark:bg-amber-500/10">
+          <p className="font-semibold text-amber-900 dark:text-amber-300">
+            Конфіг не збережено повністю
+          </p>
+          <p className="mt-1 text-xs text-amber-800/90 dark:text-amber-200/85">
+            Бракує:{" "}
+            <span className="font-medium">{missingFields.join(", ")}</span>.
+            Перейди на вкладку{" "}
+            <span className="font-semibold">
+              «{savedMode === "platform" ? "Простий" : "Розширений"} режим»
+            </span>
+            , заповни і натисни Зберегти. Кнопку нижче все одно можна натиснути
+            — сервер покаже точну причину невдачі.
+          </p>
+        </div>
+      )}
 
       <Field
         label="Email одержувача"
@@ -457,7 +482,7 @@ function TestPanel({
         </p>
         <button
           type="submit"
-          disabled={isPending || !hasSavedConfig}
+          disabled={isPending}
           className="inline-flex items-center justify-center gap-2 rounded-lg bg-zinc-900 px-4 py-2 text-sm font-medium text-white shadow-sm transition hover:bg-zinc-800 disabled:cursor-not-allowed disabled:opacity-60 dark:bg-flux-purple dark:shadow-[0_4px_20px_rgba(106,0,255,0.4)] dark:hover:bg-flux-purple-hover"
         >
           {isPending ? "Відправляю..." : "Надіслати тестовий лист"}
