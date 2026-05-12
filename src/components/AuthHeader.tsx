@@ -10,7 +10,7 @@ import ThemeToggle from "@/src/components/ThemeToggle";
 /**
  * Хедер після авторизації. Структура:
  *
- *   [Logo · NeoFlux Leads]                    [Lang] [Admin?] [Plan] | [Avatar Name] [⚙] [↗]
+ *   [Logo · Flux Leads]                       [Lang] [Admin?] [Plan] | [Avatar Name] [⚙] [↗]
  *      ─── ліва зона ───                      ────────── права (actions + profile) ──────────
  *
  * Усі кнопки висотою 32px (h-8). На мобільному: ховаємо текст brand-у

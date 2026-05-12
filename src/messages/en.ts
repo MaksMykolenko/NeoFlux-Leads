@@ -5,7 +5,7 @@ const messages = {
     homeAria: "Go to workspace home",
   },
   Meta: {
-    title: "NeoFlux Lead Engine",
+    title: "Flux Leads",
     description: "AI lead generation",
   },
   LanguageSwitcher: {
@@ -19,7 +19,7 @@ const messages = {
     switchToDark: "Switch to dark",
   },
   AuthHeader: {
-    productName: "NeoFlux Lead Engine",
+    productName: "Flux Leads",
     admin: "Admin",
     settings: "Settings",
     signOut: "Sign out",
@@ -40,7 +40,7 @@ const messages = {
     exhausted:
       "Plan limit reached ({used}/{limit}). Upgrade your plan or wait for the next period.",
     upgradeCta: "Upgrade plan",
-    upgradeHint: "Higher limits and features — see NeoFlux pricing.",
+    upgradeHint: "Higher limits and features — see Flux Leads pricing.",
   },
   ModeTabs: {
     localLabel: "Local business",
@@ -51,7 +51,7 @@ const messages = {
     universalHint: "Gemini + Google Search · OSINT",
   },
   Home: {
-    title: "NeoFlux Lead Engine",
+    title: "Flux Leads",
     subtitleBeats: "AI search for artists who buy beats",
     subtitleUniversal: "Universal AI lead search (Gemini + Google Search)",
     subtitleLocal:
@@ -181,7 +181,7 @@ const messages = {
     blockedCta: "View pricing",
   },
   Login: {
-    title: "NeoFlux Lead Engine",
+    title: "Flux Leads",
     subtitle:
       "Sign in to open the lead workspace and outreach tools.",
     fluxCta: "Sign in with Flux ID",
@@ -211,7 +211,7 @@ const messages = {
     back: "Back to workspace",
     title: "Settings",
     subtitle:
-      "Connect your own SMTP so NeoFlux can send email on your behalf. In-app delivery is email only; for Instagram, Telegram, and other channels you need to reach out manually.",
+      "Connect your own SMTP so Flux Leads can send email on your behalf. In-app delivery is email only; for Instagram, Telegram, and other channels you need to reach out manually.",
     smtpSectionTitle: "SMTP / Bring Your Own Email",
     smtpSectionSubtitle:
       "Any SMTP works — Gmail (app password), Hostinger, SendGrid, Mailgun, AWS SES. This is for email only; the app does not auto-send to other channels.",
@@ -449,7 +449,7 @@ const messages = {
     steps: {
       brandTitle: "Logo — home",
       brandBody:
-        "Click the NeoFlux mark to return to the main workspace — handy after viewing a lead or settings.",
+        "Click the Flux Leads mark to return to the main workspace — handy after viewing a lead or settings.",
       headerTitle: "Title & mode",
       headerBody:
         "Product name and the active mode: local businesses (AI + Google), beat-buying artists, or universal AI search.",
@@ -481,7 +481,7 @@ const messages = {
       leadTableTitle: "Lead table",
       replayTitle: "Help is always here",
       replayBody:
-        "“How it works” reruns this tour. After the first run it won’t auto-open. Home is also reachable from the NeoFlux logo or title.",
+        "“How it works” reruns this tour. After the first run it won’t auto-open. Home is also reachable from the Flux Leads logo or title.",
     },
   },
   BeatOutreach: {

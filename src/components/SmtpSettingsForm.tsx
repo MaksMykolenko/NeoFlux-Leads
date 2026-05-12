@@ -144,7 +144,7 @@ export default function SmtpSettingsForm({ user }: SmtpSettingsFormProps) {
 
       <div className="flex items-center justify-between gap-4 border-t border-zinc-100 pt-4 dark:border-flux-border">
         <p className="text-xs text-zinc-500 dark:text-zinc-400">
-          Кожен лист, відправлений з NeoFlux, отримує невеликий підпис із
+          Кожен лист, відправлений з Flux Leads, отримує невеликий підпис із
           посиланням на сервіс.
         </p>
         <button

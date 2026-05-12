@@ -26,7 +26,7 @@ function publicSiteHref(): string {
 
 function watermarkText(): string {
   const href = publicSiteHref();
-  return `---\nSent via NeoFlux Lead Engine — Automate your cold outreach.\n${href}`;
+  return `---\nSent via Flux Leads — Automate your cold outreach.\n${href}`;
 }
 
 function escapeAttr(s: string): string {
@@ -40,7 +40,7 @@ function watermarkHtml(): string {
   const href = publicSiteHref();
   return `<hr style="margin:24px 0 8px;border:none;border-top:1px solid #e5e7eb" />
 <p style="font:12px/1.5 -apple-system,BlinkMacSystemFont,Inter,sans-serif;color:#9ca3af;margin:0">
-  Sent via <a href="${escapeAttr(href)}" style="color:#6366f1;text-decoration:none">NeoFlux Lead Engine</a>
+  Sent via <a href="${escapeAttr(href)}" style="color:#6a00ff;text-decoration:none;font-weight:600">Flux Leads</a>
   — Automate your cold outreach.
 </p>`;
 }

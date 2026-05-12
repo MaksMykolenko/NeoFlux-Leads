@@ -5,7 +5,7 @@ const messages = {
     homeAria: "На головну панель",
   },
   Meta: {
-    title: "NeoFlux Lead Engine",
+    title: "Flux Leads",
     description: "AI збір лідів",
   },
   LanguageSwitcher: {
@@ -19,7 +19,7 @@ const messages = {
     switchToDark: "Темна тема",
   },
   AuthHeader: {
-    productName: "NeoFlux Lead Engine",
+    productName: "Flux Leads",
     admin: "Адмін",
     settings: "Налаштування",
     signOut: "Вийти",
@@ -40,7 +40,7 @@ const messages = {
     exhausted:
       "Ліміт плану вичерпано ({used}/{limit}). Оновіть тариф або зачекайте до наступного періоду.",
     upgradeCta: "Оновити тариф",
-    upgradeHint: "Більше лімітів і функцій — у тарифах NeoFlux.",
+    upgradeHint: "Більше лімітів і функцій — у тарифах Flux Leads.",
   },
   ModeTabs: {
     localLabel: "Локальний бізнес",
@@ -51,7 +51,7 @@ const messages = {
     universalHint: "Gemini + Google Search · OSINT",
   },
   Home: {
-    title: "NeoFlux Lead Engine",
+    title: "Flux Leads",
     subtitleBeats: "AI-пошук артистів, які купують біти",
     subtitleUniversal: "Універсальний AI-пошук лідів (Gemini + Google Search)",
     subtitleLocal:
@@ -181,7 +181,7 @@ const messages = {
     blockedCta: "Переглянути тарифи",
   },
   Login: {
-    title: "NeoFlux Lead Engine",
+    title: "Flux Leads",
     subtitle:
       "Увійдіть, щоб відкрити панель лідів та інструменти outreach.",
     fluxCta: "Увійти через Flux ID",
@@ -211,7 +211,7 @@ const messages = {
     back: "Назад до робочого простору",
     title: "Налаштування",
     subtitle:
-      "Підключи власний SMTP-сервер, щоб NeoFlux відправляв листи від твого імені. Автоматична розсилка з додатку працює лише на email; для Instagram, Telegram та інших каналів треба писати самостійно.",
+      "Підключи власний SMTP-сервер, щоб Flux Leads відправляв листи від твого імені. Автоматична розсилка з додатку працює лише на email; для Instagram, Telegram та інших каналів треба писати самостійно.",
     smtpSectionTitle: "SMTP / Bring Your Own Email",
     smtpSectionSubtitle:
       "Підтримує будь-який SMTP — Gmail (App Password), Hostinger, SendGrid, Mailgun, AWS SES. Це лише для пошти; інші способи зв'язку додаток не надсилає автоматично.",
@@ -450,7 +450,7 @@ const messages = {
     steps: {
       brandTitle: "Логотип — на головну",
       brandBody:
-        "Клік по марці NeoFlux відкриває основну сторінку панелі: зручно повернутися після перегляду ліда, налаштувань або іншого розділу.",
+        "Клік по марці Flux Leads відкриває основну сторінку панелі: зручно повернутися після перегляду ліда, налаштувань або іншого розділу.",
       headerTitle: "Заголовок і режим",
       headerBody:
         "Тут — назва продукту та короткий опис активного режиму: локальний бізнес (AI + Google), артисти для бітів або універсальний AI-пошук.",
@@ -482,7 +482,7 @@ const messages = {
       leadTableTitle: "Таблиця лідів",
       replayTitle: "Підказки завжди поруч",
       replayBody:
-        "Кнопка «Як це працює» запускає цей тур знову. Після першого проходження він не відкривається автоматично. На головну також можна з логотипу NeoFlux або з назви вгорі сторінки.",
+        "Кнопка «Як це працює» запускає цей тур знову. Після першого проходження він не відкривається автоматично. На головну також можна з логотипу Flux Leads або з назви вгорі сторінки.",
     },
   },
   BeatOutreach: {

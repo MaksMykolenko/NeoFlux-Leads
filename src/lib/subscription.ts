@@ -2,7 +2,7 @@ import type { User } from "@prisma/client";
 import { prisma } from "@/src/lib/prisma";
 
 /**
- * Тарифні плани NeoFlux Lead Engine.
+ * Тарифні плани Flux Leads.
  *
  * Single source of truth — тут описані ліміти та фічі для кожного плану.
  * Server actions зчитують їх через `checkSubscription()` і `getPlanForUser()`.
