@@ -128,8 +128,10 @@ function StatCard({
 }) {
   return (
     <div
-      className={`rounded-xl border bg-white p-5 shadow-sm ${
-        accent ? "border-purple-200 ring-1 ring-purple-100" : "border-zinc-200"
+      className={`rounded-md border bg-white p-5 shadow-sm transition-colors dark:bg-zinc-900 ${
+        accent
+          ? "border-purple-200 ring-1 ring-purple-100 dark:border-purple-500/40 dark:ring-purple-500/20"
+          : "border-zinc-200 dark:border-zinc-800"
       }`}
     >
       <p className="text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
@@ -137,12 +139,16 @@ function StatCard({
       </p>
       <p
         className={`mt-2 text-3xl font-semibold tracking-tight ${
-          accent ? "text-purple-700" : "text-zinc-900"
+          accent
+            ? "text-purple-600 dark:text-purple-400"
+            : "text-zinc-900 dark:text-zinc-50"
         }`}
       >
         {value}
       </p>
-      {hint && <p className="mt-1 text-xs text-zinc-400 dark:text-zinc-500">{hint}</p>}
+      {hint && (
+        <p className="mt-1 text-xs text-zinc-400 dark:text-zinc-500">{hint}</p>
+      )}
     </div>
   );
 }
