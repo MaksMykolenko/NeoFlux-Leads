@@ -45,6 +45,14 @@ function dbFailureDetail(err: unknown): string | undefined {
     if (err.code === "P2021") {
       return "У цій базі ще немає таблиць User/Session. Застосуйте схему Prisma до тієї ж БД, що в DATABASE_URL (локально: npx prisma db push; прод: migrate deploy або db push), потім спробуйте вхід знову.";
     }
+    if (err.code === "P2022") {
+      // Schema drift: Prisma client знає колонку, якої немає у БД.
+      // Найчастіше — забули запустити міграцію після зміни schema.prisma
+      // (наприклад додавання usePlatformSmtp у модель User).
+      const col =
+        (err.meta as { column?: string } | undefined)?.column ?? "невідома";
+      return `У БД відсутня колонка "${col}", яку очікує Prisma. Це означає, що schema.prisma був оновлений, але міграцію до цієї бази ще не застосували. Виконайте:\n  npx prisma db push    # dev, без файлу-міграції\nабо:\n  npx prisma migrate deploy   # prod, із файлами prisma/migrations`;
+    }
     if (err.code === "P2002") {
       return "Конфлікт унікальності (частіше всього email уже прив’язаний до іншого fluxUserId). Перевірте таблицю User у БД або зверніться до адміністратора.";
     }
@@ -52,10 +60,19 @@ function dbFailureDetail(err: unknown): string | undefined {
       return "Тимчасова проблема з’єднання з базою (таймаут або зайнятий пул з’єднань). Спробуйте вхід ще раз за хвилину; якщо повторюється часто — перевірте Supabase pooler / ліміти та DATABASE_URL.";
     }
   }
+  // Prisma іноді кидає валідаційну помилку (unknown arg, відсутнє поле тощо) —
+  // це теж зазвичай схема-дрейф або застарілий @prisma/client. Покажемо хінт.
+  if (err instanceof Prisma.PrismaClientValidationError) {
+    return "Prisma-валідація не пропустила запит (ймовірно schema.prisma і @prisma/client розсинхронізовані). Запустіть `npx prisma generate`, потім `npx prisma db push`.";
+  }
   if (err instanceof Error) {
     const m = err.message.toLowerCase();
     if (m.includes("max clients") || m.includes("emaxconnsession")) {
       return "База відхилила з’єднання: ліміт клієнтів на pooler (часто Supabase session mode). Спробуйте ще раз; для Prisma migrate використовуйте DIRECT_URL на прямий хост db.*.supabase.co.";
+    }
+    // Сирий Postgres-текст від драйвера, коли він проривається без обгортки Prisma.
+    if (m.includes("column") && m.includes("does not exist")) {
+      return "Postgres повідомив, що очікуваної колонки немає у БД (schema drift). Виконайте `npx prisma db push` до тієї ж бази, що у DATABASE_URL.";
     }
   }
   return undefined;
