@@ -11,6 +11,7 @@ import {
   type ProspectContacts,
 } from "@/src/lib/beatProspects";
 import { CHANNEL_ORDER, type ChannelKey } from "@/src/lib/channels";
+import { sendUserEmail } from "@/src/lib/mailer";
 import { calculateArtistScore } from "@/src/lib/scoring";
 import { getCurrentUser, getRequestUserId } from "@/src/lib/session";
 import {
@@ -434,4 +435,310 @@ function sanitizeContactsForJson(
     }
   }
   return out;
+}
+
+// ============================================================================
+// sendBeatViaEmail — реальна відправка email з MP3-вкладенням через SMTP юзера.
+// ============================================================================
+
+// 15MB у next.config.ts; тут ставимо нижчий поріг (10MB), щоб залишити запас
+// під FormData overhead і встигнути повернути зрозумілу помилку до того, як
+// її кине runtime.
+const MAX_BEAT_FILE_BYTES = 10 * 1024 * 1024;
+const ALLOWED_AUDIO_MIME = new Set([
+  "audio/mpeg",
+  "audio/mp3",
+  "audio/wav",
+  "audio/x-wav",
+  "audio/wave",
+  "audio/m4a",
+  "audio/x-m4a",
+  "audio/mp4",
+  "audio/flac",
+  "audio/x-flac",
+  "audio/ogg",
+]);
+const EMAIL_REGEX = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
+
+export interface SendBeatViaEmailResult {
+  success: boolean;
+  leadId?: string;
+  messageId?: string;
+  error?: string;
+  errorCode?:
+    | "LIMIT_REACHED"
+    | "NO_EMAIL"
+    | "INVALID_EMAIL"
+    | "NO_FILE"
+    | "FILE_TOO_LARGE"
+    | "INVALID_FILE_TYPE"
+    | "INVALID_PAYLOAD"
+    | "NO_SMTP"
+    | "PLATFORM_NOT_CONFIGURED"
+    | "SEND_FAILED";
+}
+
+interface BeatEmailPayload {
+  artist: BeatProspect;
+  subject: string;
+  body: string;
+  demo: {
+    name: string;
+    bytes: number;
+    bpm: string | null;
+    keySig: string | null;
+    genre: string | null;
+    price: string | null;
+  };
+  /** Інші канали, які юзер встиг відкрити вручну (Instagram/Telegram/…). */
+  channels: ChannelKey[];
+}
+
+/**
+ * Відправляє лист з MP3-вкладенням артисту-перспективі **і** одночасно
+ * фіксує outreach у CRM (так само як `sendBeatMessage`):
+ *   - upsert `Lead` (mode=BEATS, companyName=handle)
+ *   - create `Message` з `attachment` JSON (meta) і `deliveryStatus`=SENT/FAILED
+ *   - bump status у "Contacted" при успіху
+ *   - +1 у `leadsProcessedCount` якщо лід новий
+ *
+ * Аудіо НЕ зберігається у БД (тільки meta) — це cold-outreach attachment, він
+ * пішов один раз і живе у вихідних/інбоксі. Якщо колись треба буде повторно
+ * слати з того самого файлу — інтегруємо S3.
+ */
+export async function sendBeatViaEmail(
+  formData: FormData,
+): Promise<SendBeatViaEmailResult> {
+  const userId = await getRequestUserId();
+  if (!userId) return { success: false, error: "Не авторизовано" };
+
+  // ───── читаємо і валідуємо вхід ─────
+  const rawPayload = formData.get("payload");
+  if (typeof rawPayload !== "string" || !rawPayload) {
+    return {
+      success: false,
+      errorCode: "INVALID_PAYLOAD",
+      error: "Відсутній payload",
+    };
+  }
+
+  let payload: BeatEmailPayload;
+  try {
+    payload = JSON.parse(rawPayload) as BeatEmailPayload;
+  } catch {
+    return {
+      success: false,
+      errorCode: "INVALID_PAYLOAD",
+      error: "Невалідний JSON у payload",
+    };
+  }
+
+  const artist = payload.artist;
+  if (!artist?.handle) {
+    return {
+      success: false,
+      errorCode: "INVALID_PAYLOAD",
+      error: "Відсутні дані артиста",
+    };
+  }
+
+  const subject = (payload.subject ?? "").trim();
+  const body = (payload.body ?? "").trim();
+  if (!subject) {
+    return { success: false, error: "Тема не може бути порожньою" };
+  }
+  if (!body) {
+    return { success: false, error: "Текст повідомлення не може бути порожнім" };
+  }
+
+  // email беремо з артиста (АІ-результат) або з contacts.email
+  const email =
+    (artist.email && artist.email.trim()) ||
+    (artist.contacts?.email && artist.contacts.email.trim()) ||
+    null;
+  if (!email || !EMAIL_REGEX.test(email)) {
+    return {
+      success: false,
+      errorCode: "NO_EMAIL",
+      error: "У артиста немає валідного email — оберіть інший канал.",
+    };
+  }
+
+  // ───── читаємо файл ─────
+  const audioEntry = formData.get("audio");
+  if (!(audioEntry instanceof File)) {
+    return {
+      success: false,
+      errorCode: "NO_FILE",
+      error: "Не передано аудіо-файл",
+    };
+  }
+  if (audioEntry.size > MAX_BEAT_FILE_BYTES) {
+    const mb = (MAX_BEAT_FILE_BYTES / 1024 / 1024).toFixed(0);
+    return {
+      success: false,
+      errorCode: "FILE_TOO_LARGE",
+      error: `Файл завеликий — максимум ${mb}MB.`,
+    };
+  }
+  const declaredMime = audioEntry.type?.toLowerCase() ?? "";
+  if (declaredMime && !ALLOWED_AUDIO_MIME.has(declaredMime)) {
+    return {
+      success: false,
+      errorCode: "INVALID_FILE_TYPE",
+      error: `Тип файлу не підтримується (${declaredMime}). Очікую MP3/WAV/M4A/FLAC/OGG.`,
+    };
+  }
+
+  // ───── ліміт лідів — перевіряємо до відправки SMTP-сесії, щоб не палити квоту ─────
+  const limitUser = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { plan: true, leadsProcessedCount: true, planResetDate: true },
+  });
+  if (!limitUser) {
+    return { success: false, error: "Юзера не знайдено" };
+  }
+  const limitStatus = getLeadLimitStatus(limitUser);
+  // ліміт перевіряємо лише якщо потенційно створюємо НОВИЙ лід; для існуючого
+  // ліда (повторний send тому ж артисту) це не споживає квоту.
+  const existing = await prisma.lead.findFirst({
+    where: { userId, mode: LeadMode.BEATS, companyName: artist.handle },
+    select: { id: true },
+  });
+  if (!existing && !limitStatus.allowed) {
+    const plan = getPlanForUser(limitUser);
+    return {
+      success: false,
+      errorCode: "LIMIT_REACHED",
+      error: `Ліміт плану ${plan.name} вичерпано (${limitStatus.used}/${plan.leadsPerMonth}).`,
+    };
+  }
+
+  // ───── відправка через SMTP ─────
+  const buffer = Buffer.from(await audioEntry.arrayBuffer());
+  const sendResult = await sendUserEmail(userId, email, subject, body, {
+    attachments: [
+      {
+        filename: audioEntry.name || payload.demo?.name || "beat.mp3",
+        content: buffer,
+        contentType: declaredMime || "audio/mpeg",
+      },
+    ],
+  });
+
+  // ───── персистимо outreach незалежно від результату SMTP ─────
+  try {
+    const score = calculateArtistScore({
+      email,
+      followers: artist.followers,
+      lookingForType: artist.lookingForType,
+    });
+
+    const cleanChannels = Array.from(
+      new Set(
+        [
+          ...((payload.channels ?? []).filter((c): c is ChannelKey =>
+            CHANNEL_ORDER.includes(c as ChannelKey),
+          ) as ChannelKey[]),
+          // Email піде до channels лише при успішній відправці — щоб у history
+          // не лишалось "надіслано через Email", якщо SMTP впав.
+          ...(sendResult.success ? (["email"] as ChannelKey[]) : []),
+        ],
+      ),
+    );
+
+    const attachment: Prisma.InputJsonValue = {
+      name: payload.demo?.name ?? audioEntry.name,
+      bytes: audioEntry.size,
+      bpm: payload.demo?.bpm ?? null,
+      keySig: payload.demo?.keySig ?? null,
+      genre: payload.demo?.genre ?? null,
+      price: payload.demo?.price ?? null,
+    };
+
+    const socialLinks: Prisma.InputJsonValue | undefined = artist.contacts
+      ? sanitizeContactsForJson(artist.contacts)
+      : undefined;
+
+    const persisted = await prisma.$transaction(async (tx) => {
+      const leadData = {
+        status: sendResult.success ? "Contacted" : "New",
+        realName: artist.realName,
+        category: artist.genre,
+        source: artist.platform,
+        website: artist.profileUrl,
+        email,
+        followers: artist.followers,
+        lookingForType: artist.lookingForType,
+        score,
+      };
+
+      const lead = existing
+        ? await tx.lead.update({
+            where: { id: existing.id },
+            data: socialLinks !== undefined ? { ...leadData, socialLinks } : leadData,
+            select: { id: true },
+          })
+        : await tx.lead.create({
+            data: {
+              userId,
+              mode: LeadMode.BEATS,
+              companyName: artist.handle,
+              ...leadData,
+              ...(socialLinks !== undefined ? { socialLinks } : {}),
+            },
+            select: { id: true },
+          });
+
+      const messageData: Prisma.MessageUncheckedCreateInput = {
+        leadId: lead.id,
+        subject,
+        body,
+        attachment,
+        deliveryStatus: sendResult.success ? "SENT" : "FAILED",
+        errorLog: sendResult.success ? null : sendResult.error,
+      };
+      if (cleanChannels.length > 0) {
+        messageData.channels = cleanChannels as Prisma.InputJsonValue;
+      }
+      const message = await tx.message.create({ data: messageData });
+
+      return { lead, message, isNew: !existing };
+    });
+
+    if (persisted.isNew) {
+      await incrementLeadsProcessed(userId, 1);
+    }
+
+    await revalidateLocalizedPath("/");
+    await revalidateLocalizedPath(`/leads/${persisted.lead.id}`);
+
+    if (sendResult.success) {
+      return {
+        success: true,
+        leadId: persisted.lead.id,
+        messageId: persisted.message.id,
+      };
+    }
+    return {
+      success: false,
+      leadId: persisted.lead.id,
+      messageId: persisted.message.id,
+      errorCode:
+        "code" in sendResult && sendResult.code === "NO_SMTP"
+          ? "NO_SMTP"
+          : "code" in sendResult && sendResult.code === "PLATFORM_NOT_CONFIGURED"
+            ? "PLATFORM_NOT_CONFIGURED"
+            : "SEND_FAILED",
+      error: sendResult.error,
+    };
+  } catch (error) {
+    console.error("sendBeatViaEmail persistence error:", error);
+    return {
+      success: false,
+      errorCode: "SEND_FAILED",
+      error:
+        error instanceof Error ? error.message : "Не вдалося зберегти outreach",
+    };
+  }
 }

@@ -580,6 +580,18 @@ const messages = {
     bulkAllSent: "Everyone selected has already been sent.",
     bulkManual: "Send to each person below manually — same beat for all.",
     tourTableTitle: "Lead table",
+    emailSendTitle: "Send email with the beat",
+    emailSendHint:
+      "Will go to {email} through your SMTP. The MP3 demo is attached; the lead is saved to CRM as Contacted.",
+    emailSendCta: "Send via Email",
+    emailSending: "Sending…",
+    errSendEmail: "Couldn't send the email.",
+    emailHintNoSmtp:
+      "SMTP isn't configured. Open /settings and fill in either Simple or Advanced mode.",
+    emailHintPlatformNotConfigured:
+      "Platform SMTP isn't configured by the admin (PLATFORM_SMTP_* in .env). Or switch your mode to Advanced and provide your own SMTP credentials.",
+    emailHintFileTooLarge:
+      "Try re-encoding the MP3 at 128–192kbps or trimming the length.",
   },
   Channels: {
     labels: {

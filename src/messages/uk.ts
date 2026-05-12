@@ -581,6 +581,18 @@ const messages = {
     bulkAllSent: "Всім, кого вибрали, вже надіслано.",
     bulkManual: "Надішліть кожному вручну нижче — біт точно той самий.",
     tourTableTitle: "Таблиця лідів",
+    emailSendTitle: "Надіслати лист з бітом",
+    emailSendHint:
+      "Лист піде на {email} через ваш SMTP. MP3-демо прикладеться як вкладення; лід автоматично збережеться у CRM зі статусом Contacted.",
+    emailSendCta: "Надіслати на Email",
+    emailSending: "Відправляю…",
+    errSendEmail: "Не вдалося відправити лист.",
+    emailHintNoSmtp:
+      "SMTP не сконфігуровано. Відкрийте /settings і заповніть «Простий режим» або «Розширений режим».",
+    emailHintPlatformNotConfigured:
+      "Платформений SMTP не налаштований адміністратором (PLATFORM_SMTP_* у .env). Або переключіть свій режим у «Розширений» і вкажіть власні SMTP-креди.",
+    emailHintFileTooLarge:
+      "Спробуйте стиснути MP3 у бітрейт 128–192kbps або обрізати тривалість.",
   },
   Channels: {
     labels: {

@@ -16,6 +16,7 @@ import { generateBeatProposal } from "@/src/actions/aiActions";
 import {
   searchBeatProspects,
   sendBeatMessage,
+  sendBeatViaEmail,
   type DemoMeta,
 } from "@/src/actions/beatActions";
 import type { BeatProspect } from "@/src/lib/beatProspects";
@@ -32,6 +33,13 @@ interface DemoState {
   bytes: number;
   type: string;
   url: string;
+  /**
+   * Оригінальний `File`-обʼєкт з input/drop. Тримаємо його у стейті, щоб
+   * SMTP-флоу міг прокинути сирі байти у `sendBeatViaEmail` без повторного
+   * fetch(blobUrl). Не серіалізується у localStorage — це нормально, бо
+   * сторінку без файлу і так не маємо як заrestore-ити (object URL revoked).
+   */
+  file: File;
   bpm: string;
   keySig: string;
   genre: string;
@@ -451,6 +459,7 @@ function DemoUploader({
       bytes: file.size,
       type: file.type,
       url,
+      file,
       bpm: "",
       keySig: "",
       genre: "",
@@ -789,6 +798,7 @@ function MessageReview({
   const [body, setBody] = useState(initialBody);
   const [generating, startGenerate] = useTransition();
   const [saving, startSave] = useTransition();
+  const [sendingEmail, startSendEmail] = useTransition();
   const [saved, setSaved] = useState(false);
   const [copied, setCopied] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -804,6 +814,15 @@ function MessageReview({
     () => resolveBeatsProfileHref(artist.profileUrl, artist.contacts),
     [artist.profileUrl, artist.contacts]
   );
+
+  // Email беремо з контактів артиста; цей же шлях використовує сервер у
+  // `sendBeatViaEmail`, тож тут і там вибірка має бути ідентичною.
+  const artistEmail = useMemo<string | null>(() => {
+    const fromTop = artist.email?.trim();
+    if (fromTop) return fromTop;
+    const fromContacts = artist.contacts?.email?.trim();
+    return fromContacts || null;
+  }, [artist.email, artist.contacts?.email]);
 
   const isSaved = saved || forceSent;
 
@@ -892,7 +911,59 @@ function MessageReview({
     });
   }
 
+  function handleSendViaEmail() {
+    if (!artistEmail) return;
+    setError(null);
+
+    const formData = new FormData();
+    formData.append("audio", demo.file, demo.name);
+    formData.append(
+      "payload",
+      JSON.stringify({
+        artist,
+        subject,
+        body,
+        demo: {
+          name: demo.name,
+          bytes: demo.bytes,
+          bpm: demo.bpm || null,
+          keySig: demo.keySig || null,
+          genre: demo.genre || null,
+          price: demo.price || null,
+        },
+        // Опціональні канали, які юзер вже відкрив руками раніше — щоб
+        // `Message.channels` у CRM відображала всі задіяні шляхи, не лише email.
+        channels: Array.from(openedChannels),
+      }),
+    );
+
+    startSendEmail(async () => {
+      const res = await sendBeatViaEmail(formData);
+      if (res.success) {
+        setOpenedChannels((s) => {
+          const next = new Set(s);
+          next.add("email" as ChannelKey);
+          return next;
+        });
+        setSaved(true);
+        onSent();
+      } else {
+        let msg = res.error ?? t("errSendEmail");
+        if (res.errorCode === "NO_SMTP") {
+          msg = `${msg}\n\n${t("emailHintNoSmtp")}`;
+        } else if (res.errorCode === "PLATFORM_NOT_CONFIGURED") {
+          msg = `${msg}\n\n${t("emailHintPlatformNotConfigured")}`;
+        } else if (res.errorCode === "FILE_TOO_LARGE") {
+          msg = `${msg} ${t("emailHintFileTooLarge")}`;
+        }
+        setError(msg);
+      }
+    });
+  }
+
   const openedCount = openedChannels.size;
+  const canSendEmail = !!artistEmail;
+  const busy = saving || sendingEmail || generating;
 
   return (
     <div className="rounded-lg border border-zinc-200 bg-white dark:border-flux-border dark:bg-flux-card">
@@ -1019,6 +1090,34 @@ function MessageReview({
               {copied ? t("reviewCopied") : t("reviewCopy")}
             </button>
           </div>
+
+          {canSendEmail && (
+            <div className="rounded-lg border border-purple-200 bg-purple-50/60 px-4 py-3 dark:border-flux-purple-ring dark:bg-flux-purple-tint">
+              <div className="flex flex-wrap items-start justify-between gap-3">
+                <div className="min-w-0">
+                  <p className="text-sm font-semibold text-purple-900 dark:text-flux-purple-soft">
+                    {t("emailSendTitle")}
+                  </p>
+                  <p className="mt-0.5 text-[11px] text-purple-800/85 dark:text-flux-purple-soft/85">
+                    {t("emailSendHint", { email: artistEmail! })}
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={handleSendViaEmail}
+                  disabled={
+                    busy || !subject.trim() || !body.trim() || sendingEmail
+                  }
+                  className="inline-flex items-center gap-2 rounded-lg bg-purple-600 px-4 py-2 text-xs font-medium text-white shadow-sm transition hover:bg-purple-700 disabled:cursor-not-allowed disabled:bg-purple-300 dark:bg-flux-purple dark:hover:bg-flux-purple-hover"
+                >
+                  {sendingEmail && <Spinner className="h-3.5 w-3.5" />}
+                  <span>
+                    {sendingEmail ? t("emailSending") : t("emailSendCta")}
+                  </span>
+                </button>
+              </div>
+            </div>
+          )}
 
           {available.length > 0 && (
             <div className="space-y-2 pt-2 border-t border-zinc-100 dark:border-flux-border">

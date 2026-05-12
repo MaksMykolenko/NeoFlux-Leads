@@ -57,6 +57,22 @@ export type SendEmailResult =
       code?: "NO_SMTP" | "PLATFORM_NOT_CONFIGURED";
     };
 
+/**
+ * Вкладення у форматі, що nodemailer приймає напряму. `content` — Buffer
+ * з сирими байтами файлу (BEATS-флоу читає MP3 з FormData). `contentType`
+ * опційний, бо nodemailer може здогадатись з імені, але краще передавати
+ * явно — Gmail/Outlook гірше відображають audio/* з generic-mime.
+ */
+export interface MailAttachment {
+  filename: string;
+  content: Buffer;
+  contentType?: string;
+}
+
+export interface SendUserEmailOptions {
+  attachments?: MailAttachment[];
+}
+
 interface UserMailRow {
   usePlatformSmtp: boolean;
   smtpHost: string | null;
@@ -159,6 +175,7 @@ export async function sendUserEmail(
   to: string,
   subject: string,
   bodyText: string,
+  options?: SendUserEmailOptions,
 ): Promise<SendEmailResult> {
   const user = await prisma.user.findUnique({
     where: { id: userId },
@@ -179,6 +196,7 @@ export async function sendUserEmail(
 
   const finalText = `${bodyText.trim()}\n\n${watermarkText()}`;
   const finalHtml = `${escapeHtml(bodyText.trim()).replace(/\n/g, "<br />")}${watermarkHtml()}`;
+  const attachments = options?.attachments;
 
   // ───── PLATFORM MODE ─────
   if (user.usePlatformSmtp) {
@@ -219,6 +237,7 @@ export async function sendUserEmail(
         subject,
         text: finalText,
         html: finalHtml,
+        ...(attachments && attachments.length > 0 ? { attachments } : {}),
       });
       return { success: true, messageId: info.messageId };
     } catch (err) {
@@ -271,6 +290,7 @@ export async function sendUserEmail(
       subject,
       text: finalText,
       html: finalHtml,
+      ...(attachments && attachments.length > 0 ? { attachments } : {}),
     });
     return { success: true, messageId: info.messageId };
   } catch (err) {
