@@ -51,8 +51,8 @@ export default async function AdminLayout({
             <span
               className={`rounded-full px-2.5 py-1 text-xs font-semibold ${
                 role === "OWNER"
-                  ? "bg-amber-100 text-amber-800"
-                  : "bg-purple-100 text-purple-800"
+                  ? "bg-amber-100 text-amber-800 dark:bg-amber-500/15 dark:text-amber-300"
+                  : "bg-purple-100 text-purple-800 dark:bg-flux-purple-tint dark:text-flux-purple-soft"
               }`}
             >
               {role}

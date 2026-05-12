@@ -145,10 +145,10 @@ function Banner({
 }) {
   const cls =
     type === "success"
-      ? "border-emerald-200 bg-emerald-50 text-emerald-800"
+      ? "border-emerald-200 bg-emerald-50 text-emerald-800 dark:border-emerald-500/30 dark:bg-emerald-500/10 dark:text-emerald-200"
       : type === "error"
-        ? "border-red-200 bg-red-50 text-red-700"
-        : "border-purple-200 bg-purple-50 text-purple-800";
+        ? "border-red-200 bg-red-50 text-red-700 dark:border-red-500/30 dark:bg-red-500/10 dark:text-red-300"
+        : "border-purple-200 bg-purple-50 text-purple-800 dark:border-flux-purple-ring dark:bg-flux-purple-tint dark:text-flux-purple-soft";
   return (
     <div className={`mt-4 rounded-lg border px-3 py-2 text-sm ${cls}`}>
       {children}
@@ -159,16 +159,16 @@ function Banner({
 function BlockedBanner({ planName }: { planName: string }) {
   const t = useTranslations("ScraperForm");
   return (
-    <div className="mt-4 flex flex-wrap items-start justify-between gap-3 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm">
+    <div className="mt-4 flex flex-wrap items-start justify-between gap-3 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm dark:border-amber-500/30 dark:bg-amber-500/10">
       <div>
-        <p className="font-semibold text-amber-900">{planName}</p>
-        <p className="mt-0.5 text-xs text-amber-800">
+        <p className="font-semibold text-amber-900 dark:text-amber-200">{planName}</p>
+        <p className="mt-0.5 text-xs text-amber-800 dark:text-amber-300/90">
           {t("blockedBody", { plan: planName })}
         </p>
       </div>
       <Link
         href="/pricing"
-        className="inline-flex h-8 items-center rounded-md bg-amber-900 px-3 text-xs font-medium text-white transition hover:bg-amber-950"
+        className="inline-flex h-8 items-center rounded-md bg-amber-900 px-3 text-xs font-medium text-white transition hover:bg-amber-950 dark:bg-amber-500/30 dark:text-amber-100 dark:hover:bg-amber-500/40"
       >
         {t("blockedCta")} →
       </Link>

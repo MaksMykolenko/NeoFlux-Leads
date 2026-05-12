@@ -65,13 +65,13 @@ export default function UniversalOutreach() {
       </form>
 
       {error && (
-        <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">
+        <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800 dark:border-red-500/30 dark:bg-red-500/10 dark:text-red-200">
           {error}
         </div>
       )}
 
       {lastSaved !== null && !pending && (
-        <p className="text-sm text-green-700">
+        <p className="text-sm text-green-700 dark:text-emerald-300">
           {t("savedPrefix")}{" "}
           <span className="font-semibold tabular-nums">{lastSaved}</span>{" "}
           {lastSaved === 1 ? t("recordOne") : t("recordMany")}{" "}

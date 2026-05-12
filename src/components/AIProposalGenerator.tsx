@@ -200,7 +200,7 @@ export default function AIProposalGenerator({
               isGenerating || isSaving || isGeneratingSeq || isRewriting
             }
             title={t("sequenceTitle")}
-            className="inline-flex items-center gap-2 rounded-md bg-zinc-900 px-3 py-2 text-xs font-medium text-zinc-100 transition hover:bg-zinc-800 disabled:opacity-60"
+            className="inline-flex items-center gap-2 rounded-md bg-zinc-900 px-3 py-2 text-xs font-medium text-zinc-100 transition hover:bg-zinc-800 disabled:opacity-60 dark:bg-flux-card-2 dark:text-zinc-100 dark:ring-1 dark:ring-inset dark:ring-flux-border-strong dark:hover:bg-flux-card"
           >
             {isGeneratingSeq ? t("generatingShort") : t("sequenceCta")}
           </button>
@@ -311,8 +311,8 @@ export default function AIProposalGenerator({
                   onClick={handleCopy}
                   className={`inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium transition-colors ${
                     copied
-                      ? "bg-green-50 text-green-700 ring-1 ring-inset ring-green-200"
-                      : "bg-zinc-50 text-zinc-700 ring-1 ring-inset ring-zinc-200 hover:bg-zinc-100"
+                      ? "bg-green-50 text-green-700 ring-1 ring-inset ring-green-200 dark:bg-emerald-500/10 dark:text-emerald-300 dark:ring-emerald-500/30"
+                      : "bg-zinc-50 text-zinc-700 ring-1 ring-inset ring-zinc-200 hover:bg-zinc-100 dark:bg-flux-card-2 dark:text-zinc-300 dark:ring-flux-border-strong dark:hover:bg-flux-card-2/80"
                   }`}
                 >
                   {copied ? (
@@ -377,8 +377,8 @@ export default function AIProposalGenerator({
       </div>
 
       {isAlreadySaved && (
-        <div className="mt-4 flex items-start gap-2 rounded-lg border border-green-200 bg-green-50 px-3 py-2.5 text-sm text-green-800">
-          <CheckIcon className="w-4 h-4 mt-0.5 flex-shrink-0 text-green-600" />
+        <div className="mt-4 flex items-start gap-2 rounded-lg border border-green-200 bg-green-50 px-3 py-2.5 text-sm text-green-800 dark:border-emerald-500/30 dark:bg-emerald-500/10 dark:text-emerald-200">
+          <CheckIcon className="w-4 h-4 mt-0.5 flex-shrink-0 text-green-600 dark:text-emerald-400" />
           <div>
             {t("savedBannerIntro")}{" "}
             <span className="font-semibold">{tLead("Contacted")}</span>.
@@ -387,7 +387,7 @@ export default function AIProposalGenerator({
       )}
 
       {error && (
-        <div className="mt-4 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+        <div className="mt-4 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700 dark:border-red-500/30 dark:bg-red-500/10 dark:text-red-300">
           {error}
         </div>
       )}
@@ -396,10 +396,10 @@ export default function AIProposalGenerator({
         <div
           className={`mt-4 flex items-start justify-between gap-3 rounded-lg border px-3 py-2.5 text-sm ${
             toast.type === "success"
-              ? "border-green-200 bg-green-50 text-green-800"
+              ? "border-green-200 bg-green-50 text-green-800 dark:border-emerald-500/30 dark:bg-emerald-500/10 dark:text-emerald-200"
               : toast.type === "warn"
-                ? "border-amber-200 bg-amber-50 text-amber-800"
-                : "border-red-200 bg-red-50 text-red-700"
+                ? "border-amber-200 bg-amber-50 text-amber-800 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-200"
+                : "border-red-200 bg-red-50 text-red-700 dark:border-red-500/30 dark:bg-red-500/10 dark:text-red-300"
           }`}
         >
           <span className="flex-1">{toast.msg}</span>

@@ -37,7 +37,7 @@ export default function AdminUsersTable({
       <div className="overflow-x-auto">
         <table className="w-full text-sm">
           <thead>
-            <tr className="border-b border-zinc-100 bg-zinc-50/50 dark:border-flux-border">
+            <tr className="border-b border-zinc-100 bg-zinc-50/50 dark:border-flux-border dark:bg-flux-card-2/50">
               <Th>Користувач</Th>
               <Th>Роль</Th>
               <Th>План</Th>
@@ -121,7 +121,7 @@ function UserRow({
               className="h-8 w-8 flex-shrink-0 rounded-full object-cover ring-1 ring-zinc-200 dark:ring-zinc-700"
             />
           ) : (
-            <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-purple-100 text-xs font-medium text-purple-700">
+            <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-purple-100 text-xs font-medium text-purple-700 dark:bg-flux-purple-tint dark:text-flux-purple-soft">
               {(user.displayName || user.username || user.email || "?")
                 .charAt(0)
                 .toUpperCase()}
@@ -136,7 +136,7 @@ function UserRow({
             </div>
           </div>
         </div>
-        {error && <div className="mt-1 text-xs text-red-600">{error}</div>}
+        {error && <div className="mt-1 text-xs text-red-600 dark:text-red-400">{error}</div>}
       </Td>
 
       <Td>
@@ -203,10 +203,10 @@ function UserRow({
 function RoleBadge({ role }: { role: Role }) {
   const cls =
     role === "OWNER"
-      ? "bg-amber-100 text-amber-800 ring-amber-200"
+      ? "bg-amber-100 text-amber-800 ring-amber-200 dark:bg-amber-500/15 dark:text-amber-300 dark:ring-amber-500/30"
       : role === "ADMIN"
-      ? "bg-purple-100 text-purple-800 ring-purple-200"
-      : "bg-zinc-100 text-zinc-700 ring-zinc-200";
+      ? "bg-purple-100 text-purple-800 ring-purple-200 dark:bg-flux-purple-tint dark:text-flux-purple-soft dark:ring-flux-purple-ring"
+      : "bg-zinc-100 text-zinc-700 ring-zinc-200 dark:bg-flux-card-2 dark:text-zinc-300 dark:ring-flux-border-strong";
   return (
     <span
       className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-semibold ring-1 ring-inset ${cls}`}
@@ -225,7 +225,7 @@ function Th({
 }) {
   return (
     <th
-      className={`px-4 py-3 text-xs font-medium uppercase tracking-wider text-zinc-500 ${
+      className={`px-4 py-3 text-xs font-medium uppercase tracking-wider text-zinc-500 dark:text-zinc-400 ${
         align === "right" ? "text-right" : "text-left"
       }`}
     >

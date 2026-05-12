@@ -28,9 +28,9 @@ import {
 export const dynamic = "force-dynamic";
 
 function getPerformanceScoreColor(score: number): string {
-  if (score > 80) return "text-green-600";
-  if (score > 50) return "text-amber-600";
-  return "text-red-600";
+  if (score > 80) return "text-green-600 dark:text-emerald-400";
+  if (score > 50) return "text-amber-600 dark:text-amber-400";
+  return "text-red-600 dark:text-red-400";
 }
 
 function stripProtocol(url: string): string {
@@ -223,7 +223,7 @@ export default async function LeadDetailPage({
           )}
 
           <section
-            className={`bg-white rounded-xl shadow-sm border border-zinc-200 p-6 ${
+            className={`bg-white rounded-xl shadow-sm border border-zinc-200 p-6 dark:bg-flux-card dark:border-flux-border ${
               isBeats ? "" : "lg:col-span-2"
             }`}
           >
@@ -396,7 +396,7 @@ function ContactsCard({
             emptyLabel={t("notProvided")}
           >
             {lead.lookingForType ? (
-              <span className="inline-flex items-center rounded-full bg-violet-50 px-2 py-0.5 text-xs font-medium text-violet-700 ring-1 ring-inset ring-violet-200">
+              <span className="inline-flex items-center rounded-full bg-violet-50 px-2 py-0.5 text-xs font-medium text-violet-700 ring-1 ring-inset ring-violet-200 dark:bg-violet-500/15 dark:text-violet-300 dark:ring-violet-500/30">
                 {t("seekingBadge")}
               </span>
             ) : (
@@ -459,7 +459,7 @@ function ContactsCard({
                 href={lead.website}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-purple-600 hover:text-purple-800 hover:underline transition-colors"
+                className="text-purple-600 hover:text-purple-800 hover:underline transition-colors dark:text-flux-purple-soft dark:hover:text-white"
               >
                 {stripProtocol(lead.website)}
               </a>
@@ -469,7 +469,7 @@ function ContactsCard({
             {lead.email && (
               <a
                 href={`mailto:${lead.email}`}
-                className="text-purple-600 hover:text-purple-800 hover:underline transition-colors"
+                className="text-purple-600 hover:text-purple-800 hover:underline transition-colors dark:text-flux-purple-soft dark:hover:text-white"
               >
                 {lead.email}
               </a>
@@ -538,7 +538,7 @@ function ContactsCard({
               href={lead.website}
               target="_blank"
               rel="noopener noreferrer"
-              className="text-purple-600 hover:text-purple-800 hover:underline transition-colors"
+              className="text-purple-600 hover:text-purple-800 hover:underline transition-colors dark:text-flux-purple-soft dark:hover:text-white"
             >
               {stripProtocol(lead.website)}
             </a>
@@ -548,7 +548,7 @@ function ContactsCard({
           {lead.email && (
             <a
               href={`mailto:${lead.email}`}
-              className="text-purple-600 hover:text-purple-800 hover:underline transition-colors"
+              className="text-purple-600 hover:text-purple-800 hover:underline transition-colors dark:text-flux-purple-soft dark:hover:text-white"
             >
               {lead.email}
             </a>
@@ -677,7 +677,9 @@ function CheckBadge({ label, ok }: { label: string; ok: boolean }) {
   return (
     <div
       className={`flex items-center gap-2 rounded-lg border px-3 py-2 ${
-        ok ? "border-green-200 bg-green-50" : "border-red-200 bg-red-50"
+        ok
+          ? "border-green-200 bg-green-50 dark:border-emerald-500/30 dark:bg-emerald-500/10"
+          : "border-red-200 bg-red-50 dark:border-red-500/30 dark:bg-red-500/10"
       }`}
     >
       {ok ? (
@@ -685,7 +687,7 @@ function CheckBadge({ label, ok }: { label: string; ok: boolean }) {
           xmlns="http://www.w3.org/2000/svg"
           viewBox="0 0 20 20"
           fill="currentColor"
-          className="w-4 h-4 text-green-600"
+          className="w-4 h-4 text-green-600 dark:text-emerald-400"
         >
           <path
             fillRule="evenodd"
@@ -698,7 +700,7 @@ function CheckBadge({ label, ok }: { label: string; ok: boolean }) {
           xmlns="http://www.w3.org/2000/svg"
           viewBox="0 0 20 20"
           fill="currentColor"
-          className="w-4 h-4 text-red-600"
+          className="w-4 h-4 text-red-600 dark:text-red-400"
         >
           <path
             fillRule="evenodd"
@@ -709,7 +711,7 @@ function CheckBadge({ label, ok }: { label: string; ok: boolean }) {
       )}
       <span
         className={`text-sm font-medium ${
-          ok ? "text-green-700" : "text-red-700"
+          ok ? "text-green-700 dark:text-emerald-300" : "text-red-700 dark:text-red-300"
         }`}
       >
         {label}
@@ -912,12 +914,12 @@ function MessageAttachmentBadge({
     .join(" · ");
 
   return (
-    <div className="mt-3 flex items-center gap-2 rounded-md border border-violet-200 bg-violet-50 px-3 py-2 text-xs not-prose">
-      <span className="text-violet-700">♪</span>
-      <span className="font-medium text-violet-900 truncate">
+    <div className="mt-3 flex items-center gap-2 rounded-md border border-violet-200 bg-violet-50 px-3 py-2 text-xs not-prose dark:border-violet-500/30 dark:bg-violet-500/10">
+      <span className="text-violet-700 dark:text-violet-300">♪</span>
+      <span className="font-medium text-violet-900 truncate dark:text-violet-100">
         {attachment.name}
       </span>
-      {meta && <span className="text-violet-700/70">· {meta}</span>}
+      {meta && <span className="text-violet-700/70 dark:text-violet-300/70">· {meta}</span>}
     </div>
   );
 }
@@ -943,7 +945,7 @@ function MessageChannelsBadge({
         return (
           <span
             key={key}
-            className="inline-flex items-center gap-1 rounded-md bg-purple-50 px-1.5 py-0.5 text-[10px] font-medium text-purple-700 ring-1 ring-inset ring-purple-200"
+            className="inline-flex items-center gap-1 rounded-md bg-purple-50 px-1.5 py-0.5 text-[10px] font-medium text-purple-700 ring-1 ring-inset ring-purple-200 dark:bg-flux-purple-tint dark:text-flux-purple-soft dark:ring-flux-purple-ring"
           >
             <def.Icon className="w-3 h-3" />
             {ui.label}

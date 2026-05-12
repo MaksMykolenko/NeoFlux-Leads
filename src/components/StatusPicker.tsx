@@ -94,7 +94,7 @@ export default function StatusPicker({
         </span>
       </div>
       {error && (
-        <span className="text-xs font-medium text-red-600">{error}</span>
+        <span className="text-xs font-medium text-red-600 dark:text-red-400">{error}</span>
       )}
     </div>
   );

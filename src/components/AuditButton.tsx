@@ -33,7 +33,7 @@ export default function AuditButton({
   if (hasAudit) {
     return (
       <div className="flex flex-col items-start gap-0.5">
-        <span className="text-xs font-medium text-green-700">Аудит пройдено</span>
+        <span className="text-xs font-medium text-green-700 dark:text-emerald-300">Аудит пройдено</span>
         {issuesCount !== undefined && issuesCount > 0 && (
           <span className="text-xs text-zinc-400 dark:text-zinc-500">
             {issuesCount} {issuesCount === 1 ? "проблема" : issuesCount < 5 ? "проблеми" : "проблем"}
@@ -47,12 +47,12 @@ export default function AuditButton({
     <button
       onClick={handleClick}
       disabled={loading}
-      className="inline-flex items-center gap-1.5 rounded-md bg-purple-50 px-2.5 py-1 text-xs font-medium text-purple-700 transition hover:bg-purple-100 disabled:cursor-not-allowed disabled:opacity-60 focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-500"
+      className="inline-flex items-center gap-1.5 rounded-md bg-purple-50 px-2.5 py-1 text-xs font-medium text-purple-700 transition hover:bg-purple-100 disabled:cursor-not-allowed disabled:opacity-60 focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-500 dark:bg-flux-purple-tint dark:text-flux-purple-soft dark:hover:bg-flux-purple-ring/40 dark:focus-visible:ring-flux-purple"
     >
       {loading ? (
         <>
           <svg
-            className="animate-spin h-3 w-3 text-purple-700"
+            className="animate-spin h-3 w-3 text-purple-700 dark:text-flux-purple-soft"
             xmlns="http://www.w3.org/2000/svg"
             fill="none"
             viewBox="0 0 24 24"

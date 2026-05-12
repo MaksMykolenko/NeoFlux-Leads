@@ -150,7 +150,7 @@ export default function BeatOutreach() {
               {t("flowNoteBefore")}
               <Link
                 href="/settings"
-                className="font-medium text-purple-600 hover:text-purple-800 hover:underline"
+                className="font-medium text-purple-600 hover:text-purple-800 hover:underline dark:text-flux-purple-soft dark:hover:text-white"
               >
                 {t("flowNoteSettings")}
               </Link>
@@ -287,7 +287,7 @@ function SearchResults({
 
   if (error) {
     return (
-      <div className="mt-4 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+      <div className="mt-4 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-200">
         {error}
       </div>
     );
@@ -345,8 +345,8 @@ function ArtistCard({ artist, selected, onToggle }: ArtistCardProps) {
       }}
       className={`w-full text-left rounded-lg border p-4 transition-all cursor-pointer ${
         selected
-          ? "border-purple-500 ring-2 ring-purple-100 bg-purple-50/40"
-          : "border-zinc-200 bg-white hover:border-zinc-300 hover:shadow-sm"
+          ? "border-purple-500 ring-2 ring-purple-100 bg-purple-50/40 dark:border-flux-purple dark:ring-flux-purple-ring dark:bg-flux-purple-tint"
+          : "border-zinc-200 bg-white hover:border-zinc-300 hover:shadow-sm dark:border-flux-border dark:bg-flux-card dark:hover:border-flux-border-strong dark:hover:bg-flux-card-2"
       }`}
     >
       <div className="flex items-start justify-between gap-3">
@@ -356,7 +356,7 @@ function ArtistCard({ artist, selected, onToggle }: ArtistCardProps) {
               {artist.handle}
             </span>
             {artist.lookingForType && (
-              <span className="inline-flex items-center rounded-full bg-violet-50 px-1.5 py-0.5 text-[10px] font-medium text-violet-700 ring-1 ring-inset ring-violet-200 whitespace-nowrap">
+              <span className="inline-flex items-center rounded-full bg-violet-50 px-1.5 py-0.5 text-[10px] font-medium text-violet-700 ring-1 ring-inset ring-violet-200 whitespace-nowrap dark:bg-violet-500/15 dark:text-violet-300 dark:ring-violet-500/30">
                 {t("cardSeeking")}
               </span>
             )}
@@ -370,7 +370,7 @@ function ArtistCard({ artist, selected, onToggle }: ArtistCardProps) {
                 href={profileHref}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="font-medium text-purple-600 hover:text-purple-800 hover:underline"
+                className="font-medium text-purple-600 hover:text-purple-800 hover:underline dark:text-flux-purple-soft dark:hover:text-white"
                 onClick={(e) => e.stopPropagation()}
               >
                 {t("profileLink", { platform: artist.platform })}
@@ -387,8 +387,8 @@ function ArtistCard({ artist, selected, onToggle }: ArtistCardProps) {
         <span
           className={`flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full border-2 transition-all ${
             selected
-              ? "border-purple-600 bg-purple-600 text-white"
-              : "border-zinc-300 bg-white"
+              ? "border-purple-600 bg-purple-600 text-white dark:border-flux-purple dark:bg-flux-purple"
+              : "border-zinc-300 bg-white dark:border-flux-border-strong dark:bg-flux-card-2"
           }`}
         >
           {selected && <CheckIcon className="w-3.5 h-3.5" />}
@@ -416,7 +416,7 @@ function ArtistCard({ artist, selected, onToggle }: ArtistCardProps) {
           })}
         </div>
       ) : (
-        <p className="mt-2 text-[11px] text-amber-700">{t("contactsMissing")}</p>
+        <p className="mt-2 text-[11px] text-amber-700 dark:text-amber-300">{t("contactsMissing")}</p>
       )}
     </div>
   );
@@ -476,8 +476,8 @@ function DemoUploader({
         onClick={() => inputRef.current?.click()}
         className={`cursor-pointer rounded-xl border-2 border-dashed px-6 py-10 text-center transition-colors ${
           dragOver
-            ? "border-purple-500 bg-purple-50"
-            : "border-zinc-300 bg-zinc-50 hover:border-zinc-400 hover:bg-zinc-100"
+            ? "border-purple-500 bg-purple-50 dark:border-flux-purple dark:bg-flux-purple-tint"
+            : "border-zinc-300 bg-zinc-50 hover:border-zinc-400 hover:bg-zinc-100 dark:border-flux-border-strong dark:bg-flux-card/40 dark:hover:border-flux-purple dark:hover:bg-flux-card"
         }`}
       >
         <input
@@ -515,7 +515,7 @@ function DemoUploader({
   return (
     <div className="rounded-xl border border-zinc-200 bg-white p-4 space-y-4 dark:border-flux-border dark:bg-flux-card">
       <div className="flex items-start gap-3">
-        <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg bg-violet-100 text-violet-700">
+        <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg bg-violet-100 text-violet-700 dark:bg-violet-500/15 dark:text-violet-300">
           <svg
             xmlns="http://www.w3.org/2000/svg"
             viewBox="0 0 20 20"
@@ -896,7 +896,7 @@ function MessageReview({
 
   return (
     <div className="rounded-lg border border-zinc-200 bg-white dark:border-flux-border dark:bg-flux-card">
-      <div className="flex items-center justify-between gap-3 px-4 py-3 border-b border-zinc-100 bg-zinc-50/60 dark:border-flux-border">
+      <div className="flex items-center justify-between gap-3 px-4 py-3 border-b border-zinc-100 bg-zinc-50/60 dark:border-flux-border dark:bg-flux-card-2/60">
         <div>
           <p className="text-sm font-semibold text-zinc-900 dark:text-zinc-50">
             {profileHref ? (
@@ -904,7 +904,7 @@ function MessageReview({
                 href={profileHref}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="hover:text-purple-600 hover:underline"
+                className="hover:text-purple-600 hover:underline dark:hover:text-flux-purple-soft"
               >
                 {artist.handle}
               </a>
@@ -931,7 +931,7 @@ function MessageReview({
 
       {isSaved ? (
         <div className="flex items-center gap-3 px-4 py-6">
-          <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-green-100 text-green-700">
+          <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-green-100 text-green-700 dark:bg-emerald-500/15 dark:text-emerald-300">
             <CheckIcon className="w-5 h-5" />
           </div>
           <div>
@@ -977,12 +977,12 @@ function MessageReview({
           </div>
 
           {demo && (
-            <div className="flex items-center gap-2 rounded-md border border-violet-200 bg-violet-50 px-3 py-2 text-xs">
-              <span className="text-violet-700">♪</span>
-              <span className="font-medium text-violet-900 truncate">
+            <div className="flex items-center gap-2 rounded-md border border-violet-200 bg-violet-50 px-3 py-2 text-xs dark:border-violet-500/30 dark:bg-violet-500/10">
+              <span className="text-violet-700 dark:text-violet-300">♪</span>
+              <span className="font-medium text-violet-900 truncate dark:text-violet-100">
                 {demo.name}
               </span>
-              <span className="text-violet-700/70">
+              <span className="text-violet-700/70 dark:text-violet-300/70">
                 · {fmtBytes(demo.bytes)}
               </span>
             </div>
@@ -1007,8 +1007,8 @@ function MessageReview({
               onClick={copyMessageToClipboard}
               className={`inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium ring-1 ring-inset transition-colors ${
                 copied
-                  ? "bg-green-50 text-green-700 ring-green-200"
-                  : "bg-zinc-50 text-zinc-700 ring-zinc-200 hover:bg-zinc-100"
+                  ? "bg-green-50 text-green-700 ring-green-200 dark:bg-emerald-500/10 dark:text-emerald-300 dark:ring-emerald-500/30"
+                  : "bg-zinc-50 text-zinc-700 ring-zinc-200 hover:bg-zinc-100 dark:bg-flux-card-2 dark:text-zinc-300 dark:ring-flux-border-strong dark:hover:bg-flux-card-2/80"
               }`}
             >
               {copied ? (
@@ -1045,8 +1045,8 @@ function MessageReview({
                       title={`${ui.label}: ${value}\n${ui.hint}`}
                       className={`flex items-center justify-between gap-2 rounded-md border px-3 py-2 text-xs transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${
                         opened
-                          ? "border-green-200 bg-green-50 text-green-800 hover:bg-green-100"
-                          : "border-zinc-200 bg-white text-zinc-700 hover:border-zinc-300 hover:bg-zinc-50"
+                          ? "border-green-200 bg-green-50 text-green-800 hover:bg-green-100 dark:border-emerald-500/30 dark:bg-emerald-500/10 dark:text-emerald-200 dark:hover:bg-emerald-500/15"
+                          : "border-zinc-200 bg-white text-zinc-700 hover:border-zinc-300 hover:bg-zinc-50 dark:border-flux-border dark:bg-flux-card-2 dark:text-zinc-300 dark:hover:border-flux-border-strong dark:hover:bg-flux-card"
                       }`}
                     >
                       <span className="flex items-center gap-2 min-w-0">
@@ -1059,7 +1059,7 @@ function MessageReview({
                       {opened ? (
                         <CheckIcon className="w-3.5 h-3.5 flex-shrink-0" />
                       ) : (
-                        <span className="text-[10px] font-medium text-purple-600 whitespace-nowrap">
+                        <span className="text-[10px] font-medium text-purple-600 whitespace-nowrap dark:text-flux-purple-soft">
                           {t("open")}
                         </span>
                       )}
@@ -1098,7 +1098,7 @@ function MessageReview({
           </div>
 
           {error && (
-            <p className="text-xs font-medium text-red-600">{error}</p>
+            <p className="text-xs font-medium text-red-600 dark:text-red-400">{error}</p>
           )}
         </div>
       )}
@@ -1117,12 +1117,12 @@ function BulkSendBanner({
 }) {
   const t = useTranslations("BeatOutreach");
   return (
-    <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-purple-200 bg-purple-50 px-4 py-3">
-      <div className="text-sm text-purple-900">
+    <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-purple-200 bg-purple-50 px-4 py-3 dark:border-flux-purple-ring dark:bg-flux-purple-tint">
+      <div className="text-sm text-purple-900 dark:text-flux-purple-soft">
         <span className="font-semibold">
           {t("bulkHeading", { pending, total })}
         </span>
-        <span className="block text-xs text-purple-700/80 mt-0.5">
+        <span className="block text-xs text-purple-700/80 mt-0.5 dark:text-flux-purple-soft/80">
           {disabled ? t("bulkAllSent") : t("bulkManual")}
         </span>
       </div>
