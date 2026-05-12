@@ -37,7 +37,7 @@ export default function LeadViewToggle({ active }: { active: LeadView }) {
     <div
       role="tablist"
       aria-label={t("ariaLabel")}
-      className="inline-flex items-center rounded-md border border-zinc-200 bg-white p-0.5 text-xs dark:border-zinc-800 dark:bg-zinc-900"
+      className="inline-flex items-center rounded-md border border-zinc-200 bg-white p-0.5 text-xs dark:border-flux-border dark:bg-flux-card"
     >
       <ToggleButton
         label={t("table")}

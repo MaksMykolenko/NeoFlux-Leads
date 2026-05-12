@@ -50,7 +50,7 @@ export default function StatusPicker({
           )}`}
         >
           {LEAD_STATUSES.map((value) => (
-            <option key={value} value={value} className="bg-white text-zinc-900 dark:bg-zinc-900 dark:text-zinc-50">
+            <option key={value} value={value} className="bg-white text-zinc-900 dark:bg-flux-card dark:text-zinc-50">
               {value}
             </option>
           ))}

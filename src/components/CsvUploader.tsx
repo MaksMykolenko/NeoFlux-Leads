@@ -98,7 +98,7 @@ export default function CsvUploader() {
   }
 
   return (
-    <div className="rounded-md border border-zinc-200 bg-white p-5 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
+    <div className="rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm transition-colors hover:border-zinc-300 dark:border-flux-border dark:bg-flux-card dark:hover:border-flux-border-strong">
       <div className="flex items-start justify-between gap-3">
         <div>
           <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-50">
@@ -108,7 +108,7 @@ export default function CsvUploader() {
             {t("subtitle")}
           </p>
         </div>
-        <span className="inline-flex items-center rounded-full bg-purple-100 px-2 py-0.5 text-[10px] font-medium uppercase tracking-wider text-purple-700 dark:bg-purple-500/15 dark:text-purple-300">
+        <span className="inline-flex items-center rounded-full border border-purple-200 bg-purple-50 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-purple-700 dark:border-flux-purple/30 dark:bg-flux-purple-tint dark:text-flux-purple-soft">
           UNIVERSAL
         </span>
       </div>
@@ -117,7 +117,7 @@ export default function CsvUploader() {
         onDragOver={(e) => e.preventDefault()}
         onDrop={onDrop}
         onClick={() => fileRef.current?.click()}
-        className={`mt-4 flex cursor-pointer flex-col items-center justify-center gap-1 rounded-md border-2 border-dashed border-zinc-300 bg-zinc-50 px-4 py-6 text-center transition-all duration-200 hover:border-purple-400 hover:bg-purple-50/40 dark:border-zinc-700 dark:bg-zinc-950 dark:hover:border-purple-500 dark:hover:bg-purple-500/5 ${
+        className={`mt-4 flex cursor-pointer flex-col items-center justify-center gap-1 rounded-md border-2 border-dashed border-zinc-300 bg-zinc-50 px-4 py-6 text-center transition-all duration-200 hover:border-purple-400 hover:bg-purple-50/40 dark:border-zinc-700 dark:bg-flux-bg dark:hover:border-purple-500 dark:hover:bg-purple-500/5 ${
           isPending ? "opacity-60" : ""
         }`}
       >

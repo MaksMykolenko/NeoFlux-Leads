@@ -17,7 +17,7 @@ export default function LanguageSwitcher() {
     <div
       role="group"
       aria-label={t("label")}
-      className="inline-flex h-8 items-center gap-0.5 rounded-md border border-zinc-200 bg-zinc-50 p-0.5 dark:border-zinc-800 dark:bg-zinc-900"
+      className="inline-flex h-8 items-center gap-0.5 rounded-md border border-zinc-200 bg-zinc-50 p-0.5 dark:border-flux-border dark:bg-flux-card"
     >
       <LangLink
         href={pathname}

@@ -17,6 +17,9 @@ export default function BrandMark({
 }: BrandMarkProps) {
   const t = useTranslations("BrandMark");
 
+  // Flux ID brand: solid #6a00ff з glow під логотипом. Літера N — біла.
+  // У dark mode додаємо box-shadow через class на обгортці; для inline-svg
+  // (без href) glow може накладатись батьком.
   const svg = (
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -25,13 +28,7 @@ export default function BrandMark({
       aria-label="NeoFlux"
       className={href ? "h-full w-full" : className}
     >
-      <defs>
-        <linearGradient id="nf-mark-gradient" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0" stopColor="#7c3aed" />
-          <stop offset="1" stopColor="#2563eb" />
-        </linearGradient>
-      </defs>
-      <rect x="4" y="4" width="56" height="56" rx="14" fill="url(#nf-mark-gradient)" />
+      <rect x="4" y="4" width="56" height="56" rx="14" fill="#6a00ff" />
       <path d="M19 47V17h6l13 17V17h6v30h-6L25 30v17z" fill="#ffffff" />
     </svg>
   );
@@ -41,7 +38,7 @@ export default function BrandMark({
       <Link
         id={id}
         href={href}
-        className={`inline-flex shrink-0 rounded-xl text-purple-700 transition hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-500 focus-visible:ring-offset-2 ${className}`}
+        className={`inline-flex shrink-0 rounded-xl shadow-[0_0_15px_rgba(106,0,255,0.5)] transition-all duration-200 hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-flux-purple focus-visible:ring-offset-2 dark:focus-visible:ring-offset-flux-bg ${className}`}
         aria-label={t("homeAria")}
       >
         {svg}

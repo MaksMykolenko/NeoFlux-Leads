@@ -59,7 +59,7 @@ export default function SmtpSettingsForm({ user }: SmtpSettingsFormProps) {
   return (
     <form
       onSubmit={handleSubmit}
-      className="space-y-5 rounded-xl border border-zinc-200 bg-white p-6 shadow-sm dark:border-zinc-800 dark:bg-zinc-900"
+      className="space-y-5 rounded-xl border border-zinc-200 bg-white p-6 shadow-sm dark:border-flux-border dark:bg-flux-card"
     >
       <Field
         label="Host"
@@ -142,7 +142,7 @@ export default function SmtpSettingsForm({ user }: SmtpSettingsFormProps) {
         </Field>
       </div>
 
-      <div className="flex items-center justify-between gap-4 border-t border-zinc-100 pt-4 dark:border-zinc-800">
+      <div className="flex items-center justify-between gap-4 border-t border-zinc-100 pt-4 dark:border-flux-border">
         <p className="text-xs text-zinc-500 dark:text-zinc-400">
           Кожен лист, відправлений з NeoFlux, отримує невеликий підпис із
           посиланням на сервіс.

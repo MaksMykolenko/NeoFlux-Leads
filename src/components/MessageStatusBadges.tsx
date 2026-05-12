@@ -129,7 +129,7 @@ export function ReplyStatusEditor({
       </button>
       {open && (
         <div
-          className="absolute left-0 top-full z-20 mt-1 min-w-[140px] overflow-hidden rounded-md border border-zinc-200 bg-white shadow-lg dark:border-zinc-800 dark:bg-zinc-900"
+          className="absolute left-0 top-full z-20 mt-1 min-w-[140px] overflow-hidden rounded-md border border-zinc-200 bg-white shadow-lg dark:border-flux-border dark:bg-flux-card"
           onClick={stopPropagationDetails}
         >
           {REPLY_STATUSES.map((s) => {
@@ -272,10 +272,10 @@ function ErrorLogDialog({
       }}
     >
       <div
-        className="w-full max-w-lg overflow-hidden rounded-md bg-white shadow-xl dark:bg-zinc-900"
+        className="w-full max-w-lg overflow-hidden rounded-md bg-white shadow-xl dark:bg-flux-card"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="flex items-start justify-between gap-3 border-b border-zinc-200 px-5 py-3 dark:border-zinc-800">
+        <div className="flex items-start justify-between gap-3 border-b border-zinc-200 px-5 py-3 dark:border-flux-border">
           <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-50">
             {t("deliveryErrorTitle")}
           </h3>

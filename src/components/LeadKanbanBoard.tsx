@@ -85,14 +85,14 @@ export default function LeadKanbanBoard({ leads }: LeadKanbanBoardProps) {
 
   if (optimisticLeads.length === 0) {
     return (
-      <div className="rounded-md border border-zinc-200 bg-white p-12 text-center dark:border-zinc-800 dark:bg-zinc-900">
+      <div className="rounded-md border border-zinc-200 bg-white p-12 text-center dark:border-flux-border dark:bg-flux-card">
         <p className="text-sm text-zinc-500 dark:text-zinc-400">{t("empty")}</p>
       </div>
     );
   }
 
   return (
-    <div className="rounded-md border border-zinc-200 bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-900">
+    <div className="rounded-md border border-zinc-200 bg-zinc-50 dark:border-flux-border dark:bg-flux-card">
       {error && (
         <div className="border-b border-red-200 bg-red-50 px-4 py-2 text-xs text-red-700 dark:border-red-500/30 dark:bg-red-500/10 dark:text-red-300">
           {error}
@@ -142,7 +142,7 @@ function KanbanColumn({
             className={`flex min-h-[120px] flex-col gap-2 rounded-md border p-2 transition-colors ${
               snapshot.isDraggingOver
                 ? "border-purple-400 bg-purple-50 dark:border-purple-500/60 dark:bg-purple-500/10"
-                : "border-zinc-200 bg-white/60 dark:border-zinc-800 dark:bg-zinc-950/40"
+                : "border-zinc-200 bg-white/60 dark:border-flux-border dark:bg-flux-bg/40"
             }`}
           >
             {leads.map((lead, index) => (
@@ -158,10 +158,10 @@ function KanbanColumn({
                     {...provided.draggableProps}
                     {...provided.dragHandleProps}
                     style={provided.draggableProps.style}
-                    className={`select-none rounded-md border bg-white p-3 text-sm shadow-sm transition-colors dark:bg-zinc-900 ${
+                    className={`select-none rounded-md border bg-white p-3 text-sm shadow-sm transition-colors dark:bg-flux-card ${
                       snapshot.isDragging
                         ? "border-purple-500 ring-2 ring-purple-500/20"
-                        : "border-zinc-200 hover:border-zinc-300 dark:border-zinc-800 dark:hover:border-zinc-700"
+                        : "border-zinc-200 hover:border-zinc-300 dark:border-flux-border dark:hover:border-zinc-700"
                     }`}
                   >
                     <KanbanCard lead={lead} />

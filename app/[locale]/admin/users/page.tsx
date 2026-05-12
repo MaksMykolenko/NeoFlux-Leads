@@ -128,10 +128,10 @@ function StatCard({
 }) {
   return (
     <div
-      className={`rounded-md border bg-white p-5 shadow-sm transition-colors dark:bg-zinc-900 ${
+      className={`rounded-md border bg-white p-5 shadow-sm transition-colors dark:bg-flux-card ${
         accent
           ? "border-purple-200 ring-1 ring-purple-100 dark:border-purple-500/40 dark:ring-purple-500/20"
-          : "border-zinc-200 dark:border-zinc-800"
+          : "border-zinc-200 dark:border-flux-border"
       }`}
     >
       <p className="text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
@@ -166,7 +166,7 @@ function PlanDistributionCard({
 }) {
   const percent = total > 0 ? Math.round((count / total) * 100) : 0;
   return (
-    <div className="rounded-lg border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-900">
+    <div className="rounded-lg border border-zinc-200 bg-white p-4 dark:border-flux-border dark:bg-flux-card">
       <div className="flex items-baseline justify-between gap-2 text-sm">
         <span className="font-medium text-zinc-700 dark:text-zinc-300">{planName}</span>
         <span className="tabular-nums text-zinc-500 dark:text-zinc-400">

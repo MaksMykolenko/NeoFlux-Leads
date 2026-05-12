@@ -25,15 +25,24 @@ export default async function LoginPage({
   const errorMessage = formatLoginError(t, code, detail);
 
   return (
-    <main className="flex min-h-screen items-center justify-center bg-gradient-to-br from-zinc-50 via-white to-purple-50 px-4 py-12 dark:from-zinc-950 dark:via-zinc-950 dark:to-zinc-900 sm:px-6 lg:px-8">
-      <div className="w-full max-w-md">
-        <div className="rounded-md bg-white p-8 shadow-lg ring-1 ring-zinc-200/70 dark:bg-zinc-900 dark:ring-zinc-800 sm:p-10">
+    <main className="relative flex min-h-screen items-center justify-center overflow-hidden bg-gradient-to-br from-zinc-50 via-white to-purple-50 px-4 py-12 dark:bg-flux-bg dark:bg-none sm:px-6 lg:px-8">
+      {/* Радіальне purple-світіння на dark mode — як у Flux ID hero */}
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-0 hidden dark:block"
+        style={{
+          background:
+            "radial-gradient(circle at 50% 30%, rgba(106,0,255,0.18) 0%, transparent 60%)",
+        }}
+      />
+      <div className="relative w-full max-w-md">
+        <div className="rounded-2xl bg-white p-8 shadow-lg ring-1 ring-zinc-200/70 dark:bg-flux-card dark:ring-flux-border dark:shadow-[0_10px_40px_rgba(0,0,0,0.4)] sm:p-10">
           <div className="flex flex-col items-center text-center">
             <BrandMark href="/" className="h-14 w-14" />
-            <h1 className="mt-5 text-2xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
+            <h1 className="mt-5 text-2xl font-bold tracking-tight text-zinc-900 dark:text-flux-text">
               {t("title")}
             </h1>
-            <p className="mt-2 text-sm text-zinc-500 dark:text-zinc-400">
+            <p className="mt-2 text-sm text-zinc-500 dark:text-flux-muted">
               {t("subtitle")}
             </p>
           </div>
@@ -43,7 +52,7 @@ export default async function LoginPage({
           </div>
 
           {errorMessage && (
-            <div className="mt-6 flex items-start gap-3 rounded-md border border-red-200 bg-red-50 p-3 dark:border-red-500/30 dark:bg-red-500/10">
+            <div className="mt-6 flex items-start gap-3 rounded-lg border border-red-200 bg-red-50 p-3 dark:border-red-500/30 dark:bg-red-500/10">
               <svg
                 className="mt-0.5 h-4 w-4 flex-shrink-0 text-red-500"
                 viewBox="0 0 20 20"
@@ -66,7 +75,7 @@ export default async function LoginPage({
           {/* eslint-disable-next-line @next/next/no-html-link-for-pages */}
           <a
             href="/api/auth/flux/login"
-            className="mt-8 inline-flex w-full items-center justify-center gap-2 rounded-md bg-purple-500 px-4 py-3 text-sm font-medium text-white shadow-sm transition-all duration-200 hover:bg-purple-600 active:scale-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-zinc-900"
+            className="mt-8 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-purple-500 px-4 py-3.5 text-sm font-bold text-white shadow-[0_4px_20px_rgba(168,85,247,0.4)] transition-all duration-200 hover:bg-purple-600 hover:-translate-y-0.5 active:scale-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-500 focus-visible:ring-offset-2 dark:bg-flux-purple dark:shadow-[0_4px_20px_rgba(106,0,255,0.5)] dark:hover:bg-flux-purple-hover dark:focus-visible:ring-flux-purple dark:focus-visible:ring-offset-flux-bg"
           >
             <svg
               className="h-4 w-4"
@@ -84,18 +93,18 @@ export default async function LoginPage({
             {t("fluxCta")}
           </a>
 
-          <p className="mt-6 text-center text-xs text-zinc-400 dark:text-zinc-500">
+          <p className="mt-6 text-center text-xs text-zinc-400 dark:text-flux-muted">
             {t("fluxFooter")}
           </p>
         </div>
 
-        <p className="mt-6 text-center text-xs text-zinc-400 dark:text-zinc-500">
+        <p className="mt-6 text-center text-xs text-zinc-400 dark:text-flux-muted">
           {t("noAccount")}{" "}
           <a
             href="https://fluxid.fluxmarketplace.store/auth/sign-up.html"
             target="_blank"
             rel="noopener noreferrer"
-            className="font-medium text-zinc-600 hover:text-zinc-900 hover:underline dark:text-zinc-400 dark:hover:text-zinc-200 "
+            className="font-medium text-zinc-600 hover:text-zinc-900 hover:underline dark:text-zinc-300 dark:hover:text-flux-purple-soft"
           >
             {t("register")}
           </a>

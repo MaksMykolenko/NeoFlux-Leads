@@ -61,7 +61,7 @@ export default function ScraperForm() {
   return (
     <div
       id="tour-search-form"
-      className="rounded-md border border-zinc-200 bg-white p-6 shadow-sm dark:border-zinc-800 dark:bg-zinc-900"
+      className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm transition-colors hover:border-zinc-300 dark:border-flux-border dark:bg-flux-card dark:hover:border-flux-border-strong"
     >
       <form onSubmit={handleScrape} className="grid gap-3 md:grid-cols-[1fr_1fr_auto]">
         <Field label={t("nicheLabel")}>
@@ -88,7 +88,7 @@ export default function ScraperForm() {
           <button
             type="submit"
             disabled={loading || !query || !city}
-            className="inline-flex h-[42px] min-w-[140px] items-center justify-center gap-2 rounded-lg bg-purple-600 px-5 text-sm font-medium text-white transition hover:bg-purple-700 disabled:cursor-not-allowed disabled:bg-purple-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-500 focus-visible:ring-offset-2"
+            className="inline-flex h-[42px] min-w-[140px] items-center justify-center gap-2 rounded-xl bg-purple-600 px-5 text-sm font-bold text-white shadow-[0_4px_15px_rgba(168,85,247,0.4)] transition-all duration-200 hover:bg-purple-700 hover:-translate-y-0.5 active:scale-95 disabled:cursor-not-allowed disabled:bg-purple-300 disabled:translate-y-0 disabled:shadow-none focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-500 focus-visible:ring-offset-2 dark:bg-flux-purple dark:shadow-[0_4px_20px_rgba(106,0,255,0.4)] dark:hover:bg-flux-purple-hover dark:hover:shadow-[0_6px_24px_rgba(106,0,255,0.5)] dark:focus-visible:ring-flux-purple dark:focus-visible:ring-offset-flux-bg"
           >
             {loading ? (
               <>
@@ -117,7 +117,7 @@ export default function ScraperForm() {
 }
 
 const inputClass =
-  "block w-full rounded-md border border-zinc-300 bg-zinc-50 px-3.5 py-2.5 text-sm text-zinc-900 transition-all duration-200 placeholder:text-zinc-400 focus:border-purple-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-purple-100 disabled:opacity-60 dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-100 dark:placeholder:text-zinc-500 dark:focus:border-purple-500 dark:focus:bg-zinc-900 dark:focus:ring-purple-500/20";
+  "block w-full rounded-md border border-zinc-300 bg-zinc-50 px-3.5 py-2.5 text-sm text-zinc-900 transition-all duration-200 placeholder:text-zinc-400 focus:border-purple-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-purple-100 disabled:opacity-60 dark:border-zinc-700 dark:bg-flux-bg dark:text-zinc-100 dark:placeholder:text-zinc-500 dark:focus:border-purple-500 dark:focus:bg-zinc-900 dark:focus:ring-purple-500/20";
 
 function Field({
   label,

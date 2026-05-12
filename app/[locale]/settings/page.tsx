@@ -30,7 +30,7 @@ export default async function SettingsPage({
   });
 
   return (
-    <main className="min-h-screen bg-zinc-50 dark:bg-zinc-900">
+    <main className="min-h-screen bg-zinc-50 dark:bg-flux-card">
       <div className="mx-auto max-w-3xl px-4 py-10 sm:px-6 lg:px-8">
         <Link
           href="/"

@@ -14,8 +14,8 @@ export default async function AdminLayout({
   const t = await getTranslations("AdminLayout");
 
   return (
-    <div className="min-h-screen bg-zinc-50 dark:bg-zinc-900">
-      <div className="border-b border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-900">
+    <div className="min-h-screen bg-zinc-50 dark:bg-flux-card">
+      <div className="border-b border-zinc-200 bg-white dark:border-flux-border dark:bg-flux-card">
         <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-3 sm:px-6 lg:px-8">
           <div className="flex items-center gap-3">
             <Link

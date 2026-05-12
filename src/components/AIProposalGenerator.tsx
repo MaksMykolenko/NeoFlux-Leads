@@ -182,7 +182,7 @@ export default function AIProposalGenerator({
   }
 
   return (
-    <section className="bg-white rounded-xl shadow-sm border border-zinc-200 p-6 dark:bg-zinc-900 dark:border-zinc-800">
+    <section className="bg-white rounded-xl shadow-sm border border-zinc-200 p-6 dark:bg-flux-card dark:border-flux-border">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <p className="text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
@@ -260,7 +260,7 @@ export default function AIProposalGenerator({
                 value={subject}
                 onChange={(event) => setSubject(event.target.value)}
                 placeholder={t("subjectPlaceholder", { company: companyName })}
-                className="block w-full rounded-lg border border-zinc-200 bg-zinc-50 px-4 py-2.5 text-sm text-zinc-900 focus:border-purple-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-purple-100 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-50 dark:focus:bg-zinc-900"
+                className="block w-full rounded-lg border border-zinc-200 bg-zinc-50 px-4 py-2.5 text-sm text-zinc-900 focus:border-purple-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-purple-100 dark:border-flux-border dark:bg-flux-card dark:text-zinc-50 dark:focus:bg-zinc-900"
               />
             </div>
 
@@ -276,7 +276,7 @@ export default function AIProposalGenerator({
                 value={text}
                 onChange={(event) => setText(event.target.value)}
                 rows={Math.min(Math.max(text.split("\n").length + 1, 8), 18)}
-                className="block w-full resize-y rounded-lg border border-zinc-200 bg-zinc-50 px-4 py-3 text-sm leading-relaxed text-zinc-900 shadow-inner focus:border-purple-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-purple-100 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-50 dark:focus:bg-zinc-900"
+                className="block w-full resize-y rounded-lg border border-zinc-200 bg-zinc-50 px-4 py-3 text-sm leading-relaxed text-zinc-900 shadow-inner focus:border-purple-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-purple-100 dark:border-flux-border dark:bg-flux-card dark:text-zinc-50 dark:focus:bg-zinc-900"
               />
             </div>
 
@@ -423,7 +423,7 @@ export default function AIProposalGenerator({
 
 function SkeletonLoader({ label }: { label: string }) {
   return (
-    <div className="rounded-lg border border-zinc-200 bg-zinc-50 p-4 dark:border-zinc-800 dark:bg-zinc-900">
+    <div className="rounded-lg border border-zinc-200 bg-zinc-50 p-4 dark:border-flux-border dark:bg-flux-card">
       <div className="flex items-center gap-2 text-sm text-zinc-500 dark:text-zinc-400">
         <svg
           className="h-4 w-4 animate-spin text-purple-600"

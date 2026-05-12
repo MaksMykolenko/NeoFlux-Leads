@@ -50,7 +50,7 @@ export default function ModeTabs({ active }: ModeTabsProps) {
   return (
     <div
       id="tour-mode-tabs"
-      className="flex flex-wrap gap-2 border-b border-zinc-200 dark:border-zinc-800"
+      className="flex flex-wrap gap-2 border-b border-zinc-200 dark:border-flux-border"
     >
       {TABS.map((tab) => {
         const isActive = active === tab.id;

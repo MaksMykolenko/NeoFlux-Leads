@@ -126,7 +126,7 @@ export default async function LeadDetailPage({
         : null;
 
   return (
-    <div className="min-h-screen bg-zinc-50 dark:bg-zinc-900">
+    <div className="min-h-screen bg-zinc-50 dark:bg-flux-card">
       <div className="mx-auto max-w-5xl px-4 py-10 sm:px-6 lg:px-8">
         <Link
           href={backHref}
@@ -279,7 +279,7 @@ function OpportunityScoreCard({
   scoreTitle: string;
 }) {
   return (
-    <section className="bg-white rounded-xl shadow-sm border border-zinc-200 p-6 dark:bg-zinc-900 dark:border-zinc-800">
+    <section className="bg-white rounded-xl shadow-sm border border-zinc-200 p-6 dark:bg-flux-card dark:border-flux-border">
       <div className="flex items-start justify-between gap-4">
         <div>
           <p className="text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
@@ -364,7 +364,7 @@ function ContactsCard({
     const channels = getAvailableChannels(parsedContacts);
 
     return (
-      <section className="bg-white rounded-xl shadow-sm border border-zinc-200 p-6 dark:bg-zinc-900 dark:border-zinc-800">
+      <section className="bg-white rounded-xl shadow-sm border border-zinc-200 p-6 dark:bg-flux-card dark:border-flux-border">
         <div className="flex items-start justify-between gap-3">
           <h2 className="text-base font-semibold text-zinc-900 dark:text-zinc-50">{t("contactsTitle")}</h2>
           {channels.length > 0 && (
@@ -406,7 +406,7 @@ function ContactsCard({
         </dl>
 
         {channels.length > 0 ? (
-          <div className="mt-5 border-t border-zinc-100 pt-5 dark:border-zinc-800">
+          <div className="mt-5 border-t border-zinc-100 pt-5 dark:border-flux-border">
             <h3 className="text-xs font-semibold uppercase tracking-wider text-zinc-500 mb-3 dark:text-zinc-400">
               {t("channelsHeading")}
             </h3>
@@ -419,7 +419,7 @@ function ContactsCard({
                     href={def.buildHref(value)}
                     target={def.key === "phone" || def.key === "email" ? undefined : "_blank"}
                     rel="noopener noreferrer"
-                    className="flex items-center gap-2 rounded-md border border-zinc-200 bg-white px-3 py-2 text-xs transition-colors hover:border-zinc-300 hover:bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-900 dark:hover:bg-zinc-800"
+                    className="flex items-center gap-2 rounded-md border border-zinc-200 bg-white px-3 py-2 text-xs transition-colors hover:border-zinc-300 hover:bg-zinc-50 dark:border-flux-border dark:bg-flux-card dark:hover:bg-zinc-800"
                   >
                     <def.Icon className="w-3.5 h-3.5 flex-shrink-0 text-zinc-500 dark:text-zinc-400" />
                     <span className="font-medium text-zinc-900 flex-shrink-0 dark:text-zinc-50">
@@ -432,7 +432,7 @@ function ContactsCard({
             </div>
           </div>
         ) : (
-          <p className="mt-5 border-t border-zinc-100 pt-5 text-sm text-zinc-400 dark:border-zinc-800 dark:text-zinc-500">
+          <p className="mt-5 border-t border-zinc-100 pt-5 text-sm text-zinc-400 dark:border-flux-border dark:text-zinc-500">
             {t("noChannels")}
           </p>
         )}
@@ -443,7 +443,7 @@ function ContactsCard({
   if (isUniversal) {
     const socialRows = universalSocialLinkRows(lead.socialLinks);
     return (
-      <section className="bg-white rounded-xl shadow-sm border border-zinc-200 p-6 dark:bg-zinc-900 dark:border-zinc-800">
+      <section className="bg-white rounded-xl shadow-sm border border-zinc-200 p-6 dark:bg-flux-card dark:border-flux-border">
         <h2 className="text-base font-semibold text-zinc-900 dark:text-zinc-50">{t("contactsTitle")}</h2>
         <dl className="mt-4 divide-y divide-zinc-100 text-sm dark:divide-zinc-800">
           <ContactRow label={t("universalDesc")} value={lead.notes} emptyLabel={t("notProvided")}>
@@ -488,7 +488,7 @@ function ContactsCard({
         </dl>
 
         {socialRows.length > 0 ? (
-          <div className="mt-5 border-t border-zinc-100 pt-5 dark:border-zinc-800">
+          <div className="mt-5 border-t border-zinc-100 pt-5 dark:border-flux-border">
             <h3 className="text-xs font-semibold uppercase tracking-wider text-zinc-500 mb-3 dark:text-zinc-400">
               {t("socialHeading")}
             </h3>
@@ -499,7 +499,7 @@ function ContactsCard({
                   href={row.href}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center gap-2 rounded-md border border-zinc-200 bg-white px-3 py-2 text-xs transition-colors hover:border-zinc-300 hover:bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-900 dark:hover:bg-zinc-800"
+                  className="flex items-center gap-2 rounded-md border border-zinc-200 bg-white px-3 py-2 text-xs transition-colors hover:border-zinc-300 hover:bg-zinc-50 dark:border-flux-border dark:bg-flux-card dark:hover:bg-zinc-800"
                 >
                   <span className="font-medium text-zinc-900 dark:text-zinc-50">{row.label}</span>
                   <span className="text-zinc-500 truncate dark:text-zinc-400">{row.display}</span>
@@ -508,7 +508,7 @@ function ContactsCard({
             </div>
           </div>
         ) : (
-          <p className="mt-5 border-t border-zinc-100 pt-5 text-sm text-zinc-400 dark:border-zinc-800 dark:text-zinc-500">
+          <p className="mt-5 border-t border-zinc-100 pt-5 text-sm text-zinc-400 dark:border-flux-border dark:text-zinc-500">
             {t("noSocialExtra")}
           </p>
         )}
@@ -517,7 +517,7 @@ function ContactsCard({
   }
 
   return (
-    <section className="bg-white rounded-xl shadow-sm border border-zinc-200 p-6 dark:bg-zinc-900 dark:border-zinc-800">
+    <section className="bg-white rounded-xl shadow-sm border border-zinc-200 p-6 dark:bg-flux-card dark:border-flux-border">
       <h2 className="text-base font-semibold text-zinc-900 dark:text-zinc-50">{t("contactsTitle")}</h2>
       <dl className="mt-4 divide-y divide-zinc-100 text-sm dark:divide-zinc-800">
         <ContactRow label={t("category")} value={lead.category} emptyLabel={t("notProvided")} />
@@ -596,7 +596,7 @@ interface AuditCardProps {
 
 function AuditCard({ audit, leadId, hasWebsite, t }: AuditCardProps) {
   return (
-    <section className="bg-white rounded-xl shadow-sm border border-zinc-200 p-6 dark:bg-zinc-900 dark:border-zinc-800">
+    <section className="bg-white rounded-xl shadow-sm border border-zinc-200 p-6 dark:bg-flux-card dark:border-flux-border">
       <h2 className="text-base font-semibold text-zinc-900 dark:text-zinc-50">{t("auditTitle")}</h2>
 
       {!audit ? (
@@ -800,7 +800,7 @@ function MessageHistoryFeed({
 }) {
   if (messages.length === 0) {
     return (
-      <section className="bg-white rounded-xl shadow-sm border border-zinc-200 p-6 dark:bg-zinc-900 dark:border-zinc-800">
+      <section className="bg-white rounded-xl shadow-sm border border-zinc-200 p-6 dark:bg-flux-card dark:border-flux-border">
         <h2 className="text-base font-semibold text-zinc-900 dark:text-zinc-50">
           {t("messagesTitle")}
         </h2>
@@ -833,7 +833,7 @@ function MessageHistoryFeed({
   }
 
   return (
-    <section className="bg-white rounded-xl shadow-sm border border-zinc-200 p-6 dark:bg-zinc-900 dark:border-zinc-800">
+    <section className="bg-white rounded-xl shadow-sm border border-zinc-200 p-6 dark:bg-flux-card dark:border-flux-border">
       <div className="flex items-center justify-between gap-3">
         <h2 className="text-base font-semibold text-zinc-900 dark:text-zinc-50">
           {t("messagesTitle")}
@@ -847,7 +847,7 @@ function MessageHistoryFeed({
         {messages.map((msg) => (
           <details
             key={msg.id}
-            className="group rounded-lg border border-zinc-200 transition-colors hover:border-zinc-300 open:border-purple-200 open:bg-purple-50/40 dark:border-zinc-800"
+            className="group rounded-lg border border-zinc-200 transition-colors hover:border-zinc-300 open:border-purple-200 open:bg-purple-50/40 dark:border-flux-border"
           >
             <summary className="flex cursor-pointer list-none items-start justify-between gap-3 px-4 py-3">
               <div className="min-w-0 flex-1">
@@ -883,7 +883,7 @@ function MessageHistoryFeed({
                 />
               </svg>
             </summary>
-            <div className="border-t border-zinc-100 bg-zinc-50 px-4 py-3 text-sm leading-relaxed text-zinc-700 whitespace-pre-wrap dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-300">
+            <div className="border-t border-zinc-100 bg-zinc-50 px-4 py-3 text-sm leading-relaxed text-zinc-700 whitespace-pre-wrap dark:border-flux-border dark:bg-flux-card dark:text-zinc-300">
               {msg.body}
               <MessageAttachmentBadge attachment={asAttachment(msg.attachment)} />
               <MessageChannelsBadge channels={asChannels(msg.channels)} tc={tc} t={t} />

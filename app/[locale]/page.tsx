@@ -125,7 +125,7 @@ export default async function Home({
   }
 
   return (
-    <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950 ">
+    <div className="min-h-screen bg-zinc-50 dark:bg-flux-bg">
       <div className="mx-auto max-w-4xl px-4 py-12 sm:px-6 lg:px-8">
         {showCheckoutSuccess && <CheckoutSuccessBanner />}
         {missingDbEnv && (
@@ -135,17 +135,17 @@ export default async function Home({
           <DatabaseConfigBanner variant="query_failed" detail={dbQueryError} />
         )}
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-4">
           <BrandMark
             id="tour-brand-mark"
             href="/"
-            className="h-9 w-9 flex-shrink-0"
+            className="h-10 w-10 flex-shrink-0"
           />
           <div id="tour-page-title" className="min-w-0">
-            <h1 className="text-2xl font-semibold text-zinc-900 dark:text-zinc-50 tracking-tight">
+            <h1 className="text-2xl font-bold tracking-tight text-zinc-900 dark:text-flux-text">
               {t("title")}
             </h1>
-            <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
+            <p className="mt-1 text-sm text-zinc-500 dark:text-flux-muted">
               {isBeats
                 ? t("subtitleBeats")
                 : isUniversal

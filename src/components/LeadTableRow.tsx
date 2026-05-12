@@ -91,7 +91,7 @@ export default function LeadTableRow({ lead, selection }: LeadRowProps) {
             checked={selection.selected}
             onChange={(e) => selection.onToggle(lead.id, e.target.checked)}
             aria-label={`Select ${lead.companyName}`}
-            className="h-4 w-4 cursor-pointer rounded border-zinc-300 text-purple-500 focus:ring-purple-500 dark:border-zinc-700 dark:bg-zinc-900"
+            className="h-4 w-4 cursor-pointer rounded border-zinc-300 text-purple-500 focus:ring-purple-500 dark:border-zinc-700 dark:bg-flux-card"
           />
         </td>
       )}

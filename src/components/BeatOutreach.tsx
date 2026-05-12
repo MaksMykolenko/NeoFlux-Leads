@@ -146,7 +146,7 @@ export default function BeatOutreach() {
           <p className="text-sm text-zinc-400 dark:text-zinc-500">{t("selectAndDemo")}</p>
         ) : (
           <div className="space-y-3">
-            <p className="rounded-md border border-zinc-100 bg-zinc-50 px-3 py-2 text-xs text-zinc-600 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-400">
+            <p className="rounded-md border border-zinc-100 bg-zinc-50 px-3 py-2 text-xs text-zinc-600 dark:border-flux-border dark:bg-flux-card dark:text-zinc-400">
               {t("flowNoteBefore")}
               <Link
                 href="/settings"
@@ -229,7 +229,7 @@ function ArtistSearch({
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           disabled={pending}
-          className="flex-1 rounded-lg border border-zinc-300 bg-zinc-50 px-4 py-2.5 text-sm focus:bg-white focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 disabled:opacity-60 dark:border-zinc-700 dark:bg-zinc-900 dark:focus:bg-zinc-900"
+          className="flex-1 rounded-lg border border-zinc-300 bg-zinc-50 px-4 py-2.5 text-sm focus:bg-white focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 disabled:opacity-60 dark:border-zinc-700 dark:bg-flux-card dark:focus:bg-zinc-900"
         />
         <button
           type="submit"
@@ -263,8 +263,8 @@ function SearchResults({
   const t = useTranslations("BeatOutreach");
   if (!searched) {
     return (
-      <div className="mt-4 rounded-lg border border-dashed border-zinc-300 bg-zinc-50 px-6 py-10 text-center dark:border-zinc-700 dark:bg-zinc-900">
-        <div className="mx-auto flex h-10 w-10 items-center justify-center rounded-full bg-white text-zinc-400 shadow-sm dark:bg-zinc-900 dark:text-zinc-500">
+      <div className="mt-4 rounded-lg border border-dashed border-zinc-300 bg-zinc-50 px-6 py-10 text-center dark:border-zinc-700 dark:bg-flux-card">
+        <div className="mx-auto flex h-10 w-10 items-center justify-center rounded-full bg-white text-zinc-400 shadow-sm dark:bg-flux-card dark:text-zinc-500">
           <svg
             xmlns="http://www.w3.org/2000/svg"
             viewBox="0 0 20 20"
@@ -295,7 +295,7 @@ function SearchResults({
 
   if (results.length === 0) {
     return (
-      <div className="mt-4 rounded-lg border border-zinc-200 bg-zinc-50 px-4 py-3 text-sm text-zinc-600 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-400">
+      <div className="mt-4 rounded-lg border border-zinc-200 bg-zinc-50 px-4 py-3 text-sm text-zinc-600 dark:border-flux-border dark:bg-flux-card dark:text-zinc-400">
         {t("noResultsAlt")}
       </div>
     );
@@ -487,7 +487,7 @@ function DemoUploader({
           className="hidden"
           onChange={(e) => handleFile(e.target.files?.[0] ?? undefined)}
         />
-        <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-white text-zinc-400 shadow-sm dark:bg-zinc-900 dark:text-zinc-500">
+        <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-white text-zinc-400 shadow-sm dark:bg-flux-card dark:text-zinc-500">
           <svg
             xmlns="http://www.w3.org/2000/svg"
             viewBox="0 0 24 24"
@@ -513,7 +513,7 @@ function DemoUploader({
   const set = (patch: Partial<DemoState>) => onChange({ ...demo, ...patch });
 
   return (
-    <div className="rounded-xl border border-zinc-200 bg-white p-4 space-y-4 dark:border-zinc-800 dark:bg-zinc-900">
+    <div className="rounded-xl border border-zinc-200 bg-white p-4 space-y-4 dark:border-flux-border dark:bg-flux-card">
       <div className="flex items-start gap-3">
         <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg bg-violet-100 text-violet-700">
           <svg
@@ -611,7 +611,7 @@ function MetaInput({
         value={value}
         placeholder={placeholder}
         onChange={(e) => onChange(e.target.value)}
-        className="w-full rounded-md border border-zinc-200 bg-zinc-50 px-2.5 py-1.5 text-sm focus:bg-white focus:outline-none focus:ring-2 focus:ring-purple-500 dark:border-zinc-800 dark:bg-zinc-900 dark:focus:bg-zinc-900"
+        className="w-full rounded-md border border-zinc-200 bg-zinc-50 px-2.5 py-1.5 text-sm focus:bg-white focus:outline-none focus:ring-2 focus:ring-purple-500 dark:border-flux-border dark:bg-flux-card dark:focus:bg-zinc-900"
       />
     </div>
   );
@@ -895,8 +895,8 @@ function MessageReview({
   const openedCount = openedChannels.size;
 
   return (
-    <div className="rounded-lg border border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-900">
-      <div className="flex items-center justify-between gap-3 px-4 py-3 border-b border-zinc-100 bg-zinc-50/60 dark:border-zinc-800">
+    <div className="rounded-lg border border-zinc-200 bg-white dark:border-flux-border dark:bg-flux-card">
+      <div className="flex items-center justify-between gap-3 px-4 py-3 border-b border-zinc-100 bg-zinc-50/60 dark:border-flux-border">
         <div>
           <p className="text-sm font-semibold text-zinc-900 dark:text-zinc-50">
             {profileHref ? (
@@ -961,7 +961,7 @@ function MessageReview({
               type="text"
               value={subject}
               onChange={(e) => setSubject(e.target.value)}
-              className="block w-full rounded-md border border-zinc-200 bg-zinc-50 px-3 py-2 text-sm focus:bg-white focus:outline-none focus:ring-2 focus:ring-purple-500 dark:border-zinc-800 dark:bg-zinc-900 dark:focus:bg-zinc-900"
+              className="block w-full rounded-md border border-zinc-200 bg-zinc-50 px-3 py-2 text-sm focus:bg-white focus:outline-none focus:ring-2 focus:ring-purple-500 dark:border-flux-border dark:bg-flux-card dark:focus:bg-zinc-900"
             />
           </div>
           <div>
@@ -972,7 +972,7 @@ function MessageReview({
               value={body}
               rows={9}
               onChange={(e) => setBody(e.target.value)}
-              className="block w-full resize-y rounded-md border border-zinc-200 bg-zinc-50 px-3 py-2 text-sm leading-relaxed focus:bg-white focus:outline-none focus:ring-2 focus:ring-purple-500 dark:border-zinc-800 dark:bg-zinc-900 dark:focus:bg-zinc-900"
+              className="block w-full resize-y rounded-md border border-zinc-200 bg-zinc-50 px-3 py-2 text-sm leading-relaxed focus:bg-white focus:outline-none focus:ring-2 focus:ring-purple-500 dark:border-flux-border dark:bg-flux-card dark:focus:bg-zinc-900"
             />
           </div>
 
@@ -1021,7 +1021,7 @@ function MessageReview({
           </div>
 
           {available.length > 0 && (
-            <div className="space-y-2 pt-2 border-t border-zinc-100 dark:border-zinc-800">
+            <div className="space-y-2 pt-2 border-t border-zinc-100 dark:border-flux-border">
               <div className="flex items-center justify-between">
                 <p className="text-[10px] uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
                   {t("channelsHeadingLower")}
@@ -1071,7 +1071,7 @@ function MessageReview({
             </div>
           )}
 
-          <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-zinc-100 dark:border-zinc-800">
+          <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-zinc-100 dark:border-flux-border">
             <p className="text-[11px] text-zinc-500 dark:text-zinc-400">
               {openedCount === 0
                 ? t("saveHintNoChannel")
@@ -1147,10 +1147,10 @@ function StepCard({
 }) {
   return (
     <section
-      className={`rounded-md border bg-white p-5 shadow-sm transition-opacity dark:bg-zinc-900 ${
+      className={`rounded-md border bg-white p-5 shadow-sm transition-opacity dark:bg-flux-card ${
         active
-          ? "border-zinc-200 opacity-100 dark:border-zinc-800"
-          : "border-zinc-100 opacity-60 dark:border-zinc-800/60"
+          ? "border-zinc-200 opacity-100 dark:border-flux-border"
+          : "border-zinc-100 opacity-60 dark:border-flux-border/60"
       }`}
     >
       <header className="mb-4 flex items-center gap-3">

@@ -1,31 +1,62 @@
 @import "tailwindcss";
 
-/* Dark mode через next-themes (attribute="class"). Tailwind v4 за замовчуванням
-   використовує media-query, але ми хочемо явне керування — щоб юзер міг обрати
-   тему, а не залежати від OS preference. Selector узгоджений з next-themes:
-   <html class="light"> або <html class="dark">. */
+/* Dark mode через next-themes (attribute="class"). Selector узгоджений з
+   next-themes: <html class="light"> або <html class="dark">. */
 @custom-variant dark (&:where(.dark, .dark *));
 
+/* ─── Flux ID design tokens ─────────────────────────────────────────────
+   Кольори і токени взяті з Flux ID flux-id.css. Bg #0b0c10, картки
+   #13141C, primary purple #6a00ff. Зберігаємо їх як CSS-перемінні
+   (доступні скрізь через var(--flux-*)) і одночасно реєструємо у
+   Tailwind @theme — щоб працювали утиліти типу bg-flux-bg, text-flux-purple.
+*/
 @theme inline {
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+
+  --color-flux-bg: #0b0c10;
+  --color-flux-card: #13141c;
+  --color-flux-card-2: #1a1b24;
+  --color-flux-text: #ffffff;
+  --color-flux-muted: #8a8d93;
+  --color-flux-border: rgba(255, 255, 255, 0.05);
+  --color-flux-border-strong: rgba(255, 255, 255, 0.1);
+  --color-flux-purple: #6a00ff;
+  --color-flux-purple-hover: #832bff;
+  --color-flux-purple-soft: #b580ff;
+  --color-flux-purple-tint: rgba(106, 0, 255, 0.15);
+  --color-flux-purple-ring: rgba(106, 0, 255, 0.3);
 }
 
-/* Базові кольори оболонки. Решта поверхонь керується Tailwind utility-класами
-   на елементах, але body має джерело фону, щоб transition між темами не
-   "блимав" білим. */
+/* Базові кольори оболонки. На рівні body — щоб transition між темами не
+   "блимав", а також щоб контент за межами framework-у наслідував тон. */
 html,
 body {
-  background-color: #fafafa; /* zinc-50 */
-  color: #18181b; /* zinc-900 */
+  background-color: #fafafa;
+  color: #18181b;
 }
 
 html.dark,
 html.dark body {
-  background-color: #09090b; /* zinc-950 */
-  color: #d4d4d8; /* zinc-300 */
+  background-color: #0b0c10;
+  color: #f3f4f6;
 }
 
 body {
-  font-family: var(--font-sans), Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans), "Inter", Arial, Helvetica, sans-serif;
+}
+
+/* Світіння на акцент-кнопках. Утиліта-однострочник для повторюваного
+   паттерну з Flux ID: box-shadow з purple-glow. Викликається класом
+   `flux-glow` або через arbitrary `shadow-[...]`. */
+@utility flux-glow {
+  box-shadow: 0 4px 20px rgba(106, 0, 255, 0.4);
+}
+
+@utility flux-glow-lg {
+  box-shadow: 0 10px 30px rgba(106, 0, 255, 0.25);
+}
+
+@utility flux-glow-card {
+  box-shadow: 0 10px 30px rgba(106, 0, 255, 0.1);
 }

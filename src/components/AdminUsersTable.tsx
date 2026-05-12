@@ -26,18 +26,18 @@ export default function AdminUsersTable({
 }: AdminUsersTableProps) {
   if (users.length === 0) {
     return (
-      <div className="rounded-xl border border-zinc-200 bg-white p-12 text-center text-sm text-zinc-500 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-400">
+      <div className="rounded-xl border border-zinc-200 bg-white p-12 text-center text-sm text-zinc-500 dark:border-flux-border dark:bg-flux-card dark:text-zinc-400">
         Користувачів ще немає.
       </div>
     );
   }
 
   return (
-    <div className="overflow-hidden rounded-xl border border-zinc-200 bg-white shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
+    <div className="overflow-hidden rounded-xl border border-zinc-200 bg-white shadow-sm dark:border-flux-border dark:bg-flux-card">
       <div className="overflow-x-auto">
         <table className="w-full text-sm">
           <thead>
-            <tr className="border-b border-zinc-100 bg-zinc-50/50 dark:border-zinc-800">
+            <tr className="border-b border-zinc-100 bg-zinc-50/50 dark:border-flux-border">
               <Th>Користувач</Th>
               <Th>Роль</Th>
               <Th>План</Th>
@@ -145,7 +145,7 @@ function UserRow({
             value={role}
             onChange={(e) => handleRoleChange(e.target.value as Role)}
             disabled={isPending}
-            className="rounded-md border border-zinc-200 bg-white px-2 py-1 text-xs font-medium text-zinc-700 shadow-sm transition focus:border-purple-500 focus:outline-none focus:ring-1 focus:ring-purple-500 disabled:opacity-60 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-300"
+            className="rounded-md border border-zinc-200 bg-white px-2 py-1 text-xs font-medium text-zinc-700 shadow-sm transition focus:border-purple-500 focus:outline-none focus:ring-1 focus:ring-purple-500 disabled:opacity-60 dark:border-flux-border dark:bg-flux-card dark:text-zinc-300"
           >
             {ROLES.map((r) => (
               <option key={r} value={r}>
@@ -163,7 +163,7 @@ function UserRow({
           value={plan}
           onChange={(e) => handlePlanChange(e.target.value as PlanId)}
           disabled={isPending}
-          className="rounded-md border border-zinc-200 bg-white px-2 py-1 text-xs font-medium text-zinc-700 shadow-sm transition focus:border-purple-500 focus:outline-none focus:ring-1 focus:ring-purple-500 disabled:opacity-60 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-300"
+          className="rounded-md border border-zinc-200 bg-white px-2 py-1 text-xs font-medium text-zinc-700 shadow-sm transition focus:border-purple-500 focus:outline-none focus:ring-1 focus:ring-purple-500 disabled:opacity-60 dark:border-flux-border dark:bg-flux-card dark:text-zinc-300"
         >
           {PLAN_ORDER.map((id) => (
             <option key={id} value={id}>

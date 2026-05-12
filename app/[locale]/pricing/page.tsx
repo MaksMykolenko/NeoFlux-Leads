@@ -26,11 +26,20 @@ export default async function PricingPage({
   const currentPlan = getPlanForUser(user);
 
   return (
-    <main className="min-h-screen bg-gradient-to-br from-zinc-50 to-purple-50 py-12 dark:from-zinc-950 dark:to-zinc-900 sm:py-16">
-      <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
+    <main className="relative min-h-screen overflow-hidden bg-gradient-to-br from-zinc-50 to-purple-50 py-12 dark:bg-flux-bg dark:bg-none sm:py-16">
+      {/* Радіальне світіння в dark mode — як Flux ID hero */}
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-0 hidden dark:block"
+        style={{
+          background:
+            "radial-gradient(circle at 50% 0%, rgba(106,0,255,0.12) 0%, transparent 60%)",
+        }}
+      />
+      <div className="relative mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
         <Link
           href="/"
-          className="inline-flex items-center gap-1.5 text-sm font-medium text-zinc-500 transition-all duration-200 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100"
+          className="inline-flex items-center gap-1.5 text-sm font-medium text-zinc-500 transition-all duration-200 hover:text-zinc-900 dark:text-flux-muted dark:hover:text-flux-text"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -48,17 +57,15 @@ export default async function PricingPage({
         </Link>
 
         <header className="mt-8 text-center">
-          <h1 className="text-4xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50 sm:text-5xl">
+          <span className="inline-flex items-center gap-1.5 rounded-full border border-purple-200 bg-purple-50 px-3.5 py-1 text-xs font-semibold uppercase tracking-wider text-purple-700 dark:border-flux-purple/30 dark:bg-flux-purple-tint dark:text-flux-purple-soft">
+            <span className="inline-block h-1.5 w-1.5 rounded-full bg-purple-500 dark:bg-flux-purple" />
+            {t("current")} {currentPlan.name}
+          </span>
+          <h1 className="mt-5 text-4xl font-bold tracking-tight text-zinc-900 dark:text-flux-text sm:text-5xl">
             {t("title")}
           </h1>
-          <p className="mt-4 text-lg text-zinc-600 dark:text-zinc-300 ">
+          <p className="mt-4 text-lg text-zinc-600 dark:text-flux-muted">
             {t("subtitle")}
-          </p>
-          <p className="mt-2 text-sm text-zinc-500 dark:text-zinc-400">
-            {t("current")}{" "}
-            <span className="font-medium text-zinc-900 dark:text-zinc-100 ">
-              {currentPlan.name}
-            </span>
           </p>
         </header>
 
@@ -74,7 +81,7 @@ export default async function PricingPage({
           ))}
         </div>
 
-        <p className="mt-12 text-center text-xs text-zinc-500 dark:text-zinc-400">
+        <p className="mt-12 text-center text-xs text-zinc-500 dark:text-flux-muted">
           {t("paymentNote")}
         </p>
       </div>
@@ -102,63 +109,63 @@ function PlanCard({ plan, isCurrent, locale, t }: PlanCardProps) {
   const formatted = unlimited ? t("unlimitedWord") : String(plan.leadsPerMonth);
   const perMonthSuffix = unlimited ? "" : t("perMonthSuffix");
 
-  // Картки: чіткі лінії + малий радіус. Glow на платних — інтенсивний у dark,
-  // м'який у light (purple-500 #a855f7 → rgb(168,85,247)).
+  // Картки у Flux ID-стилі: великий радіус (20px), субт-бордер з покращенням
+  // на hover до flux-purple + glow. PRO має шкалу + ring + найбільший glow.
   const cardClasses = [
-    "relative flex flex-col rounded-md border bg-white p-8 transition-all duration-200 dark:bg-zinc-900",
+    "group relative flex flex-col rounded-2xl border bg-white p-8 transition-all duration-300 dark:bg-flux-card hover:-translate-y-1",
     isPro
-      ? "border-purple-200 shadow-[0_0_30px_-5px_rgba(168,85,247,0.35)] ring-2 ring-purple-500 dark:border-purple-500/40 dark:shadow-[0_0_30px_rgba(168,85,247,0.25)] lg:scale-[1.02]"
+      ? "border-purple-200 shadow-[0_0_30px_-5px_rgba(168,85,247,0.35)] ring-2 ring-purple-500 dark:border-flux-purple/40 dark:ring-flux-purple dark:shadow-[0_10px_40px_rgba(106,0,255,0.25)] lg:scale-[1.04]"
       : isAgency
-        ? "border-zinc-200 shadow-md dark:border-zinc-800 dark:shadow-[0_0_20px_rgba(168,85,247,0.12)]"
-        : "border-zinc-200 shadow-sm dark:border-zinc-800",
+        ? "border-zinc-200 shadow-md dark:border-flux-border dark:hover:border-flux-purple/30 dark:hover:shadow-[0_10px_30px_rgba(106,0,255,0.12)]"
+        : "border-zinc-200 shadow-sm dark:border-flux-border dark:hover:border-flux-border-strong",
   ].join(" ");
 
-  // CTA-кнопка тарифу: насичений purple-600 з glow на hover (як на брифі).
-  const upgradeClasses = `inline-flex w-full items-center justify-center gap-2 rounded-md px-4 py-2.5 text-sm font-medium transition-all duration-200 active:scale-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-zinc-900 ${
+  // CTA: насичений #6a00ff (Flux ID brand) у dark, purple-600 у light.
+  const upgradeClasses = `inline-flex w-full items-center justify-center gap-2 rounded-xl px-4 py-3 text-sm font-bold tracking-tight transition-all duration-200 active:scale-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-500 focus-visible:ring-offset-2 dark:focus-visible:ring-flux-purple dark:focus-visible:ring-offset-flux-card ${
     isPaid
-      ? "bg-purple-600 text-white shadow-sm hover:bg-purple-700 hover:shadow-[0_0_20px_rgba(168,85,247,0.5)] dark:hover:bg-purple-500"
-      : "bg-zinc-900 text-white shadow-sm hover:bg-zinc-800 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-200"
+      ? "bg-purple-600 text-white shadow-[0_4px_20px_rgba(168,85,247,0.4)] hover:bg-purple-700 hover:-translate-y-0.5 hover:shadow-[0_6px_24px_rgba(168,85,247,0.55)] dark:bg-flux-purple dark:shadow-[0_4px_20px_rgba(106,0,255,0.4)] dark:hover:bg-flux-purple-hover dark:hover:shadow-[0_6px_24px_rgba(106,0,255,0.55)]"
+      : "bg-zinc-900 text-white shadow-sm hover:bg-zinc-800 dark:bg-flux-card-2 dark:text-flux-text dark:hover:bg-flux-card"
   }`;
 
   return (
     <div className={cardClasses}>
       {isPro && (
-        <span className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-purple-500 px-3 py-1 text-xs font-semibold uppercase tracking-wider text-white shadow">
+        <span className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-purple-500 px-3.5 py-1 text-xs font-bold uppercase tracking-wider text-white shadow-md dark:bg-flux-purple dark:shadow-[0_4px_15px_rgba(106,0,255,0.6)]">
           {t("popular")}
         </span>
       )}
 
       <div>
-        <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-50">
+        <h2 className="text-xl font-bold tracking-tight text-zinc-900 dark:text-flux-text">
           {plan.name}
         </h2>
-        <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
+        <p className="mt-1 text-sm text-zinc-500 dark:text-flux-muted">
           {plan.tagline}
         </p>
       </div>
 
       <div className="mt-6 flex items-baseline gap-1">
-        <span className="text-5xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
+        <span className="text-5xl font-bold tracking-tight text-zinc-900 dark:text-flux-text">
           {formatPrice(plan.priceUsd)}
         </span>
-        <span className="text-base text-zinc-500 dark:text-zinc-400">
+        <span className="text-base text-zinc-500 dark:text-flux-muted">
           {t("perMonth")}
         </span>
       </div>
 
-      <p className="mt-4 text-sm text-zinc-600 dark:text-zinc-300 ">
+      <p className="mt-4 text-sm leading-relaxed text-zinc-600 dark:text-flux-muted">
         {plan.description}
       </p>
 
       <ul className="mt-6 space-y-3 text-sm">
-        <li className="flex items-start gap-2">
+        <li className="flex items-start gap-2.5">
           <CheckIcon />
           <span className="text-zinc-700 dark:text-zinc-300">
             {t("leadsLine", { formatted, perMonthSuffix })}
           </span>
         </li>
         {plan.highlights.slice(1).map((h) => (
-          <li key={h} className="flex items-start gap-2">
+          <li key={h} className="flex items-start gap-2.5">
             <CheckIcon />
             <span className="text-zinc-700 dark:text-zinc-300">{h}</span>
           </li>
@@ -170,7 +177,7 @@ function PlanCard({ plan, isCurrent, locale, t }: PlanCardProps) {
           <button
             type="button"
             disabled
-            className="inline-flex w-full cursor-default items-center justify-center rounded-md border border-zinc-200 bg-zinc-50 px-4 py-2.5 text-sm font-medium text-zinc-500 dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-400 "
+            className="inline-flex w-full cursor-default items-center justify-center rounded-xl border border-zinc-200 bg-zinc-50 px-4 py-3 text-sm font-medium text-zinc-500 dark:border-flux-border dark:bg-flux-bg dark:text-flux-muted"
           >
             {t("currentPlan")}
           </button>
@@ -185,7 +192,7 @@ function PlanCard({ plan, isCurrent, locale, t }: PlanCardProps) {
           <button
             type="button"
             disabled
-            className="inline-flex w-full cursor-default items-center justify-center rounded-md border border-zinc-200 bg-zinc-50 px-4 py-2.5 text-sm font-medium text-zinc-500 dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-400 "
+            className="inline-flex w-full cursor-default items-center justify-center rounded-xl border border-zinc-200 bg-zinc-50 px-4 py-3 text-sm font-medium text-zinc-500 dark:border-flux-border dark:bg-flux-bg dark:text-flux-muted"
           >
             {t("currentPlan")}
           </button>
@@ -198,7 +205,7 @@ function PlanCard({ plan, isCurrent, locale, t }: PlanCardProps) {
 function CheckIcon() {
   return (
     <svg
-      className="mt-0.5 h-4 w-4 flex-shrink-0 text-purple-500"
+      className="mt-0.5 h-4 w-4 flex-shrink-0 text-purple-500 dark:text-flux-purple-soft"
       viewBox="0 0 20 20"
       fill="currentColor"
       aria-hidden="true"

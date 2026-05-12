@@ -76,7 +76,7 @@ export default async function LocaleLayout({
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body
-        className="min-h-full flex flex-col bg-zinc-50 text-zinc-900 dark:bg-zinc-950 dark:text-zinc-300"
+        className="min-h-full flex flex-col bg-zinc-50 text-zinc-900 dark:bg-flux-bg dark:text-flux-text"
         suppressHydrationWarning
       >
         <ThemeProvider>
@@ -86,7 +86,7 @@ export default async function LocaleLayout({
             </Suspense>
             <div className="flex-1">{children}</div>
             <footer>
-              <div className="mx-auto max-w-6xl px-4 py-4 text-center text-xs text-zinc-500 dark:text-zinc-400 sm:px-6 lg:px-8">
+              <div className="mx-auto max-w-6xl px-4 py-6 text-center text-xs text-zinc-500 dark:text-flux-muted sm:px-6 lg:px-8">
                 © 2026 NeoFlux Software. All rights reserved.
               </div>
             </footer>

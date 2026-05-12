@@ -12,7 +12,7 @@ export default function DatabaseConfigBanner({
   return (
     <div
       role="alert"
-      className="mb-8 rounded-md border border-amber-300 bg-amber-50 px-4 py-4 text-sm text-amber-950 shadow-sm dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-200"
+      className="mb-8 rounded-2xl border border-amber-300 bg-amber-50 px-4 py-4 text-sm text-amber-950 shadow-sm dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-200"
     >
       <p className="font-semibold text-amber-900 dark:text-amber-200">
         {variant === "missing_env"
@@ -41,7 +41,7 @@ export default function DatabaseConfigBanner({
         з <code className="text-xs">DATABASE_URL</code> на прод.
       </p>
       {variant === "query_failed" && detail && (
-        <pre className="mt-3 max-h-32 overflow-auto rounded-md border border-amber-200 bg-white/60 p-2 text-xs text-amber-950/80 dark:border-amber-500/30 dark:bg-zinc-900/60 dark:text-amber-200/80">
+        <pre className="mt-3 max-h-32 overflow-auto rounded-md border border-amber-200 bg-white/60 p-2 text-xs text-amber-950/80 dark:border-amber-500/30 dark:bg-flux-card/60 dark:text-amber-200/80">
           {detail}
         </pre>
       )}
