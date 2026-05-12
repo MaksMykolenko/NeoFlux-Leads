@@ -257,6 +257,8 @@ const messages = {
     checkoutSuccessBody:
       "Ваші ліміти оновляться протягом декількох хвилин.",
     checkoutSuccessClose: "Закрити",
+    manageSubscription: "Керувати підпискою",
+    portalLoading: "Відкриваємо портал…",
   },
   AdminUsers: {
     title: "Користувачі",

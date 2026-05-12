@@ -1,5 +1,6 @@
 "use server";
 
+import { prisma } from "@/src/lib/prisma";
 import { getCurrentUser } from "@/src/lib/session";
 import { getStripe } from "@/src/lib/stripe";
 import { PLANS, type PlanId } from "@/src/lib/subscription";
@@ -9,6 +10,14 @@ export interface CheckoutResult {
   success: boolean;
   url?: string;
   error?: string;
+}
+
+export interface PortalResult {
+  success: boolean;
+  url?: string;
+  error?: string;
+  /** "NO_CUSTOMER" — юзер ще не робив Checkout, Stripe Customer не існує. */
+  errorCode?: "NO_CUSTOMER" | "NO_BASE_URL" | "STRIPE_ERROR";
 }
 
 const ALLOWED_PRICE_IDS = new Set(
@@ -97,6 +106,78 @@ export async function createCheckoutSession(
     console.error("createCheckoutSession error:", error);
     return {
       success: false,
+      error: error instanceof Error ? error.message : "Stripe API error",
+    };
+  }
+}
+
+/**
+ * Створює Stripe Billing Portal session — самообслуговування для активних
+ * підписників: оновлення картки, скасування підписки, перегляд інвойсів.
+ *
+ * Customer ID беремо з БД, а не з клієнтського запиту — щоб юзер не міг
+ * передати чужий cus_*. Якщо stripeCustomerId порожній, повертаємо
+ * NO_CUSTOMER (це означає, що юзер ще не оформив підписку — UI не має
+ * рендерити кнопку).
+ *
+ * Передумова: у Stripe Dashboard має бути налаштований Billing Portal
+ * (https://dashboard.stripe.com/test/settings/billing/portal). Без цього
+ * sessions.create поверне `No configuration provided`.
+ */
+export async function createCustomerPortalSession(
+  locale: string,
+): Promise<PortalResult> {
+  const sessionUser = await getCurrentUser();
+  if (!sessionUser) return { success: false, error: "Не авторизовано" };
+
+  // Свіжо тягнемо з БД, щоб stripeCustomerId був актуальним (webhook міг
+  // встановити його після того, як cookie-payload юзера вже зрендерився).
+  const user = await prisma.user.findUnique({
+    where: { id: sessionUser.id },
+    select: { stripeCustomerId: true },
+  });
+
+  if (!user?.stripeCustomerId) {
+    return {
+      success: false,
+      errorCode: "NO_CUSTOMER",
+      error: "Customer ID not found",
+    };
+  }
+
+  const base = process.env.NEXT_PUBLIC_BASE_URL?.trim();
+  if (!base) {
+    return {
+      success: false,
+      errorCode: "NO_BASE_URL",
+      error: "NEXT_PUBLIC_BASE_URL не налаштовано",
+    };
+  }
+
+  const safeBase = base.replace(/\/$/, "");
+  const safeLoc = (routing.locales as readonly string[]).includes(locale)
+    ? locale
+    : routing.defaultLocale;
+
+  try {
+    const stripe = getStripe();
+    const portalSession = await stripe.billingPortal.sessions.create({
+      customer: user.stripeCustomerId,
+      return_url: `${safeBase}/${safeLoc}`,
+    });
+    if (!portalSession.url) {
+      return {
+        success: false,
+        errorCode: "STRIPE_ERROR",
+        error: "Stripe не повернув URL порталу",
+      };
+    }
+    return { success: true, url: portalSession.url };
+  } catch (error) {
+    console.error("createCustomerPortalSession error:", error);
+    return {
+      success: false,
+      errorCode: "STRIPE_ERROR",
       error: error instanceof Error ? error.message : "Stripe API error",
     };
   }

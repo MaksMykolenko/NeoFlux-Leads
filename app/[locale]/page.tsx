@@ -17,6 +17,7 @@ import BeatOutreach from "@/src/components/BeatOutreach";
 import UniversalOutreach from "@/src/components/UniversalOutreach";
 import CsvUploader from "@/src/components/CsvUploader";
 import CheckoutSuccessBanner from "@/src/components/CheckoutSuccessBanner";
+import ManageSubscriptionButton from "@/src/components/ManageSubscriptionButton";
 import BrandMark from "@/src/components/BrandMark";
 import LeadsTableSection from "@/src/components/LeadsTableSection";
 import LeadKanbanBoard, {
@@ -160,8 +161,13 @@ export default async function Home({
           </div>
         )}
 
-        <div className="mt-6">
+        <div className="mt-6 space-y-3">
           <UsageMeter status={limitStatus} plan={plan} />
+          {user.stripeCustomerId && (
+            <div className="flex justify-end">
+              <ManageSubscriptionButton locale={locale} />
+            </div>
+          )}
         </div>
 
         {!isBoard && (

@@ -256,6 +256,8 @@ const messages = {
     checkoutSuccessTitle: "Thanks for subscribing!",
     checkoutSuccessBody: "Your limits will update in a few minutes.",
     checkoutSuccessClose: "Close",
+    manageSubscription: "Manage subscription",
+    portalLoading: "Opening portal…",
   },
   AdminUsers: {
     title: "Users",
