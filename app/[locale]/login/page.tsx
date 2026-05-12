@@ -25,7 +25,7 @@ export default async function LoginPage({
   const errorMessage = formatLoginError(t, code, detail);
 
   return (
-    <main className="flex min-h-screen items-center justify-center bg-gradient-to-br from-zinc-50 via-white to-cyan-50 px-4 py-12 dark:from-zinc-950 dark:via-zinc-950 dark:to-zinc-900 sm:px-6 lg:px-8">
+    <main className="flex min-h-screen items-center justify-center bg-gradient-to-br from-zinc-50 via-white to-purple-50 px-4 py-12 dark:from-zinc-950 dark:via-zinc-950 dark:to-zinc-900 sm:px-6 lg:px-8">
       <div className="w-full max-w-md">
         <div className="rounded-md bg-white p-8 shadow-lg ring-1 ring-zinc-200/70 dark:bg-zinc-900 dark:ring-zinc-800 sm:p-10">
           <div className="flex flex-col items-center text-center">
@@ -66,7 +66,7 @@ export default async function LoginPage({
           {/* eslint-disable-next-line @next/next/no-html-link-for-pages */}
           <a
             href="/api/auth/flux/login"
-            className="mt-8 inline-flex w-full items-center justify-center gap-2 rounded-md bg-cyan-500 px-4 py-3 text-sm font-medium text-white shadow-sm transition-all duration-200 hover:bg-cyan-600 active:scale-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-zinc-900"
+            className="mt-8 inline-flex w-full items-center justify-center gap-2 rounded-md bg-purple-500 px-4 py-3 text-sm font-medium text-white shadow-sm transition-all duration-200 hover:bg-purple-600 active:scale-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-zinc-900"
           >
             <svg
               className="h-4 w-4"

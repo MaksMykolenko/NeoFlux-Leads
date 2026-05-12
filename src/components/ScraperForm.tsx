@@ -88,7 +88,7 @@ export default function ScraperForm() {
           <button
             type="submit"
             disabled={loading || !query || !city}
-            className="inline-flex h-[42px] min-w-[140px] items-center justify-center gap-2 rounded-lg bg-cyan-600 px-5 text-sm font-medium text-white transition hover:bg-cyan-700 disabled:cursor-not-allowed disabled:bg-cyan-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500 focus-visible:ring-offset-2"
+            className="inline-flex h-[42px] min-w-[140px] items-center justify-center gap-2 rounded-lg bg-purple-600 px-5 text-sm font-medium text-white transition hover:bg-purple-700 disabled:cursor-not-allowed disabled:bg-purple-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-500 focus-visible:ring-offset-2"
           >
             {loading ? (
               <>
@@ -117,7 +117,7 @@ export default function ScraperForm() {
 }
 
 const inputClass =
-  "block w-full rounded-md border border-zinc-300 bg-zinc-50 px-3.5 py-2.5 text-sm text-zinc-900 transition-all duration-200 placeholder:text-zinc-400 focus:border-cyan-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-cyan-100 disabled:opacity-60 dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-100 dark:placeholder:text-zinc-500 dark:focus:border-cyan-500 dark:focus:bg-zinc-900 dark:focus:ring-cyan-500/20";
+  "block w-full rounded-md border border-zinc-300 bg-zinc-50 px-3.5 py-2.5 text-sm text-zinc-900 transition-all duration-200 placeholder:text-zinc-400 focus:border-purple-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-purple-100 disabled:opacity-60 dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-100 dark:placeholder:text-zinc-500 dark:focus:border-purple-500 dark:focus:bg-zinc-900 dark:focus:ring-purple-500/20";
 
 function Field({
   label,
@@ -148,7 +148,7 @@ function Banner({
       ? "border-emerald-200 bg-emerald-50 text-emerald-800"
       : type === "error"
         ? "border-red-200 bg-red-50 text-red-700"
-        : "border-cyan-200 bg-cyan-50 text-cyan-800";
+        : "border-purple-200 bg-purple-50 text-purple-800";
   return (
     <div className={`mt-4 rounded-lg border px-3 py-2 text-sm ${cls}`}>
       {children}

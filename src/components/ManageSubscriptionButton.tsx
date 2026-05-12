@@ -36,7 +36,7 @@ export default function ManageSubscriptionButton({
         type="button"
         onClick={onClick}
         disabled={isPending}
-        className="inline-flex h-8 items-center gap-1.5 rounded-md border border-zinc-200 bg-white px-3 text-xs font-medium text-zinc-700 shadow-sm transition-all duration-200 hover:border-cyan-300 hover:bg-cyan-50 hover:text-cyan-700 active:scale-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500 disabled:cursor-progress disabled:opacity-70 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-300 dark:hover:border-cyan-700 dark:hover:bg-cyan-500/10 dark:hover:text-cyan-300"
+        className="inline-flex h-8 items-center gap-1.5 rounded-md border border-zinc-200 bg-white px-3 text-xs font-medium text-zinc-700 shadow-sm transition-all duration-200 hover:border-purple-300 hover:bg-purple-50 hover:text-purple-700 active:scale-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-500 disabled:cursor-progress disabled:opacity-70 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-300 dark:hover:border-purple-700 dark:hover:bg-purple-500/10 dark:hover:text-purple-300"
       >
         {isPending ? (
           <Spinner />

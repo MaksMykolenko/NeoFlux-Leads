@@ -141,7 +141,7 @@ function KanbanColumn({
             {...provided.droppableProps}
             className={`flex min-h-[120px] flex-col gap-2 rounded-md border p-2 transition-colors ${
               snapshot.isDraggingOver
-                ? "border-cyan-400 bg-cyan-50 dark:border-cyan-500/60 dark:bg-cyan-500/10"
+                ? "border-purple-400 bg-purple-50 dark:border-purple-500/60 dark:bg-purple-500/10"
                 : "border-zinc-200 bg-white/60 dark:border-zinc-800 dark:bg-zinc-950/40"
             }`}
           >
@@ -160,7 +160,7 @@ function KanbanColumn({
                     style={provided.draggableProps.style}
                     className={`select-none rounded-md border bg-white p-3 text-sm shadow-sm transition-colors dark:bg-zinc-900 ${
                       snapshot.isDragging
-                        ? "border-cyan-500 ring-2 ring-cyan-500/20"
+                        ? "border-purple-500 ring-2 ring-purple-500/20"
                         : "border-zinc-200 hover:border-zinc-300 dark:border-zinc-800 dark:hover:border-zinc-700"
                     }`}
                   >
@@ -203,7 +203,7 @@ function KanbanCard({ lead }: { lead: KanbanLead }) {
         <ModeBadge mode={lead.mode} />
         <a
           href={`/leads/${lead.id}`}
-          className="text-[10px] font-medium uppercase tracking-wider text-zinc-500 transition-colors hover:text-cyan-600 dark:text-zinc-400 dark:hover:text-cyan-400"
+          className="text-[10px] font-medium uppercase tracking-wider text-zinc-500 transition-colors hover:text-purple-600 dark:text-zinc-400 dark:hover:text-purple-400"
         >
           →
         </a>
@@ -248,7 +248,7 @@ function ModeBadge({ mode }: { mode: LeadMode }) {
     BEATS: {
       label: "BEATS",
       className:
-        "bg-cyan-50 text-cyan-700 ring-cyan-200 dark:bg-cyan-500/15 dark:text-cyan-300 dark:ring-cyan-500/30",
+        "bg-purple-50 text-purple-700 ring-purple-200 dark:bg-purple-500/15 dark:text-purple-300 dark:ring-purple-500/30",
     },
     UNIVERSAL: {
       label: "UNIVERSAL",

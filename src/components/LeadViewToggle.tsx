@@ -79,7 +79,7 @@ function ToggleButton({
       disabled={disabled}
       className={`inline-flex items-center gap-1.5 rounded px-2.5 py-1 font-medium transition-all duration-200 ${
         active
-          ? "bg-cyan-500 text-white"
+          ? "bg-purple-500 text-white"
           : "text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-zinc-100"
       } disabled:cursor-wait disabled:opacity-60`}
     >

@@ -78,7 +78,7 @@ export default function LeadTableRow({ lead, selection }: LeadRowProps) {
     <tr
       onClick={() => router.push(`/leads/${lead.id}`)}
       className={`cursor-pointer transition-colors hover:bg-zinc-50 dark:hover:bg-zinc-800/50 ${
-        selection?.selected ? "bg-cyan-50/50 dark:bg-cyan-500/10" : ""
+        selection?.selected ? "bg-purple-50/50 dark:bg-purple-500/10" : ""
       }`}
     >
       {selection && (
@@ -91,7 +91,7 @@ export default function LeadTableRow({ lead, selection }: LeadRowProps) {
             checked={selection.selected}
             onChange={(e) => selection.onToggle(lead.id, e.target.checked)}
             aria-label={`Select ${lead.companyName}`}
-            className="h-4 w-4 cursor-pointer rounded border-zinc-300 text-cyan-500 focus:ring-cyan-500 dark:border-zinc-700 dark:bg-zinc-900"
+            className="h-4 w-4 cursor-pointer rounded border-zinc-300 text-purple-500 focus:ring-purple-500 dark:border-zinc-700 dark:bg-zinc-900"
           />
         </td>
       )}
@@ -99,7 +99,7 @@ export default function LeadTableRow({ lead, selection }: LeadRowProps) {
         <Link
           href={`/leads/${lead.id}`}
           onClick={stopPropagation}
-          className="text-zinc-900 transition-colors hover:text-cyan-600 hover:underline dark:text-zinc-100 dark:hover:text-cyan-400 "
+          className="text-zinc-900 transition-colors hover:text-purple-600 hover:underline dark:text-zinc-100 dark:hover:text-purple-400 "
         >
           {lead.companyName}
         </Link>
@@ -132,7 +132,7 @@ export default function LeadTableRow({ lead, selection }: LeadRowProps) {
             onClick={stopPropagation}
             target="_blank"
             rel="noopener noreferrer"
-            className="text-cyan-600 transition-colors hover:text-cyan-700 hover:underline dark:text-cyan-400 dark:hover:text-cyan-300"
+            className="text-purple-600 transition-colors hover:text-purple-700 hover:underline dark:text-purple-400 dark:hover:text-purple-300"
           >
             {siteHref.replace(/^https?:\/\//, "").replace(/\/$/, "")}
           </a>

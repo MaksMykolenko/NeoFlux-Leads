@@ -161,15 +161,15 @@ export default function LeadsTableSection({
       </div>
 
       {selectedCount > 0 && (
-        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-cyan-200 bg-cyan-50 px-6 py-2.5 dark:border-cyan-500/30 dark:bg-cyan-500/10">
+        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-purple-200 bg-purple-50 px-6 py-2.5 dark:border-purple-500/30 dark:bg-purple-500/10">
           <div className="flex items-center gap-3 text-sm">
-            <span className="font-medium text-cyan-900 dark:text-cyan-200">
+            <span className="font-medium text-purple-900 dark:text-purple-200">
               {t("selected", { count: selectedCount })}
             </span>
             <button
               type="button"
               onClick={clearSelection}
-              className="text-xs text-cyan-700 hover:text-cyan-900 hover:underline dark:text-cyan-300 dark:hover:text-cyan-200"
+              className="text-xs text-purple-700 hover:text-purple-900 hover:underline dark:text-purple-300 dark:hover:text-purple-200"
             >
               {t("clear")}
             </button>
@@ -180,7 +180,7 @@ export default function LeadsTableSection({
                 type="button"
                 onClick={runBulkAudit}
                 disabled={isPending}
-                className="inline-flex items-center gap-1.5 rounded-md bg-white px-3 py-1.5 text-xs font-medium text-cyan-700 ring-1 ring-inset ring-cyan-300 transition-all duration-200 hover:bg-cyan-100 active:scale-95 disabled:opacity-60 dark:bg-zinc-900 dark:text-cyan-300 dark:ring-cyan-500/40 dark:hover:bg-cyan-500/10"
+                className="inline-flex items-center gap-1.5 rounded-md bg-white px-3 py-1.5 text-xs font-medium text-purple-700 ring-1 ring-inset ring-purple-300 transition-all duration-200 hover:bg-purple-100 active:scale-95 disabled:opacity-60 dark:bg-zinc-900 dark:text-purple-300 dark:ring-purple-500/40 dark:hover:bg-purple-500/10"
               >
                 {t("auditSelected")}
               </button>
@@ -246,7 +246,7 @@ export default function LeadsTableSection({
                     }}
                     onChange={toggleAll}
                     aria-label={t("selectAll")}
-                    className="h-4 w-4 cursor-pointer rounded border-zinc-300 text-cyan-500 focus:ring-cyan-500 dark:border-zinc-700 dark:bg-zinc-900"
+                    className="h-4 w-4 cursor-pointer rounded border-zinc-300 text-purple-500 focus:ring-purple-500 dark:border-zinc-700 dark:bg-zinc-900"
                   />
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
@@ -313,7 +313,7 @@ function StatusDropdown({
           }
         }}
         defaultValue=""
-        className="appearance-none rounded-md border border-cyan-300 bg-white px-3 py-1.5 pr-7 text-xs font-medium text-cyan-700 transition-all duration-200 hover:bg-cyan-100 disabled:opacity-60 dark:border-cyan-500/40 dark:bg-zinc-900 dark:text-cyan-300 dark:hover:bg-cyan-500/10"
+        className="appearance-none rounded-md border border-purple-300 bg-white px-3 py-1.5 pr-7 text-xs font-medium text-purple-700 transition-all duration-200 hover:bg-purple-100 disabled:opacity-60 dark:border-purple-500/40 dark:bg-zinc-900 dark:text-purple-300 dark:hover:bg-purple-500/10"
       >
         <option value="" disabled>
           {t("changeStatus")}

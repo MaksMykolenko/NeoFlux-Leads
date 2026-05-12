@@ -459,7 +459,7 @@ function ContactsCard({
                 href={lead.website}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-blue-600 hover:text-blue-800 hover:underline transition-colors"
+                className="text-purple-600 hover:text-purple-800 hover:underline transition-colors"
               >
                 {stripProtocol(lead.website)}
               </a>
@@ -469,7 +469,7 @@ function ContactsCard({
             {lead.email && (
               <a
                 href={`mailto:${lead.email}`}
-                className="text-blue-600 hover:text-blue-800 hover:underline transition-colors"
+                className="text-purple-600 hover:text-purple-800 hover:underline transition-colors"
               >
                 {lead.email}
               </a>
@@ -479,7 +479,7 @@ function ContactsCard({
             {lead.phone && (
               <a
                 href={`tel:${lead.phone.replace(/\s+/g, "")}`}
-                className="text-zinc-900 hover:text-blue-600 transition-colors dark:text-zinc-50"
+                className="text-zinc-900 hover:text-purple-600 transition-colors dark:text-zinc-50"
               >
                 {lead.phone}
               </a>
@@ -526,7 +526,7 @@ function ContactsCard({
           {lead.phone && (
             <a
               href={`tel:${lead.phone.replace(/\s+/g, "")}`}
-              className="text-zinc-900 hover:text-blue-600 transition-colors dark:text-zinc-50"
+              className="text-zinc-900 hover:text-purple-600 transition-colors dark:text-zinc-50"
             >
               {lead.phone}
             </a>
@@ -538,7 +538,7 @@ function ContactsCard({
               href={lead.website}
               target="_blank"
               rel="noopener noreferrer"
-              className="text-blue-600 hover:text-blue-800 hover:underline transition-colors"
+              className="text-purple-600 hover:text-purple-800 hover:underline transition-colors"
             >
               {stripProtocol(lead.website)}
             </a>
@@ -548,7 +548,7 @@ function ContactsCard({
           {lead.email && (
             <a
               href={`mailto:${lead.email}`}
-              className="text-blue-600 hover:text-blue-800 hover:underline transition-colors"
+              className="text-purple-600 hover:text-purple-800 hover:underline transition-colors"
             >
               {lead.email}
             </a>
@@ -847,7 +847,7 @@ function MessageHistoryFeed({
         {messages.map((msg) => (
           <details
             key={msg.id}
-            className="group rounded-lg border border-zinc-200 transition-colors hover:border-zinc-300 open:border-cyan-200 open:bg-cyan-50/40 dark:border-zinc-800"
+            className="group rounded-lg border border-zinc-200 transition-colors hover:border-zinc-300 open:border-purple-200 open:bg-purple-50/40 dark:border-zinc-800"
           >
             <summary className="flex cursor-pointer list-none items-start justify-between gap-3 px-4 py-3">
               <div className="min-w-0 flex-1">
@@ -943,7 +943,7 @@ function MessageChannelsBadge({
         return (
           <span
             key={key}
-            className="inline-flex items-center gap-1 rounded-md bg-cyan-50 px-1.5 py-0.5 text-[10px] font-medium text-cyan-700 ring-1 ring-inset ring-cyan-200"
+            className="inline-flex items-center gap-1 rounded-md bg-purple-50 px-1.5 py-0.5 text-[10px] font-medium text-purple-700 ring-1 ring-inset ring-purple-200"
           >
             <def.Icon className="w-3 h-3" />
             {ui.label}

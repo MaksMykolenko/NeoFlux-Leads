@@ -150,7 +150,7 @@ export default function BeatOutreach() {
               {t("flowNoteBefore")}
               <Link
                 href="/settings"
-                className="font-medium text-blue-600 hover:text-blue-800 hover:underline"
+                className="font-medium text-purple-600 hover:text-purple-800 hover:underline"
               >
                 {t("flowNoteSettings")}
               </Link>
@@ -229,12 +229,12 @@ function ArtistSearch({
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           disabled={pending}
-          className="flex-1 rounded-lg border border-zinc-300 bg-zinc-50 px-4 py-2.5 text-sm focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:opacity-60 dark:border-zinc-700 dark:bg-zinc-900 dark:focus:bg-zinc-900"
+          className="flex-1 rounded-lg border border-zinc-300 bg-zinc-50 px-4 py-2.5 text-sm focus:bg-white focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 disabled:opacity-60 dark:border-zinc-700 dark:bg-zinc-900 dark:focus:bg-zinc-900"
         />
         <button
           type="submit"
           disabled={pending || !query.trim()}
-          className="inline-flex items-center justify-center gap-2 rounded-lg bg-blue-600 px-6 py-2.5 text-sm font-medium text-white shadow-sm transition-colors hover:bg-blue-700 disabled:bg-blue-300 disabled:cursor-not-allowed min-w-[160px]"
+          className="inline-flex items-center justify-center gap-2 rounded-lg bg-purple-600 px-6 py-2.5 text-sm font-medium text-white shadow-sm transition-colors hover:bg-purple-700 disabled:bg-purple-300 disabled:cursor-not-allowed min-w-[160px]"
         >
           {pending && <Spinner className="h-4 w-4" />}
           <span>{pending ? t("aiSearching") : t("findBuyers")}</span>
@@ -345,7 +345,7 @@ function ArtistCard({ artist, selected, onToggle }: ArtistCardProps) {
       }}
       className={`w-full text-left rounded-lg border p-4 transition-all cursor-pointer ${
         selected
-          ? "border-blue-500 ring-2 ring-blue-100 bg-blue-50/40"
+          ? "border-purple-500 ring-2 ring-purple-100 bg-purple-50/40"
           : "border-zinc-200 bg-white hover:border-zinc-300 hover:shadow-sm"
       }`}
     >
@@ -370,7 +370,7 @@ function ArtistCard({ artist, selected, onToggle }: ArtistCardProps) {
                 href={profileHref}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="font-medium text-blue-600 hover:text-blue-800 hover:underline"
+                className="font-medium text-purple-600 hover:text-purple-800 hover:underline"
                 onClick={(e) => e.stopPropagation()}
               >
                 {t("profileLink", { platform: artist.platform })}
@@ -387,7 +387,7 @@ function ArtistCard({ artist, selected, onToggle }: ArtistCardProps) {
         <span
           className={`flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full border-2 transition-all ${
             selected
-              ? "border-blue-600 bg-blue-600 text-white"
+              ? "border-purple-600 bg-purple-600 text-white"
               : "border-zinc-300 bg-white"
           }`}
         >
@@ -476,7 +476,7 @@ function DemoUploader({
         onClick={() => inputRef.current?.click()}
         className={`cursor-pointer rounded-xl border-2 border-dashed px-6 py-10 text-center transition-colors ${
           dragOver
-            ? "border-blue-500 bg-blue-50"
+            ? "border-purple-500 bg-purple-50"
             : "border-zinc-300 bg-zinc-50 hover:border-zinc-400 hover:bg-zinc-100"
         }`}
       >
@@ -611,7 +611,7 @@ function MetaInput({
         value={value}
         placeholder={placeholder}
         onChange={(e) => onChange(e.target.value)}
-        className="w-full rounded-md border border-zinc-200 bg-zinc-50 px-2.5 py-1.5 text-sm focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-zinc-800 dark:bg-zinc-900 dark:focus:bg-zinc-900"
+        className="w-full rounded-md border border-zinc-200 bg-zinc-50 px-2.5 py-1.5 text-sm focus:bg-white focus:outline-none focus:ring-2 focus:ring-purple-500 dark:border-zinc-800 dark:bg-zinc-900 dark:focus:bg-zinc-900"
       />
     </div>
   );
@@ -904,7 +904,7 @@ function MessageReview({
                 href={profileHref}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="hover:text-blue-600 hover:underline"
+                className="hover:text-purple-600 hover:underline"
               >
                 {artist.handle}
               </a>
@@ -961,7 +961,7 @@ function MessageReview({
               type="text"
               value={subject}
               onChange={(e) => setSubject(e.target.value)}
-              className="block w-full rounded-md border border-zinc-200 bg-zinc-50 px-3 py-2 text-sm focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-zinc-800 dark:bg-zinc-900 dark:focus:bg-zinc-900"
+              className="block w-full rounded-md border border-zinc-200 bg-zinc-50 px-3 py-2 text-sm focus:bg-white focus:outline-none focus:ring-2 focus:ring-purple-500 dark:border-zinc-800 dark:bg-zinc-900 dark:focus:bg-zinc-900"
             />
           </div>
           <div>
@@ -972,7 +972,7 @@ function MessageReview({
               value={body}
               rows={9}
               onChange={(e) => setBody(e.target.value)}
-              className="block w-full resize-y rounded-md border border-zinc-200 bg-zinc-50 px-3 py-2 text-sm leading-relaxed focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-zinc-800 dark:bg-zinc-900 dark:focus:bg-zinc-900"
+              className="block w-full resize-y rounded-md border border-zinc-200 bg-zinc-50 px-3 py-2 text-sm leading-relaxed focus:bg-white focus:outline-none focus:ring-2 focus:ring-purple-500 dark:border-zinc-800 dark:bg-zinc-900 dark:focus:bg-zinc-900"
             />
           </div>
 
@@ -993,7 +993,7 @@ function MessageReview({
               type="button"
               onClick={handleRegenerate}
               disabled={generating || saving}
-              className="inline-flex items-center gap-1.5 rounded-md bg-gradient-to-r from-violet-600 to-blue-600 px-3 py-1.5 text-xs font-medium text-white shadow-sm hover:from-violet-700 hover:to-blue-700 transition-all disabled:opacity-60 disabled:cursor-wait"
+              className="inline-flex items-center gap-1.5 rounded-md bg-gradient-to-r from-violet-600 to-purple-600 px-3 py-1.5 text-xs font-medium text-white shadow-sm hover:from-violet-700 hover:to-purple-700 transition-all disabled:opacity-60 disabled:cursor-wait"
             >
               {generating ? (
                 <Spinner className="w-3 h-3" />
@@ -1059,7 +1059,7 @@ function MessageReview({
                       {opened ? (
                         <CheckIcon className="w-3.5 h-3.5 flex-shrink-0" />
                       ) : (
-                        <span className="text-[10px] font-medium text-blue-600 whitespace-nowrap">
+                        <span className="text-[10px] font-medium text-purple-600 whitespace-nowrap">
                           {t("open")}
                         </span>
                       )}
@@ -1090,7 +1090,7 @@ function MessageReview({
                 !subject.trim() ||
                 !body.trim()
               }
-              className="inline-flex items-center justify-center gap-2 rounded-lg bg-blue-600 px-6 py-2.5 text-sm font-medium text-white shadow-sm transition-colors hover:bg-blue-700 disabled:bg-blue-300 disabled:cursor-not-allowed"
+              className="inline-flex items-center justify-center gap-2 rounded-lg bg-purple-600 px-6 py-2.5 text-sm font-medium text-white shadow-sm transition-colors hover:bg-purple-700 disabled:bg-purple-300 disabled:cursor-not-allowed"
             >
               {saving && <Spinner className="h-4 w-4" />}
               <span>{saving ? t("reviewSaving") : t("reviewSaveCrm")}</span>
@@ -1117,12 +1117,12 @@ function BulkSendBanner({
 }) {
   const t = useTranslations("BeatOutreach");
   return (
-    <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-blue-200 bg-blue-50 px-4 py-3">
-      <div className="text-sm text-blue-900">
+    <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-purple-200 bg-purple-50 px-4 py-3">
+      <div className="text-sm text-purple-900">
         <span className="font-semibold">
           {t("bulkHeading", { pending, total })}
         </span>
-        <span className="block text-xs text-blue-700/80 mt-0.5">
+        <span className="block text-xs text-purple-700/80 mt-0.5">
           {disabled ? t("bulkAllSent") : t("bulkManual")}
         </span>
       </div>
@@ -1147,19 +1147,25 @@ function StepCard({
 }) {
   return (
     <section
-      className={`rounded-xl border bg-white shadow-sm p-5 transition-opacity ${
-        active ? "border-zinc-200 opacity-100" : "border-zinc-100 opacity-60"
+      className={`rounded-md border bg-white p-5 shadow-sm transition-opacity dark:bg-zinc-900 ${
+        active
+          ? "border-zinc-200 opacity-100 dark:border-zinc-800"
+          : "border-zinc-100 opacity-60 dark:border-zinc-800/60"
       }`}
     >
-      <header className="flex items-center gap-3 mb-4">
+      <header className="mb-4 flex items-center gap-3">
         <span
           className={`flex h-7 w-7 items-center justify-center rounded-full text-xs font-semibold ${
-            active ? "bg-blue-600 text-white" : "bg-zinc-100 text-zinc-400"
+            active
+              ? "bg-purple-500 text-white"
+              : "bg-zinc-100 text-zinc-400 dark:bg-zinc-800 dark:text-zinc-500"
           }`}
         >
           {n}
         </span>
-        <h2 className="text-base font-semibold text-zinc-900 dark:text-zinc-50">{title}</h2>
+        <h2 className="text-base font-semibold text-zinc-900 dark:text-zinc-50">
+          {title}
+        </h2>
       </header>
       <div>{children}</div>
     </section>

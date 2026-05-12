@@ -33,7 +33,7 @@ export default function UsageMeter({ status, plan }: UsageMeterProps) {
   const danger = percent >= 95;
   const warn = !danger && percent >= 75;
 
-  const barColor = danger ? "bg-red-500" : warn ? "bg-amber-500" : "bg-cyan-500";
+  const barColor = danger ? "bg-red-500" : warn ? "bg-amber-500" : "bg-purple-500";
   const trackColor = danger
     ? "border-red-200 bg-red-50/60 dark:border-red-500/30 dark:bg-red-500/10"
     : warn
@@ -59,7 +59,7 @@ export default function UsageMeter({ status, plan }: UsageMeterProps) {
         </div>
         <Link
           href="/pricing"
-          className="text-xs font-medium text-cyan-600 transition-colors hover:text-cyan-700 hover:underline dark:text-cyan-400 dark:hover:text-cyan-300"
+          className="text-xs font-medium text-purple-600 transition-colors hover:text-purple-700 hover:underline dark:text-purple-400 dark:hover:text-purple-300"
         >
           {t("upgradeCta")} →
         </Link>

@@ -60,7 +60,7 @@ export default function ModeTabs({ active }: ModeTabsProps) {
             href={tab.href}
             className={`relative px-4 py-3 text-sm font-medium transition-all duration-200 focus:outline-none focus-visible:bg-zinc-50 dark:focus-visible:bg-zinc-900 ${
               isActive
-                ? "text-cyan-600 dark:text-cyan-400"
+                ? "text-purple-600 dark:text-purple-400"
                 : "text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100"
             }`}
           >
@@ -69,7 +69,7 @@ export default function ModeTabs({ active }: ModeTabsProps) {
               {t(tab.hintKey)}
             </div>
             {isActive && (
-              <span className="absolute -bottom-px left-0 right-0 h-0.5 bg-cyan-500" />
+              <span className="absolute -bottom-px left-0 right-0 h-0.5 bg-purple-500" />
             )}
           </Link>
         );

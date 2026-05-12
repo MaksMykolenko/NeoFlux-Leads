@@ -208,7 +208,7 @@ export default function AIProposalGenerator({
             type="button"
             onClick={handleGenerate}
             disabled={isGenerating || isSaving}
-            className="inline-flex items-center gap-2 rounded-lg bg-cyan-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-cyan-700 disabled:cursor-wait disabled:opacity-60 focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500 focus-visible:ring-offset-2"
+            className="inline-flex items-center gap-2 rounded-lg bg-purple-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-purple-700 disabled:cursor-wait disabled:opacity-60 focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-500 focus-visible:ring-offset-2"
           >
             <SparkleIcon className="w-4 h-4" />
             {isGenerating
@@ -231,7 +231,7 @@ export default function AIProposalGenerator({
                 onClick={() => handlePickStep(s.step)}
                 className={`flex-1 rounded px-3 py-2 text-xs font-medium transition ${
                   activeStep === s.step
-                    ? "bg-cyan-600 text-white"
+                    ? "bg-purple-600 text-white"
                     : "text-zinc-400 hover:bg-zinc-800 hover:text-zinc-100"
                 }`}
               >
@@ -260,7 +260,7 @@ export default function AIProposalGenerator({
                 value={subject}
                 onChange={(event) => setSubject(event.target.value)}
                 placeholder={t("subjectPlaceholder", { company: companyName })}
-                className="block w-full rounded-lg border border-zinc-200 bg-zinc-50 px-4 py-2.5 text-sm text-zinc-900 focus:border-cyan-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-cyan-100 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-50 dark:focus:bg-zinc-900"
+                className="block w-full rounded-lg border border-zinc-200 bg-zinc-50 px-4 py-2.5 text-sm text-zinc-900 focus:border-purple-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-purple-100 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-50 dark:focus:bg-zinc-900"
               />
             </div>
 
@@ -276,7 +276,7 @@ export default function AIProposalGenerator({
                 value={text}
                 onChange={(event) => setText(event.target.value)}
                 rows={Math.min(Math.max(text.split("\n").length + 1, 8), 18)}
-                className="block w-full resize-y rounded-lg border border-zinc-200 bg-zinc-50 px-4 py-3 text-sm leading-relaxed text-zinc-900 shadow-inner focus:border-cyan-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-cyan-100 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-50 dark:focus:bg-zinc-900"
+                className="block w-full resize-y rounded-lg border border-zinc-200 bg-zinc-50 px-4 py-3 text-sm leading-relaxed text-zinc-900 shadow-inner focus:border-purple-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-purple-100 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-50 dark:focus:bg-zinc-900"
               />
             </div>
 
@@ -291,7 +291,7 @@ export default function AIProposalGenerator({
                   type="button"
                   onClick={() => handleRewrite(opt)}
                   disabled={isRewriting || isGenerating || isSaving}
-                  className={`inline-flex items-center gap-1.5 rounded-md border border-cyan-700 bg-cyan-700 px-2.5 py-1 text-[11px] font-medium text-white transition hover:bg-cyan-800 hover:border-cyan-800 disabled:opacity-60 ${
+                  className={`inline-flex items-center gap-1.5 rounded-md border border-purple-700 bg-purple-700 px-2.5 py-1 text-[11px] font-medium text-white transition hover:bg-purple-800 hover:border-purple-800 disabled:opacity-60 ${
                     pendingTone === opt && isRewriting ? "opacity-70" : ""
                   }`}
                 >
@@ -351,7 +351,7 @@ export default function AIProposalGenerator({
                     !subject.trim()
                   }
                   title={!canSendEmail ? t("noEmailHint") : undefined}
-                  className="inline-flex items-center gap-1.5 rounded-md bg-cyan-600 px-3 py-1.5 text-xs font-medium text-white shadow-sm transition hover:bg-cyan-700 disabled:cursor-not-allowed disabled:bg-cyan-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500"
+                  className="inline-flex items-center gap-1.5 rounded-md bg-purple-600 px-3 py-1.5 text-xs font-medium text-white shadow-sm transition hover:bg-purple-700 disabled:cursor-not-allowed disabled:bg-purple-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-500"
                 >
                   {isSending ? (
                     <>
@@ -426,7 +426,7 @@ function SkeletonLoader({ label }: { label: string }) {
     <div className="rounded-lg border border-zinc-200 bg-zinc-50 p-4 dark:border-zinc-800 dark:bg-zinc-900">
       <div className="flex items-center gap-2 text-sm text-zinc-500 dark:text-zinc-400">
         <svg
-          className="h-4 w-4 animate-spin text-cyan-600"
+          className="h-4 w-4 animate-spin text-purple-600"
           xmlns="http://www.w3.org/2000/svg"
           fill="none"
           viewBox="0 0 24 24"

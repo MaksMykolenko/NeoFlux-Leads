@@ -26,7 +26,7 @@ export default async function PricingPage({
   const currentPlan = getPlanForUser(user);
 
   return (
-    <main className="min-h-screen bg-gradient-to-br from-zinc-50 to-cyan-50 py-12 dark:from-zinc-950 dark:to-zinc-900 sm:py-16">
+    <main className="min-h-screen bg-gradient-to-br from-zinc-50 to-purple-50 py-12 dark:from-zinc-950 dark:to-zinc-900 sm:py-16">
       <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
         <Link
           href="/"
@@ -102,26 +102,28 @@ function PlanCard({ plan, isCurrent, locale, t }: PlanCardProps) {
   const formatted = unlimited ? t("unlimitedWord") : String(plan.leadsPerMonth);
   const perMonthSuffix = unlimited ? "" : t("perMonthSuffix");
 
-  // Картки: чіткі лінії + малий радіус. Glow тільки у dark mode на платних.
+  // Картки: чіткі лінії + малий радіус. Glow на платних — інтенсивний у dark,
+  // м'який у light (purple-500 #a855f7 → rgb(168,85,247)).
   const cardClasses = [
     "relative flex flex-col rounded-md border bg-white p-8 transition-all duration-200 dark:bg-zinc-900",
     isPro
-      ? "border-cyan-200 shadow-lg ring-2 ring-cyan-500 dark:border-cyan-500/40 dark:shadow-[0_0_15px_rgba(0,176,255,0.15)] lg:scale-[1.02]"
+      ? "border-purple-200 shadow-[0_0_30px_-5px_rgba(168,85,247,0.35)] ring-2 ring-purple-500 dark:border-purple-500/40 dark:shadow-[0_0_30px_rgba(168,85,247,0.25)] lg:scale-[1.02]"
       : isAgency
-        ? "border-zinc-200 shadow-md dark:border-zinc-800 dark:shadow-[0_0_15px_rgba(0,176,255,0.08)]"
+        ? "border-zinc-200 shadow-md dark:border-zinc-800 dark:shadow-[0_0_20px_rgba(168,85,247,0.12)]"
         : "border-zinc-200 shadow-sm dark:border-zinc-800",
   ].join(" ");
 
-  const upgradeClasses = `inline-flex w-full items-center justify-center gap-2 rounded-md px-4 py-2.5 text-sm font-medium transition-all duration-200 active:scale-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500 ${
+  // CTA-кнопка тарифу: насичений purple-600 з glow на hover (як на брифі).
+  const upgradeClasses = `inline-flex w-full items-center justify-center gap-2 rounded-md px-4 py-2.5 text-sm font-medium transition-all duration-200 active:scale-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-zinc-900 ${
     isPaid
-      ? "bg-cyan-500 text-white shadow-sm hover:bg-cyan-600 dark:hover:bg-cyan-400"
+      ? "bg-purple-600 text-white shadow-sm hover:bg-purple-700 hover:shadow-[0_0_20px_rgba(168,85,247,0.5)] dark:hover:bg-purple-500"
       : "bg-zinc-900 text-white shadow-sm hover:bg-zinc-800 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-200"
   }`;
 
   return (
     <div className={cardClasses}>
       {isPro && (
-        <span className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-cyan-500 px-3 py-1 text-xs font-semibold uppercase tracking-wider text-white shadow">
+        <span className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-purple-500 px-3 py-1 text-xs font-semibold uppercase tracking-wider text-white shadow">
           {t("popular")}
         </span>
       )}
@@ -196,7 +198,7 @@ function PlanCard({ plan, isCurrent, locale, t }: PlanCardProps) {
 function CheckIcon() {
   return (
     <svg
-      className="mt-0.5 h-4 w-4 flex-shrink-0 text-cyan-500"
+      className="mt-0.5 h-4 w-4 flex-shrink-0 text-purple-500"
       viewBox="0 0 20 20"
       fill="currentColor"
       aria-hidden="true"

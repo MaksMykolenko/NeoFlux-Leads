@@ -21,7 +21,7 @@ const REPLY_STATUS_STYLES: Record<ReplyStatus, string> = {
   Replied:
     "bg-rose-100 text-rose-700 hover:bg-rose-200 dark:bg-rose-500/15 dark:text-rose-300 dark:hover:bg-rose-500/25",
   Interested:
-    "bg-cyan-100 text-cyan-700 hover:bg-cyan-200 dark:bg-cyan-500/15 dark:text-cyan-300 dark:hover:bg-cyan-500/25",
+    "bg-purple-100 text-purple-700 hover:bg-purple-200 dark:bg-purple-500/15 dark:text-purple-300 dark:hover:bg-purple-500/25",
   Bounced:
     "bg-red-100 text-red-700 hover:bg-red-200 dark:bg-red-500/15 dark:text-red-300 dark:hover:bg-red-500/25",
 };
@@ -144,14 +144,14 @@ export function ReplyStatusEditor({
                 }}
                 className={`flex w-full items-center justify-between gap-2 px-3 py-1.5 text-left text-xs transition-colors hover:bg-zinc-50 dark:hover:bg-zinc-800 ${
                   isCurrent
-                    ? "font-semibold text-cyan-600 dark:text-cyan-400"
+                    ? "font-semibold text-purple-600 dark:text-purple-400"
                     : "text-zinc-700 dark:text-zinc-300"
                 }`}
               >
                 <span>{t(STATUS_LABEL_KEYS[s])}</span>
                 {isCurrent && (
                   <svg
-                    className="h-3 w-3 text-cyan-600"
+                    className="h-3 w-3 text-purple-600"
                     viewBox="0 0 20 20"
                     fill="currentColor"
                     aria-hidden="true"

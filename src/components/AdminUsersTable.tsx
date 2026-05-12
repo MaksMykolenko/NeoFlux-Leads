@@ -121,7 +121,7 @@ function UserRow({
               className="h-8 w-8 flex-shrink-0 rounded-full object-cover ring-1 ring-zinc-200 dark:ring-zinc-700"
             />
           ) : (
-            <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-cyan-100 text-xs font-medium text-cyan-700">
+            <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-purple-100 text-xs font-medium text-purple-700">
               {(user.displayName || user.username || user.email || "?")
                 .charAt(0)
                 .toUpperCase()}
@@ -145,7 +145,7 @@ function UserRow({
             value={role}
             onChange={(e) => handleRoleChange(e.target.value as Role)}
             disabled={isPending}
-            className="rounded-md border border-zinc-200 bg-white px-2 py-1 text-xs font-medium text-zinc-700 shadow-sm transition focus:border-cyan-500 focus:outline-none focus:ring-1 focus:ring-cyan-500 disabled:opacity-60 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-300"
+            className="rounded-md border border-zinc-200 bg-white px-2 py-1 text-xs font-medium text-zinc-700 shadow-sm transition focus:border-purple-500 focus:outline-none focus:ring-1 focus:ring-purple-500 disabled:opacity-60 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-300"
           >
             {ROLES.map((r) => (
               <option key={r} value={r}>
@@ -163,7 +163,7 @@ function UserRow({
           value={plan}
           onChange={(e) => handlePlanChange(e.target.value as PlanId)}
           disabled={isPending}
-          className="rounded-md border border-zinc-200 bg-white px-2 py-1 text-xs font-medium text-zinc-700 shadow-sm transition focus:border-cyan-500 focus:outline-none focus:ring-1 focus:ring-cyan-500 disabled:opacity-60 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-300"
+          className="rounded-md border border-zinc-200 bg-white px-2 py-1 text-xs font-medium text-zinc-700 shadow-sm transition focus:border-purple-500 focus:outline-none focus:ring-1 focus:ring-purple-500 disabled:opacity-60 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-300"
         >
           {PLAN_ORDER.map((id) => (
             <option key={id} value={id}>
@@ -205,7 +205,7 @@ function RoleBadge({ role }: { role: Role }) {
     role === "OWNER"
       ? "bg-amber-100 text-amber-800 ring-amber-200"
       : role === "ADMIN"
-      ? "bg-cyan-100 text-cyan-800 ring-cyan-200"
+      ? "bg-purple-100 text-purple-800 ring-purple-200"
       : "bg-zinc-100 text-zinc-700 ring-zinc-200";
   return (
     <span

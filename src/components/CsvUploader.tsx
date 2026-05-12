@@ -108,7 +108,7 @@ export default function CsvUploader() {
             {t("subtitle")}
           </p>
         </div>
-        <span className="inline-flex items-center rounded-full bg-cyan-100 px-2 py-0.5 text-[10px] font-medium uppercase tracking-wider text-cyan-700 dark:bg-cyan-500/15 dark:text-cyan-300">
+        <span className="inline-flex items-center rounded-full bg-purple-100 px-2 py-0.5 text-[10px] font-medium uppercase tracking-wider text-purple-700 dark:bg-purple-500/15 dark:text-purple-300">
           UNIVERSAL
         </span>
       </div>
@@ -117,7 +117,7 @@ export default function CsvUploader() {
         onDragOver={(e) => e.preventDefault()}
         onDrop={onDrop}
         onClick={() => fileRef.current?.click()}
-        className={`mt-4 flex cursor-pointer flex-col items-center justify-center gap-1 rounded-md border-2 border-dashed border-zinc-300 bg-zinc-50 px-4 py-6 text-center transition-all duration-200 hover:border-cyan-400 hover:bg-cyan-50/40 dark:border-zinc-700 dark:bg-zinc-950 dark:hover:border-cyan-500 dark:hover:bg-cyan-500/5 ${
+        className={`mt-4 flex cursor-pointer flex-col items-center justify-center gap-1 rounded-md border-2 border-dashed border-zinc-300 bg-zinc-50 px-4 py-6 text-center transition-all duration-200 hover:border-purple-400 hover:bg-purple-50/40 dark:border-zinc-700 dark:bg-zinc-950 dark:hover:border-purple-500 dark:hover:bg-purple-500/5 ${
           isPending ? "opacity-60" : ""
         }`}
       >

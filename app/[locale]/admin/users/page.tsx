@@ -129,7 +129,7 @@ function StatCard({
   return (
     <div
       className={`rounded-xl border bg-white p-5 shadow-sm ${
-        accent ? "border-cyan-200 ring-1 ring-cyan-100" : "border-zinc-200"
+        accent ? "border-purple-200 ring-1 ring-purple-100" : "border-zinc-200"
       }`}
     >
       <p className="text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
@@ -137,7 +137,7 @@ function StatCard({
       </p>
       <p
         className={`mt-2 text-3xl font-semibold tracking-tight ${
-          accent ? "text-cyan-700" : "text-zinc-900"
+          accent ? "text-purple-700" : "text-zinc-900"
         }`}
       >
         {value}
@@ -180,7 +180,7 @@ function PlanDistributionCard({
 function planAccent(plan: PlanId): string {
   switch (plan) {
     case "PRO":
-      return "bg-cyan-500";
+      return "bg-purple-500";
     case "AGENCY":
       return "bg-amber-500";
     default:

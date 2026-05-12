@@ -29,7 +29,7 @@ export default function ThemeToggle() {
       onClick={() => setTheme(next)}
       title={label}
       aria-label={label}
-      className="inline-flex h-8 w-8 items-center justify-center rounded-md text-zinc-500 transition-all duration-200 hover:bg-zinc-100 hover:text-zinc-900 active:scale-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-zinc-100"
+      className="inline-flex h-8 w-8 items-center justify-center rounded-md text-zinc-500 transition-all duration-200 hover:bg-zinc-100 hover:text-zinc-900 active:scale-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-500 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-zinc-100"
     >
       {!mounted ? (
         <PlaceholderIcon />
