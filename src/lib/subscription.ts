@@ -29,8 +29,9 @@ export interface Plan {
   description: string;
   highlights: string[];
   features: Record<FeatureKey, boolean>;
-  // Stripe Price ID для Checkout-сесії. null для STARTER (безкоштовно — без чекауту).
-  // Test mode IDs захардкоджені; для прода замініть на live IDs.
+  // Stripe Price ID (price_…) або Product ID (prod_…) для Checkout.
+  // Якщо prod_ — при створенні сесії обирається активна recurring-ціна продукту.
+  // Webhook зіставляє і price.id, і price.product з цим значенням.
   stripePriceId: string | null;
 }
 
@@ -76,7 +77,7 @@ export const PLANS: Record<PlanId, Plan> = {
       unlimitedAi: true,
       csvExport: false,
     },
-    stripePriceId: "price_1TW0l2JJgWmDrCZLlV8INSZz",
+    stripePriceId: "prod_UV0mNdVJs3O1ub",
   },
   AGENCY: {
     id: "AGENCY",
@@ -97,7 +98,7 @@ export const PLANS: Record<PlanId, Plan> = {
       unlimitedAi: true,
       csvExport: true,
     },
-    stripePriceId: "price_1TW0mWJJgWmDrCZLYwICUy1y",
+    stripePriceId: "prod_UV0oVIZZb3fA1s",
   },
 };
 
@@ -113,11 +114,47 @@ export function getPlanForUser(user: Pick<User, "plan">): Plan {
   return getPlanById(user.plan);
 }
 
-/** Зворотній lookup: Stripe priceId → PlanId. Повертає null для STARTER/невідомих. */
+/** Зворотній lookup: Stripe price.id або product id → PlanId. */
 export function getPlanIdByStripePriceId(priceId: string | null | undefined): PlanId | null {
   if (!priceId) return null;
   for (const id of PLAN_ORDER) {
     if (PLANS[id].stripePriceId === priceId) return id;
+  }
+  return null;
+}
+
+/**
+ * Lookup за об'єктом Price з підписки: спочатку price.id, потім price.product
+ * (коли в PLANS збережено prod_).
+ */
+export function getPlanIdFromStripePrice(
+  price: { id: string; product: unknown } | null | undefined,
+): PlanId | null {
+  if (!price) return null;
+  const byPrice = getPlanIdByStripePriceId(price.id);
+  if (byPrice) return byPrice;
+  const productId = stripeProductIdFromPriceProduct(price.product);
+  if (!productId) return null;
+  return getPlanIdByStripePriceId(productId);
+}
+
+function stripeProductIdFromPriceProduct(product: unknown): string | null {
+  if (typeof product === "string") return product;
+  if (
+    product &&
+    typeof product === "object" &&
+    "deleted" in product &&
+    (product as { deleted?: boolean }).deleted
+  ) {
+    return null;
+  }
+  if (
+    product &&
+    typeof product === "object" &&
+    "id" in product &&
+    typeof (product as { id: unknown }).id === "string"
+  ) {
+    return (product as { id: string }).id;
   }
   return null;
 }

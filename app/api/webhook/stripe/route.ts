@@ -3,7 +3,7 @@ import type Stripe from "stripe";
 import { prisma } from "@/src/lib/prisma";
 import { getStripe } from "@/src/lib/stripe";
 import {
-  getPlanIdByStripePriceId,
+  getPlanIdFromStripePrice,
   type PlanId,
 } from "@/src/lib/subscription";
 
@@ -130,8 +130,8 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
 
 async function handleSubscriptionUpdated(subscription: Stripe.Subscription) {
   const isActive = subscription.status === "active" || subscription.status === "trialing";
-  const priceId = subscription.items.data[0]?.price?.id;
-  const planId = isActive ? getPlanIdByStripePriceId(priceId ?? null) : null;
+  const price = subscription.items.data[0]?.price;
+  const planId = isActive ? getPlanIdFromStripePrice(price ?? undefined) : null;
 
   await applySubscriptionState({
     subscription,

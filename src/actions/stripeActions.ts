@@ -20,14 +20,43 @@ export interface PortalResult {
   errorCode?: "NO_CUSTOMER" | "NO_BASE_URL" | "STRIPE_ERROR";
 }
 
-const ALLOWED_PRICE_IDS = new Set(
+const ALLOWED_CHECKOUT_IDS = new Set(
   Object.values(PLANS)
     .map((p) => p.stripePriceId)
     .filter((id): id is string => typeof id === "string" && id.length > 0),
 );
 
-function isAllowedPriceId(value: string): boolean {
-  return ALLOWED_PRICE_IDS.has(value);
+function isAllowedCheckoutId(value: string): boolean {
+  return ALLOWED_CHECKOUT_IDS.has(value);
+}
+
+async function resolveCheckoutLinePriceId(
+  stripe: ReturnType<typeof getStripe>,
+  configuredId: string,
+): Promise<{ priceId: string } | { error: string }> {
+  if (configuredId.startsWith("price_")) {
+    return { priceId: configuredId };
+  }
+  if (!configuredId.startsWith("prod_")) {
+    return { error: "Невалідний Stripe price/product ID" };
+  }
+  const prices = await stripe.prices.list({
+    product: configuredId,
+    active: true,
+    limit: 20,
+  });
+  const recurring =
+    prices.data.find(
+      (p) => p.type === "recurring" && p.recurring?.interval === "month",
+    ) ?? prices.data.find((p) => p.type === "recurring");
+  const chosen = recurring ?? prices.data[0];
+  if (!chosen) {
+    return {
+      error:
+        "Для Stripe Product немає активної ціни — додайте recurring Price у Dashboard.",
+    };
+  }
+  return { priceId: chosen.id };
 }
 
 function safeLocale(value: string): string {
@@ -51,7 +80,7 @@ export async function createCheckoutSession(
   priceId: string,
   locale: string,
 ): Promise<CheckoutResult> {
-  if (!priceId || !isAllowedPriceId(priceId)) {
+  if (!priceId || !isAllowedCheckoutId(priceId)) {
     return { success: false, error: "Невалідний priceId" };
   }
 
@@ -78,9 +107,15 @@ export async function createCheckoutSession(
 
   try {
     const stripe = getStripe();
+    const resolved = await resolveCheckoutLinePriceId(stripe, priceId);
+    if ("error" in resolved) {
+      return { success: false, error: resolved.error };
+    }
+    const linePriceId = resolved.priceId;
+
     const session = await stripe.checkout.sessions.create({
       mode: "subscription",
-      line_items: [{ price: priceId, quantity: 1 }],
+      line_items: [{ price: linePriceId, quantity: 1 }],
       client_reference_id: user.id,
       metadata: {
         userId: user.id,
