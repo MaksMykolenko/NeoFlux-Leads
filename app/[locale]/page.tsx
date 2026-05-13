@@ -126,7 +126,11 @@ export default async function Home({
 
   return (
     <div className="min-h-screen bg-zinc-50 dark:bg-flux-bg">
-      <div className="mx-auto max-w-4xl px-4 py-12 sm:px-6 lg:px-8">
+      <div
+        className={`mx-auto px-4 py-12 sm:px-6 lg:px-8 ${
+          isBoard ? "max-w-[88rem]" : "max-w-4xl"
+        }`}
+      >
         {showCheckoutSuccess && <CheckoutSuccessBanner />}
         {missingDbEnv && (
           <DatabaseConfigBanner variant="missing_env" />
@@ -185,11 +189,16 @@ export default async function Home({
 
         <div className="mt-10" id="tour-leads-table">
           {isBoard ? (
-            <div>
-              <div className="mb-4 flex items-center justify-between gap-3">
-                <h2 className="text-base font-medium text-zinc-900 dark:text-zinc-50">
-                  {t("boardTitle")}
-                </h2>
+            <div className="overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-sm dark:border-flux-border dark:bg-flux-card">
+              <div className="flex flex-col gap-3 border-b border-zinc-200 px-5 py-4 dark:border-flux-border sm:flex-row sm:items-center sm:justify-between sm:gap-4">
+                <div className="min-w-0">
+                  <h2 className="text-base font-semibold text-zinc-900 dark:text-zinc-50">
+                    {t("boardTitle")}
+                  </h2>
+                  <p className="mt-1 text-xs leading-relaxed text-zinc-500 dark:text-zinc-400">
+                    {t("boardSubtitle")}
+                  </p>
+                </div>
                 <LeadViewToggle active="board" />
               </div>
               <LeadKanbanBoard leads={kanbanLeads} />

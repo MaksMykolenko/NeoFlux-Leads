@@ -7,9 +7,14 @@ import {
   Droppable,
   type DropResult,
 } from "@hello-pangea/dnd";
-import { useRouter } from "@/src/i18n/navigation";
 import { useTranslations } from "next-intl";
-import { LEAD_STATUSES, type LeadStatus } from "@/src/lib/leadStatus";
+import { Link, useRouter } from "@/src/i18n/navigation";
+import {
+  KANBAN_COLUMN_ACCENT,
+  KANBAN_FUNNEL_SEGMENT,
+  LEAD_STATUSES,
+  type LeadStatus,
+} from "@/src/lib/leadStatus";
 import { LeadMode } from "@/src/lib/leadMode";
 import { updateLeadStatus } from "@/src/actions/statusActions";
 
@@ -30,14 +35,8 @@ interface LeadKanbanBoardProps {
 type OptimisticUpdate = { id: string; newStatus: string };
 
 /**
- * Кіберпанк-мінімалістична канбан-дошка лідів.
- *
- * Темна палітра gunmetal grey + строгі фіолетові акценти. Без glow/neon —
- * лише чисті 1px бордери і пласкі pill-бейджі. Drag-and-drop через
- * @hello-pangea/dnd: useOptimistic для миттєвого UI, server action у
- * transition оновлює БД, router.refresh() підтягує canonical стан. На
- * помилці — оптимістичний апдейт автоматично відкочується (це гарантує
- * сам useOptimistic при завершенні transition без зміни props).
+ * Канбан-воронка лідів: drag-and-drop через @hello-pangea/dnd, useOptimistic
+ * для миттєвого UI, server action оновлює БД.
  */
 export default function LeadKanbanBoard({ leads }: LeadKanbanBoardProps) {
   const t = useTranslations("Kanban");
@@ -54,7 +53,10 @@ export default function LeadKanbanBoard({ leads }: LeadKanbanBoardProps) {
     ),
   );
 
-  const grouped = useMemo(() => groupByStatus(optimisticLeads), [optimisticLeads]);
+  const grouped = useMemo(
+    () => groupByStatus(optimisticLeads),
+    [optimisticLeads],
+  );
 
   function onDragEnd(result: DropResult) {
     const { source, destination, draggableId } = result;
@@ -70,9 +72,6 @@ export default function LeadKanbanBoard({ leads }: LeadKanbanBoardProps) {
     setError(null);
 
     startTransition(async () => {
-      // Sync optimistic update inside the transition — UI flips immediately,
-      // useOptimistic auto-reverts if the transition resolves without props
-      // changing (i.e. server action failed → no router.refresh()).
       applyOptimistic({ id: draggableId, newStatus });
       const res = await updateLeadStatus(draggableId, newStatus);
       if (!res.success) {
@@ -85,21 +84,46 @@ export default function LeadKanbanBoard({ leads }: LeadKanbanBoardProps) {
 
   if (optimisticLeads.length === 0) {
     return (
-      <div className="rounded-md border border-zinc-200 bg-white p-12 text-center dark:border-flux-border dark:bg-flux-card">
-        <p className="text-sm text-zinc-500 dark:text-zinc-400">{t("empty")}</p>
+      <div className="flex flex-col items-center justify-center gap-3 px-6 py-16 text-center">
+        <div className="flex h-14 w-14 items-center justify-center rounded-2xl border border-zinc-200 bg-gradient-to-br from-zinc-50 to-zinc-100 shadow-inner dark:border-flux-border dark:from-flux-card dark:to-flux-bg/80">
+          <svg
+            className="h-7 w-7 text-zinc-400 dark:text-zinc-500"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+            aria-hidden
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={1.5}
+              d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zM13.5 18.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z"
+            />
+          </svg>
+        </div>
+        <p className="max-w-sm text-sm text-zinc-600 dark:text-zinc-400">
+          {t("empty")}
+        </p>
       </div>
     );
   }
 
+  const total = optimisticLeads.length;
+
   return (
-    <div className="rounded-md border border-zinc-200 bg-zinc-50 dark:border-flux-border dark:bg-flux-card">
+    <div>
       {error && (
-        <div className="border-b border-red-200 bg-red-50 px-4 py-2 text-xs text-red-700 dark:border-red-500/30 dark:bg-red-500/10 dark:text-red-300">
+        <div className="border-b border-red-200 bg-red-50 px-5 py-2.5 text-xs text-red-700 dark:border-red-500/30 dark:bg-red-500/10 dark:text-red-300">
           {error}
         </div>
       )}
+
+      <div className="border-b border-zinc-100 bg-gradient-to-b from-zinc-50/95 to-white px-5 py-4 dark:border-flux-border dark:from-flux-card/90 dark:to-flux-bg/50">
+        <FunnelSummary grouped={grouped} total={total} />
+      </div>
+
       <DragDropContext onDragEnd={onDragEnd}>
-        <div className="flex gap-3 overflow-x-auto p-3">
+        <div className="flex gap-4 overflow-x-auto bg-zinc-50/40 px-4 pb-4 pt-4 dark:bg-flux-bg/40">
           {LEAD_STATUSES.map((status) => (
             <KanbanColumn
               key={status}
@@ -114,6 +138,50 @@ export default function LeadKanbanBoard({ leads }: LeadKanbanBoardProps) {
   );
 }
 
+function FunnelSummary({
+  grouped,
+  total,
+}: {
+  grouped: Record<LeadStatus, KanbanLead[]>;
+  total: number;
+}) {
+  const t = useTranslations("Kanban");
+
+  return (
+    <div className="space-y-2.5">
+      <div className="flex flex-wrap items-end justify-between gap-2">
+        <p className="text-[11px] font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
+          {t("funnelDistribution")}
+        </p>
+        <p className="text-xs tabular-nums text-zinc-600 dark:text-zinc-300">
+          {t("funnelTotal", { count: total })}
+        </p>
+      </div>
+      <div
+        className="flex h-3 w-full overflow-hidden rounded-full bg-zinc-200/90 ring-1 ring-inset ring-zinc-300/40 dark:bg-zinc-800 dark:ring-zinc-700/50"
+        role="img"
+        aria-label={t("funnelDistribution")}
+      >
+        {LEAD_STATUSES.map((status) => {
+          const n = grouped[status]?.length ?? 0;
+          if (n === 0) return null;
+          return (
+            <div
+              key={status}
+              title={`${t(`status.${status}`)}: ${n}`}
+              className={`${KANBAN_FUNNEL_SEGMENT[status]} min-w-[6px] shadow-sm transition-[flex-grow] duration-300`}
+              style={{ flexGrow: n, flexBasis: 0 }}
+            />
+          );
+        })}
+      </div>
+      <p className="text-[11px] leading-relaxed text-zinc-500 dark:text-zinc-400">
+        {t("funnelHint")}
+      </p>
+    </div>
+  );
+}
+
 function KanbanColumn({
   status,
   leads,
@@ -124,13 +192,17 @@ function KanbanColumn({
   isPending: boolean;
 }) {
   const t = useTranslations("Kanban");
+  const accent = KANBAN_COLUMN_ACCENT[status];
+
   return (
-    <div className="flex w-72 flex-shrink-0 flex-col">
-      <div className="flex items-center justify-between gap-2 px-2 py-2">
-        <h3 className="text-xs font-semibold uppercase tracking-wider text-zinc-700 dark:text-zinc-300">
+    <div
+      className={`flex w-[17.5rem] flex-shrink-0 flex-col overflow-hidden rounded-xl border border-zinc-200/90 bg-white shadow-sm dark:border-flux-border dark:bg-flux-card ${accent}`}
+    >
+      <div className="flex items-center justify-between gap-2 border-b border-zinc-100 bg-zinc-50/80 px-3 py-2.5 dark:border-flux-border dark:bg-flux-card-2/50">
+        <h3 className="text-[11px] font-semibold uppercase tracking-wider text-zinc-800 dark:text-zinc-200">
           {t(`status.${status}`)}
         </h3>
-        <span className="inline-flex h-5 min-w-[20px] items-center justify-center rounded-full bg-zinc-200 px-1.5 text-[10px] font-medium tabular-nums text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400 ">
+        <span className="inline-flex h-6 min-w-[1.5rem] items-center justify-center rounded-full bg-white px-2 text-[11px] font-semibold tabular-nums text-zinc-600 shadow-sm ring-1 ring-zinc-200/80 dark:bg-zinc-800 dark:text-zinc-300 dark:ring-zinc-700">
           {leads.length}
         </span>
       </div>
@@ -139,10 +211,10 @@ function KanbanColumn({
           <div
             ref={provided.innerRef}
             {...provided.droppableProps}
-            className={`flex min-h-[120px] flex-col gap-2 rounded-md border p-2 transition-colors ${
+            className={`flex min-h-[220px] flex-col gap-2.5 p-2.5 transition-colors ${
               snapshot.isDraggingOver
-                ? "border-purple-400 bg-purple-50 dark:border-purple-500/60 dark:bg-purple-500/10"
-                : "border-zinc-200 bg-white/60 dark:border-flux-border dark:bg-flux-bg/40"
+                ? "bg-violet-50/90 dark:bg-violet-500/10"
+                : "bg-zinc-50/50 dark:bg-flux-bg/30"
             }`}
           >
             {leads.map((lead, index) => (
@@ -158,10 +230,10 @@ function KanbanColumn({
                     {...provided.draggableProps}
                     {...provided.dragHandleProps}
                     style={provided.draggableProps.style}
-                    className={`select-none rounded-md border bg-white p-3 text-sm shadow-sm transition-colors dark:bg-flux-card ${
+                    className={`select-none rounded-lg border bg-white p-3.5 text-sm shadow-sm ring-1 ring-black/[0.03] transition-all dark:bg-flux-card dark:ring-white/5 ${
                       snapshot.isDragging
-                        ? "border-purple-500 ring-2 ring-purple-500/20"
-                        : "border-zinc-200 hover:border-zinc-300 dark:border-flux-border dark:hover:border-zinc-700"
+                        ? "border-violet-500 shadow-lg ring-2 ring-violet-500/25"
+                        : "border-zinc-200/90 hover:border-zinc-300 hover:shadow-md dark:border-flux-border dark:hover:border-zinc-600"
                     }`}
                   >
                     <KanbanCard lead={lead} />
@@ -171,8 +243,8 @@ function KanbanColumn({
             ))}
             {provided.placeholder}
             {leads.length === 0 && !snapshot.isDraggingOver && (
-              <div className="flex flex-1 items-center justify-center py-4">
-                <span className="text-[11px] text-zinc-400 dark:text-zinc-600 ">
+              <div className="flex flex-1 items-center justify-center py-8">
+                <span className="rounded-md border border-dashed border-zinc-200/80 bg-white/60 px-3 py-2 text-[11px] text-zinc-400 dark:border-zinc-700 dark:bg-flux-card/40 dark:text-zinc-500">
                   {t("dropHere")}
                 </span>
               </div>
@@ -185,11 +257,13 @@ function KanbanColumn({
 }
 
 function KanbanCard({ lead }: { lead: KanbanLead }) {
+  const t = useTranslations("Kanban");
   const subtitle = lead.category || lead.city || null;
+
   return (
     <div className="flex flex-col gap-2">
       <div className="flex items-start justify-between gap-2">
-        <p className="line-clamp-2 text-sm font-medium leading-snug text-zinc-900 dark:text-zinc-100 ">
+        <p className="line-clamp-2 text-sm font-semibold leading-snug text-zinc-900 dark:text-zinc-50">
           {lead.companyName}
         </p>
         <ScoreIndicator score={lead.score} />
@@ -199,14 +273,18 @@ function KanbanCard({ lead }: { lead: KanbanLead }) {
           {subtitle}
         </p>
       )}
-      <div className="flex items-center justify-between gap-2 pt-1">
+      <div className="flex items-center justify-between gap-2 border-t border-zinc-100 pt-2 dark:border-flux-border">
         <ModeBadge mode={lead.mode} />
-        <a
+        <Link
           href={`/leads/${lead.id}`}
-          className="text-[10px] font-medium uppercase tracking-wider text-zinc-500 transition-colors hover:text-purple-600 dark:text-zinc-400 dark:hover:text-purple-400"
+          title={t("openLead")}
+          className="inline-flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-md text-zinc-400 transition-colors hover:bg-violet-50 hover:text-violet-600 dark:hover:bg-violet-500/15 dark:hover:text-violet-300"
         >
-          →
-        </a>
+          <span className="sr-only">{t("openLead")}</span>
+          <span aria-hidden className="text-sm font-medium">
+            →
+          </span>
+        </Link>
       </div>
     </div>
   );

@@ -32,3 +32,23 @@ export function getStatusClasses(status: string): string {
   if (isLeadStatus(status)) return STATUS_STYLES[status];
   return "bg-zinc-100 text-zinc-700 ring-zinc-200 dark:bg-zinc-800 dark:text-zinc-300 dark:ring-zinc-700";
 }
+
+/** Ліва смуга колонки канбану — узгоджено з палітрою статусів. */
+export const KANBAN_COLUMN_ACCENT: Record<LeadStatus, string> = {
+  New: "border-l-4 border-l-blue-500",
+  Qualified: "border-l-4 border-l-violet-500",
+  Contacted: "border-l-4 border-l-amber-500",
+  Replied: "border-l-4 border-l-rose-500",
+  Won: "border-l-4 border-l-emerald-500",
+  Lost: "border-l-4 border-l-red-500",
+};
+
+/** Сегменти стрічки воронки (розподіл за статусами). */
+export const KANBAN_FUNNEL_SEGMENT: Record<LeadStatus, string> = {
+  New: "bg-blue-500 dark:bg-blue-400",
+  Qualified: "bg-violet-500 dark:bg-violet-400",
+  Contacted: "bg-amber-500 dark:bg-amber-400",
+  Replied: "bg-rose-500 dark:bg-rose-400",
+  Won: "bg-emerald-500 dark:bg-emerald-400",
+  Lost: "bg-red-500 dark:bg-red-400",
+};

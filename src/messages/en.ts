@@ -74,6 +74,8 @@ const messages = {
     colAudience: "Audience",
     colAudit: "Audit",
     boardTitle: "Lead pipeline",
+    boardSubtitle:
+      "Every mode on one board: drag cards across columns to update status. Use the arrow on a card to open the lead.",
   },
   LeadViewToggle: {
     ariaLabel: "Lead view mode",
@@ -82,8 +84,13 @@ const messages = {
   },
   Kanban: {
     empty: "No leads yet — create or import some.",
+    funnelTotal: "On the board: {count}",
+    funnelDistribution: "Breakdown by status",
+    funnelHint:
+      "Drag a card to another column to save the new status automatically. Up to 200 most recent leads.",
     dropHere: "Drop here",
     updateFailed: "Failed to update status. Try again.",
+    openLead: "Open lead",
     status: {
       New: "New",
       Qualified: "Qualified",
