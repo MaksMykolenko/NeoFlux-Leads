@@ -1,7 +1,13 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { saveSmtpSettings, sendTestEmail } from "@/src/actions/userActions";
+import { useTranslations } from "next-intl";
+import {
+  saveSmtpSettings,
+  sendTestEmail,
+  sendTestEmailWithAttachment,
+  type SendTestEmailResult,
+} from "@/src/actions/userActions";
 
 type Mode = "platform" | "custom" | "test";
 
@@ -20,6 +26,7 @@ interface SmtpSettingsFormProps {
 const PASSWORD_PLACEHOLDER = "••••••••";
 
 export default function SmtpSettingsForm({ user }: SmtpSettingsFormProps) {
+  const t = useTranslations("SmtpSettingsForm");
   const [mode, setMode] = useState<Mode>(
     user.usePlatformSmtp ? "platform" : "custom",
   );
@@ -92,10 +99,11 @@ export default function SmtpSettingsForm({ user }: SmtpSettingsFormProps) {
 
   return (
     <div className="space-y-5 rounded-xl border border-zinc-200 bg-white p-6 shadow-sm dark:border-flux-border dark:bg-flux-card">
-      <ModeTabs mode={mode} onChange={setMode} disabled={isPending} />
+      <ModeTabs mode={mode} onChange={setMode} disabled={isPending} t={t} />
 
       {mode === "test" ? (
         <TestPanel
+          t={t}
           defaultEmail={user.fromEmail ?? ""}
           missingFields={missingFields}
           savedMode={savedMode}
@@ -240,10 +248,12 @@ function ModeTabs({
   mode,
   onChange,
   disabled,
+  t,
 }: {
   mode: Mode;
   onChange: (mode: Mode) => void;
   disabled: boolean;
+  t: (key: string, values?: Record<string, string | number>) => string;
 }) {
   return (
     <div
@@ -255,22 +265,22 @@ function ModeTabs({
         active={mode === "platform"}
         onClick={() => onChange("platform")}
         disabled={disabled}
-        label="Простий режим"
-        sublabel="Рекомендовано"
+        label={t("modePlatform")}
+        sublabel={t("modePlatformSub")}
       />
       <ModeTab
         active={mode === "custom"}
         onClick={() => onChange("custom")}
         disabled={disabled}
-        label="Розширений режим"
-        sublabel="Власний SMTP"
+        label={t("modeCustom")}
+        sublabel={t("modeCustomSub")}
       />
       <ModeTab
         active={mode === "test"}
         onClick={() => onChange("test")}
         disabled={disabled}
-        label="Тест"
-        sublabel="Надіслати лист собі"
+        label={t("modeTest")}
+        sublabel={t("modeTestSub")}
       />
     </div>
   );
@@ -384,15 +394,19 @@ function Field({
  * щоб одразу було видно, що треба полагодити.
  */
 function TestPanel({
+  t,
   defaultEmail,
   missingFields,
   savedMode,
 }: {
+  t: (key: string, values?: Record<string, string | number>) => string;
   defaultEmail: string;
   missingFields: string[];
   savedMode: "platform" | "custom";
 }) {
   const [email, setEmail] = useState(defaultEmail);
+  const [attachmentFile, setAttachmentFile] = useState<File | null>(null);
+  const [sendKind, setSendKind] = useState<"plain" | "file" | null>(null);
   const [status, setStatus] = useState<{
     type: "success" | "error";
     msg: string;
@@ -400,71 +414,107 @@ function TestPanel({
   const [isPending, startTransition] = useTransition();
 
   const isReady = missingFields.length === 0;
+  const modeLabel =
+    savedMode === "platform" ? t("testModePlatform") : t("testModeCustom");
+  const tabHint =
+    savedMode === "platform" ? t("testTabSimple") : t("testTabAdvanced");
 
-  function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
+  function applySmtpHints(result: SendTestEmailResult): string {
+    let msg = result.error ?? t("errors.generic");
+    if (result.code === "NO_SMTP") {
+      msg = `${msg}\n\n${t("testErrorNoSmtpHint", { tab: tabHint })}`;
+    } else if (result.code === "PLATFORM_NOT_CONFIGURED") {
+      msg = `${msg}\n\n${t("testErrorPlatformHint")}`;
+    }
+    return msg;
+  }
+
+  function sendPlain() {
     setStatus(null);
     const trimmed = email.trim();
     if (!trimmed) {
-      setStatus({ type: "error", msg: "Введіть email одержувача" });
+      setStatus({ type: "error", msg: t("testErrorRecipient") });
       return;
     }
+    setSendKind("plain");
     startTransition(async () => {
-      const result = await sendTestEmail(trimmed);
-      if (result.success) {
-        setStatus({
-          type: "success",
-          msg: `Тестовий лист відправлено на ${trimmed}. Перевір інбокс (та Спам).`,
-        });
-      } else {
-        let msg = result.error ?? "Не вдалося відправити тестовий лист";
-        if (result.code === "NO_SMTP") {
-          msg = `${msg}\n\nПерейдіть на вкладку "${savedMode === "platform" ? "Простий" : "Розширений"} режим", заповніть поля і натисніть Зберегти.`;
-        } else if (result.code === "PLATFORM_NOT_CONFIGURED") {
-          msg = `${msg}\n\nЦе налаштовує адмін сервера (PLATFORM_SMTP_* у .env). Або переключіться у "Розширений режим" і вкажіть свій SMTP.`;
+      try {
+        const result = await sendTestEmail(trimmed);
+        if (result.success) {
+          setStatus({
+            type: "success",
+            msg: t("testSuccess", { email: trimmed }),
+          });
+        } else {
+          setStatus({ type: "error", msg: applySmtpHints(result) });
         }
-        setStatus({ type: "error", msg });
+      } finally {
+        setSendKind(null);
+      }
+    });
+  }
+
+  function sendWithAttachment() {
+    setStatus(null);
+    const trimmed = email.trim();
+    if (!trimmed) {
+      setStatus({ type: "error", msg: t("testErrorRecipient") });
+      return;
+    }
+    if (!attachmentFile) {
+      setStatus({
+        type: "error",
+        msg: t("testErrorPickFile"),
+      });
+      return;
+    }
+    setSendKind("file");
+    startTransition(async () => {
+      try {
+        const fd = new FormData();
+        fd.append("to", trimmed);
+        fd.append("audio", attachmentFile);
+        const result = await sendTestEmailWithAttachment(fd);
+        if (result.success) {
+          setStatus({
+            type: "success",
+            msg: t("testSuccessWithFile", { email: trimmed }),
+          });
+        } else {
+          setStatus({ type: "error", msg: applySmtpHints(result) });
+        }
+      } finally {
+        setSendKind(null);
       }
     });
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-5">
+    <div className="space-y-5">
       {isReady ? (
         <div className="rounded-lg border border-purple-200 bg-purple-50/60 px-4 py-3 text-sm dark:border-flux-purple-ring dark:bg-flux-purple-tint">
           <p className="font-semibold text-purple-900 dark:text-flux-purple-soft">
-            Тестова відправка
+            {t("testReadyTitle")}
           </p>
           <p className="mt-1 text-xs text-purple-800/90 dark:text-flux-purple-soft/85">
-            Лист піде через{" "}
-            {savedMode === "platform"
-              ? "платформений SMTP (як у Простому режимі)"
-              : "твій власний SMTP (як у Розширеному)"}{" "}
-            — те, що збережено зараз у БД. Натискай Надіслати.
+            {t("testReadyBody", { mode: modeLabel })}
           </p>
         </div>
       ) : (
         <div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm dark:border-amber-500/30 dark:bg-amber-500/10">
           <p className="font-semibold text-amber-900 dark:text-amber-300">
-            Конфіг не збережено повністю
+            {t("testIncompleteTitle")}
           </p>
           <p className="mt-1 text-xs text-amber-800/90 dark:text-amber-200/85">
-            Бракує:{" "}
-            <span className="font-medium">{missingFields.join(", ")}</span>.
-            Перейди на вкладку{" "}
-            <span className="font-semibold">
-              «{savedMode === "platform" ? "Простий" : "Розширений"} режим»
-            </span>
-            , заповни і натисни Зберегти. Кнопку нижче все одно можна натиснути
-            — сервер покаже точну причину невдачі.
+            {t("testIncompleteBody", {
+              missing: missingFields.join(", "),
+              tab: tabHint,
+            })}
           </p>
         </div>
       )}
 
-      <Field
-        label="Email одержувача"
-        hint="можна вказати свій email або будь-яку іншу адресу для перевірки доставки"
-      >
+      <Field label={t("testRecipientLabel")} hint={t("testRecipientHint")}>
         <input
           type="email"
           value={email}
@@ -476,17 +526,58 @@ function TestPanel({
         />
       </Field>
 
-      <div className="flex items-center justify-between gap-4 border-t border-zinc-100 pt-4 dark:border-flux-border">
+      <div className="rounded-lg border border-zinc-200 bg-zinc-50/80 px-4 py-3 dark:border-flux-border dark:bg-flux-bg/80">
+        <Field label={t("testAttachmentLabel")} hint={t("testAttachmentHint")}>
+          <div className="flex flex-wrap items-center gap-2">
+            <input
+              type="file"
+              accept="audio/*,.mp3,.wav,.m4a,.flac,.ogg"
+              className={`${inputClass} py-1.5 file:mr-3 file:rounded-md file:border-0 file:bg-purple-100 file:px-2.5 file:py-1 file:text-xs file:font-medium file:text-purple-800 dark:file:bg-purple-500/20 dark:file:text-purple-200`}
+              disabled={isPending}
+              onChange={(e) => {
+                const f = e.target.files?.[0];
+                setAttachmentFile(f ?? null);
+              }}
+            />
+            {attachmentFile && (
+              <button
+                type="button"
+                onClick={() => setAttachmentFile(null)}
+                className="text-xs font-medium text-zinc-500 underline hover:text-zinc-800 dark:text-zinc-400 dark:hover:text-zinc-200"
+              >
+                {t("testAttachmentClear")}
+              </button>
+            )}
+          </div>
+        </Field>
+      </div>
+
+      <div className="flex flex-col gap-3 border-t border-zinc-100 pt-4 dark:border-flux-border sm:flex-row sm:items-end sm:justify-between">
         <p className="text-xs text-zinc-500 dark:text-zinc-400">
-          Тестовий лист має невеликий підпис Flux Leads — як і всі outreach-листи.
+          {t("testFooterNote")}
         </p>
-        <button
-          type="submit"
-          disabled={isPending}
-          className="inline-flex items-center justify-center gap-2 rounded-lg bg-zinc-900 px-4 py-2 text-sm font-medium text-white shadow-sm transition hover:bg-zinc-800 disabled:cursor-not-allowed disabled:opacity-60 dark:bg-flux-purple dark:shadow-[0_4px_20px_rgba(106,0,255,0.4)] dark:hover:bg-flux-purple-hover"
-        >
-          {isPending ? "Відправляю..." : "Надіслати тестовий лист"}
-        </button>
+        <div className="flex flex-shrink-0 flex-wrap gap-2">
+          <button
+            type="button"
+            onClick={sendPlain}
+            disabled={isPending}
+            className="inline-flex items-center justify-center gap-2 rounded-lg bg-zinc-900 px-4 py-2 text-sm font-medium text-white shadow-sm transition hover:bg-zinc-800 disabled:cursor-not-allowed disabled:opacity-60 dark:bg-zinc-800 dark:hover:bg-zinc-700"
+          >
+            {isPending && sendKind === "plain"
+              ? t("testSubmitPending")
+              : t("testSubmit")}
+          </button>
+          <button
+            type="button"
+            onClick={sendWithAttachment}
+            disabled={isPending || !attachmentFile}
+            className="inline-flex items-center justify-center gap-2 rounded-lg bg-purple-600 px-4 py-2 text-sm font-medium text-white shadow-sm transition hover:bg-purple-700 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-flux-purple dark:hover:bg-flux-purple-hover"
+          >
+            {isPending && sendKind === "file"
+              ? t("testSubmitWithFilePending")
+              : t("testSubmitWithFile")}
+          </button>
+        </div>
       </div>
 
       {status && (
@@ -500,6 +591,6 @@ function TestPanel({
           {status.msg}
         </div>
       )}
-    </form>
+    </div>
   );
 }

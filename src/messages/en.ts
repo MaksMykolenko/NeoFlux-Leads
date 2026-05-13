@@ -248,6 +248,42 @@ const messages = {
       user: "Username is required",
       email: "Invalid from email",
     },
+    modePlatform: "Simple mode",
+    modePlatformSub: "Recommended",
+    modeCustom: "Advanced mode",
+    modeCustomSub: "Your SMTP",
+    modeTest: "Test",
+    modeTestSub: "Email & MP3 attachment",
+    testReadyTitle: "Test send",
+    testReadyBody:
+      "Mail goes via {mode} — whatever is saved in the database now. If you pick a file below, the attachment uses the same path as Beat mode «Send via email».",
+    testModePlatform: "platform SMTP (Simple mode)",
+    testModeCustom: "your own SMTP (Advanced mode)",
+    testIncompleteTitle: "Configuration not fully saved",
+    testIncompleteBody:
+      "Missing: {missing}. Open the «{tab}» tab, fill in the fields, and press Save. You can still press the button below — the server will return the exact error.",
+    testTabSimple: "Simple",
+    testTabAdvanced: "Advanced",
+    testRecipientLabel: "Recipient email",
+    testRecipientHint: "Your inbox or any address to verify delivery",
+    testAttachmentLabel: "Audio attachment (optional)",
+    testAttachmentHint:
+      "MP3 / WAV / M4A / FLAC / OGG, up to 10 MB — same as Beat «Send via email». If empty, a plain text test is sent.",
+    testAttachmentClear: "Remove file",
+    testFooterNote: "Test messages include the Flux Leads footer like real outreach.",
+    testSubmit: "Send test email",
+    testSubmitWithFile: "Send test with attachment",
+    testSubmitPending: "Sending…",
+    testSubmitWithFilePending: "Sending with file…",
+    testSuccess: "Test email sent to {email}. Check inbox (and Spam).",
+    testSuccessWithFile:
+      "Test email with audio sent to {email}. Open the attachment in your client; check Spam if needed.",
+    testErrorRecipient: "Enter a recipient email",
+    testErrorPickFile: "Choose an audio file to test with attachment",
+    testErrorNoSmtpHint:
+      "Open the «{tab}» tab, fill in the fields, and press Save.",
+    testErrorPlatformHint:
+      "Ask your admin to set PLATFORM_SMTP_* in .env, or switch to Advanced mode and use your own SMTP.",
   },
   Pricing: {
     back: "Back to workspace",

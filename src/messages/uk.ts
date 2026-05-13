@@ -248,6 +248,44 @@ const messages = {
       user: "Username обов'язковий",
       email: "Невалідний From Email",
     },
+    modePlatform: "Простий режим",
+    modePlatformSub: "Рекомендовано",
+    modeCustom: "Розширений режим",
+    modeCustomSub: "Власний SMTP",
+    modeTest: "Тест",
+    modeTestSub: "Лист і вкладення MP3",
+    testReadyTitle: "Тестова відправка",
+    testReadyBody:
+      "Лист піде через {mode} — те, що збережено зараз у базі. Якщо обрати файл нижче, вкладення піде так само, як у режимі «Біти».",
+    testModePlatform: "платформений SMTP (Простий режим)",
+    testModeCustom: "ваш власний SMTP (Розширений режим)",
+    testIncompleteTitle: "Конфіг не збережено повністю",
+    testIncompleteBody:
+      "Бракує: {missing}. Перейдіть на вкладку «{tab}», заповніть поля і натисніть «Зберегти». Кнопку нижче все одно можна натиснути — сервер покаже точну причину.",
+    testTabSimple: "Простий",
+    testTabAdvanced: "Розширений",
+    testRecipientLabel: "Email одержувача",
+    testRecipientHint:
+      "Свій email або будь-яка адреса для перевірки доставки",
+    testAttachmentLabel: "Аудіо для вкладення (опційно)",
+    testAttachmentHint:
+      "MP3 / WAV / M4A / FLAC / OGG, до 10 MB — як у «Надіслати на Email» для бітів. Якщо файл не обрано, піде звичайний текстовий тест.",
+    testAttachmentClear: "Прибрати файл",
+    testFooterNote:
+      "Тестовий лист має підпис Flux Leads — як і outreach-листи.",
+    testSubmit: "Надіслати тестовий лист",
+    testSubmitWithFile: "Надіслати тест з вкладенням",
+    testSubmitPending: "Відправляю…",
+    testSubmitWithFilePending: "Відправляю з файлом…",
+    testSuccess: "Тестовий лист відправлено на {email}. Перевірте інбокс (і Спам).",
+    testSuccessWithFile:
+      "Тестовий лист з аудіо-вкладенням відправлено на {email}. Перевірте вкладення в клієнті та Спам.",
+    testErrorRecipient: "Введіть email одержувача",
+    testErrorPickFile: "Оберіть аудіо-файл для тесту з вкладенням",
+    testErrorNoSmtpHint:
+      "Перейдіть на вкладку «{tab}», заповніть поля і натисніть «Зберегти».",
+    testErrorPlatformHint:
+      "Це налаштовує адмін сервера (PLATFORM_SMTP_* у .env). Або увімкніть «Розширений режим» і вкажіть свій SMTP.",
   },
   Pricing: {
     back: "Назад до робочого простору",

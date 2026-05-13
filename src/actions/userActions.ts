@@ -4,6 +4,7 @@ import { revalidateLocalizedPath } from "@/src/i18n/revalidateLocalized";
 import { encrypt } from "@/src/lib/crypto";
 import { sendUserEmail } from "@/src/lib/mailer";
 import { prisma } from "@/src/lib/prisma";
+import { validateBeatEmailAudioFile } from "@/src/lib/beatAttachmentRules";
 import { getRequestUserId } from "@/src/lib/session";
 
 export interface SmtpSettingsInput {
@@ -151,6 +152,65 @@ export async function sendTestEmail(
   ].join("\n");
 
   const result = await sendUserEmail(userId, target, subject, body);
+
+  if (result.success) {
+    return { success: true, messageId: result.messageId };
+  }
+  return { success: false, error: result.error, code: result.code };
+}
+
+/**
+ * Тестовий лист **із аудіо-вкладенням** — той самий шлях, що `sendBeatViaEmail`
+ * (sendUserEmail + attachments), без створення ліда в CRM.
+ */
+export async function sendTestEmailWithAttachment(
+  formData: FormData,
+): Promise<SendTestEmailResult> {
+  const userId = await getRequestUserId();
+  if (!userId) return { success: false, error: "Не авторизовано" };
+
+  const toRaw = formData.get("to");
+  if (typeof toRaw !== "string" || !toRaw.trim()) {
+    return { success: false, error: "Відсутній email одержувача" };
+  }
+  const target = toRaw.trim();
+  if (!EMAIL_REGEX.test(target)) {
+    return { success: false, error: "Невалідний email одержувача" };
+  }
+
+  const validated = validateBeatEmailAudioFile(formData.get("audio"));
+  if (!validated.ok) {
+    return {
+      success: false,
+      error: validated.error,
+      code: validated.reason,
+    };
+  }
+  const audioEntry = validated.file;
+  const declaredMime = audioEntry.type?.toLowerCase() ?? "";
+
+  const subject = "[TEST] Flux Leads — лист з аудіо-вкладенням";
+  const body = [
+    "Привіт!",
+    "",
+    "Це тестовий лист із прикріпленим файлом — той самий шлях відправки, що й кнопка «Надіслати на Email» у режимі «Біти» (вкладення не зберігається в базі даних).",
+    "Перевірте відкриття файлу в поштовому клієнті та папку «Спам», якщо потрібно.",
+    "",
+    `Файл: ${audioEntry.name} (~${Math.max(1, Math.round(audioEntry.size / 1024))} KB)`,
+    "",
+    "— Flux Leads",
+  ].join("\n");
+
+  const buffer = Buffer.from(await audioEntry.arrayBuffer());
+  const result = await sendUserEmail(userId, target, subject, body, {
+    attachments: [
+      {
+        filename: audioEntry.name || "test-beat.mp3",
+        content: buffer,
+        contentType: declaredMime || "audio/mpeg",
+      },
+    ],
+  });
 
   if (result.success) {
     return { success: true, messageId: result.messageId };

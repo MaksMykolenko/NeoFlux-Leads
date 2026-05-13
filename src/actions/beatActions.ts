@@ -19,6 +19,7 @@ import {
   getPlanForUser,
   incrementLeadsProcessed,
 } from "@/src/lib/subscription";
+import { validateBeatEmailAudioFile } from "@/src/lib/beatAttachmentRules";
 
 const SEARCH_MODEL = "gemini-2.5-flash";
 const MAX_RESULTS = 8;
@@ -441,23 +442,6 @@ function sanitizeContactsForJson(
 // sendBeatViaEmail — реальна відправка email з MP3-вкладенням через SMTP юзера.
 // ============================================================================
 
-// 15MB у next.config.ts; тут ставимо нижчий поріг (10MB), щоб залишити запас
-// під FormData overhead і встигнути повернути зрозумілу помилку до того, як
-// її кине runtime.
-const MAX_BEAT_FILE_BYTES = 10 * 1024 * 1024;
-const ALLOWED_AUDIO_MIME = new Set([
-  "audio/mpeg",
-  "audio/mp3",
-  "audio/wav",
-  "audio/x-wav",
-  "audio/wave",
-  "audio/m4a",
-  "audio/x-m4a",
-  "audio/mp4",
-  "audio/flac",
-  "audio/x-flac",
-  "audio/ogg",
-]);
 const EMAIL_REGEX = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
 
 export interface SendBeatViaEmailResult {
@@ -565,30 +549,19 @@ export async function sendBeatViaEmail(
   }
 
   // ───── читаємо файл ─────
-  const audioEntry = formData.get("audio");
-  if (!(audioEntry instanceof File)) {
-    return {
-      success: false,
-      errorCode: "NO_FILE",
-      error: "Не передано аудіо-файл",
-    };
+  const audioValidated = validateBeatEmailAudioFile(formData.get("audio"));
+  if (!audioValidated.ok) {
+    const { reason, error } = audioValidated;
+    const errorCode =
+      reason === "FILE_TOO_LARGE"
+        ? "FILE_TOO_LARGE"
+        : reason === "INVALID_FILE_TYPE"
+          ? "INVALID_FILE_TYPE"
+          : "NO_FILE";
+    return { success: false, errorCode, error };
   }
-  if (audioEntry.size > MAX_BEAT_FILE_BYTES) {
-    const mb = (MAX_BEAT_FILE_BYTES / 1024 / 1024).toFixed(0);
-    return {
-      success: false,
-      errorCode: "FILE_TOO_LARGE",
-      error: `Файл завеликий — максимум ${mb}MB.`,
-    };
-  }
+  const audioEntry = audioValidated.file;
   const declaredMime = audioEntry.type?.toLowerCase() ?? "";
-  if (declaredMime && !ALLOWED_AUDIO_MIME.has(declaredMime)) {
-    return {
-      success: false,
-      errorCode: "INVALID_FILE_TYPE",
-      error: `Тип файлу не підтримується (${declaredMime}). Очікую MP3/WAV/M4A/FLAC/OGG.`,
-    };
-  }
 
   // ───── ліміт лідів — перевіряємо до відправки SMTP-сесії, щоб не палити квоту ─────
   const limitUser = await prisma.user.findUnique({
