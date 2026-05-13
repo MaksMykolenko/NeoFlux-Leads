@@ -1173,7 +1173,7 @@ function MessageReview({
           <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-zinc-100 dark:border-flux-border">
             <p className="text-[11px] text-zinc-500 dark:text-zinc-400">
               {openedCount === 0
-                ? t("saveHintNoChannel")
+                ? t("saveHintOptionalChannels")
                 : t("saveHintChannels", {
                     count: openedCount,
                     channelsWord:
@@ -1183,12 +1183,7 @@ function MessageReview({
             <button
               type="button"
               onClick={handleSaveToCrm}
-              disabled={
-                saving ||
-                openedCount === 0 ||
-                !subject.trim() ||
-                !body.trim()
-              }
+              disabled={saving || !subject.trim() || !body.trim()}
               className="inline-flex items-center justify-center gap-2 rounded-lg bg-purple-600 px-6 py-2.5 text-sm font-medium text-white shadow-sm transition-colors hover:bg-purple-700 disabled:bg-purple-300 disabled:cursor-not-allowed"
             >
               {saving && <Spinner className="h-4 w-4" />}

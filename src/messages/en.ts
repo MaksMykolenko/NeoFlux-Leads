@@ -470,7 +470,7 @@ const messages = {
         "After selecting artists, upload a track: preview, optional watermark, metadata for the AI letter (BPM, key, price). SMTP for email is configured once in Settings.",
       msgTitle: "Messages & channels",
       msgBody:
-        "Automatic sending from the app is email only (SMTP in Settings; “Send by email” on the lead page). For Instagram, Telegram, etc., write yourself — buttons open profiles/chats. “Save to CRM” stores outreach without messenger delivery.",
+        "To send your pitch with the beat file attached: use “Send via Email” — configure SMTP once in Settings, and the app attaches the demo to the message (the artist needs a public email). On Instagram, Telegram, SoundCloud, etc., the app cannot attach files: channel buttons only open the profile or chat and copy your text — open the conversation and attach the same file manually if the platform allows it. “Save to CRM” stores subject, body, and demo metadata only; audio is not uploaded to our servers.",
       tableTitleBeats: "Lead table",
       tableDescBeats:
         "Recently saved artists from CRM. Row click opens details: socials, followers, messages, demo.",
@@ -572,7 +572,8 @@ const messages = {
     open: "Open",
     noPrefillHint:
       "Platforms without URL prefill (Instagram, SoundCloud, etc.) — the message is copied automatically; paste in the app.",
-    saveHintNoChannel: "Open at least one channel to save the lead to CRM.",
+    saveHintOptionalChannels:
+      "You can save now — subject, body, and demo metadata. Any channels you open below are also stored on the lead.",
     saveHintChannels: "Done — recording {count} {channelsWord} in CRM.",
     channelOne: "channel",
     channelMany: "channels",
