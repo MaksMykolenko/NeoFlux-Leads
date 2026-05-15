@@ -79,10 +79,10 @@ export default async function LeadDetailPage({
 
   const backHref =
     lead.mode === LeadMode.BEATS
-      ? "/?mode=beats"
+      ? "/dashboard?mode=beats"
       : lead.mode === LeadMode.UNIVERSAL
-        ? "/?mode=universal"
-        : "/";
+        ? "/dashboard?mode=universal"
+        : "/dashboard";
 
   // Compute the score live for display so the UI stays accurate even if the
   // persisted `lead.score` lags (e.g. before the first audit run, or after a

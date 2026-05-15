@@ -1,20 +1,10 @@
 import createIntlMiddleware from "next-intl/middleware";
 import { NextResponse, type NextRequest } from "next/server";
 import { routing } from "./src/i18n/routing";
+import { isPublicPathname, stripLocalePrefix } from "./src/lib/seo/publicPaths";
 import { SESSION_COOKIE } from "./src/lib/session";
 
 const handleI18n = createIntlMiddleware(routing);
-
-function stripLocalePrefix(pathname: string): string {
-  for (const loc of routing.locales) {
-    if (pathname === `/${loc}`) return "/";
-    if (pathname.startsWith(`/${loc}/`)) {
-      const rest = pathname.slice(loc.length + 1);
-      return rest.startsWith("/") ? rest : `/${rest}`;
-    }
-  }
-  return pathname;
-}
 
 function isLoginPath(stripped: string): boolean {
   return stripped === "/login" || stripped.startsWith("/login?");
@@ -31,7 +21,11 @@ export default function proxy(request: NextRequest) {
   const stripped = stripLocalePrefix(pathname);
   const hasSession = !!request.cookies.get(SESSION_COOKIE)?.value;
 
-  if (!hasSession && !isLoginPath(stripped)) {
+  if (isPublicPathname(stripped) || isLoginPath(stripped)) {
+    return response;
+  }
+
+  if (!hasSession) {
     const locale =
       routing.locales.find(
         (l) => pathname === `/${l}` || pathname.startsWith(`/${l}/`),

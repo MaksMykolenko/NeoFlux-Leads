@@ -225,12 +225,18 @@ export async function GET(req: NextRequest) {
     ip,
   });
 
-  const home = new URL(`/${routing.defaultLocale}`, getPublicAppOrigin(req));
+  const localeCookie = req.cookies.get("neoflux_oauth_locale")?.value;
+  const locale =
+    localeCookie && routing.locales.includes(localeCookie as "uk" | "en")
+      ? localeCookie
+      : routing.defaultLocale;
+  const home = new URL(`/${locale}/dashboard`, getPublicAppOrigin(req));
   const response = NextResponse.redirect(home, 302);
 
   const cookie = buildSessionCookie(sessionToken);
   response.cookies.set(cookie);
   response.cookies.delete({ name: STATE_COOKIE, path: "/api/auth/flux" });
+  response.cookies.delete({ name: "neoflux_oauth_locale", path: "/api/auth/flux" });
 
   return response;
 }

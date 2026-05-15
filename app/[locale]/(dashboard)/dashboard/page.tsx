@@ -142,7 +142,7 @@ export default async function Home({
         <div className="flex items-center gap-4">
           <BrandMark
             id="tour-brand-mark"
-            href="/"
+            href="/dashboard"
             className="h-10 w-10 flex-shrink-0"
           />
           <div id="tour-page-title" className="min-w-0">

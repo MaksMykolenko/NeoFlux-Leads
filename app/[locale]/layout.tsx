@@ -1,14 +1,12 @@
 import { Geist, Geist_Mono } from "next/font/google";
 import { notFound } from "next/navigation";
-import { Suspense } from "react";
 import { hasLocale, NextIntlClientProvider } from "next-intl";
-import { getMessages, getTranslations, setRequestLocale } from "next-intl/server";
+import { getMessages, setRequestLocale } from "next-intl/server";
 import type { Metadata } from "next";
 import { routing } from "@/src/i18n/routing";
-import AuthHeader from "@/src/components/AuthHeader";
-import Footer from "@/src/components/Footer";
+import GoogleAnalyticsProvider from "@/src/components/analytics/GoogleAnalyticsProvider";
 import ThemeProvider from "@/src/components/ThemeProvider";
-import { getEnvSiteHref } from "@/src/lib/siteOrigin";
+import { resolveMetadataBase } from "@/src/lib/seo/metadata";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -20,34 +18,12 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-function resolveMetadataBase(): URL | undefined {
-  try {
-    return new URL(getEnvSiteHref());
-  } catch {
-    return undefined;
-  }
-}
+export const metadata: Metadata = {
+  metadataBase: resolveMetadataBase(),
+};
 
 export function generateStaticParams() {
   return routing.locales.map((locale) => ({ locale }));
-}
-
-export async function generateMetadata({
-  params,
-}: {
-  params: Promise<{ locale: string }>;
-}): Promise<Metadata> {
-  const { locale } = await params;
-  const t = await getTranslations({ locale, namespace: "Meta" });
-  const title = t("title");
-  const description = t("description");
-  return {
-    metadataBase: resolveMetadataBase(),
-    title,
-    description,
-    openGraph: { title, description },
-    twitter: { card: "summary", title, description },
-  };
 }
 
 export default async function LocaleLayout({
@@ -77,15 +53,10 @@ export default async function LocaleLayout({
       >
         <ThemeProvider>
           <NextIntlClientProvider messages={messages}>
-            <Suspense fallback={null}>
-              <AuthHeader />
-            </Suspense>
-            <div className="flex-1">{children}</div>
-            <Suspense fallback={null}>
-              <Footer />
-            </Suspense>
+            {children}
           </NextIntlClientProvider>
         </ThemeProvider>
+        <GoogleAnalyticsProvider />
       </body>
     </html>
   );

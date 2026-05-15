@@ -34,13 +34,13 @@ export function isOwner(user: { role: string } | null | undefined): boolean {
  */
 export async function requireAdmin(): Promise<User> {
   const user = await requireUser();
-  if (!isAdmin(user)) redirect({ href: "/", locale: await getLocale() });
+  if (!isAdmin(user)) redirect({ href: "/dashboard", locale: await getLocale() });
   return user;
 }
 
 export async function requireOwner(): Promise<User> {
   const user = await requireUser();
-  if (!isOwner(user)) redirect({ href: "/", locale: await getLocale() });
+  if (!isOwner(user)) redirect({ href: "/dashboard", locale: await getLocale() });
   return user;
 }
 

@@ -6,7 +6,70 @@ const messages = {
   },
   Meta: {
     title: "Flux Leads",
-    description: "AI збір лідів",
+    description: "AI Lead Engine для B2B аутрічу",
+  },
+  Marketing: {
+    productName: "Flux Leads",
+    navAria: "Головна навігація",
+    navFeatures: "Можливості",
+    navPricing: "Тарифи",
+    navWebAgencies: "Для веб-студій",
+    ctaLogin: "Увійти",
+    ctaDashboard: "Панель",
+    footerTagline:
+      "Lead Engine і мікро-CRM для холодного аутрічу. Від NeoFlux Software.",
+    footerProduct: "Продукт",
+    footerCompany: "Компанія",
+    footerPolicy: "Політика конфіденційності",
+    footerRights: "Усі права захищено.",
+  },
+  MarketingHome: {
+    heroH1: "AI-лідоген для веб-студій",
+    heroSub:
+      "Знаходьте локальних клієнтів, аудитуйте їхні сайти та надсилайте cold email з конкретними доказами — без ручного скрапінгу та хаосу в таблицях.",
+    heroCta: "Почати безкоштовно",
+    heroSecondary: "Тарифи",
+    heroImageAlt: "Інтерфейс Flux Leads",
+    featuresH2: "Від пошуку до угоди — в одній системі",
+    featureSearchH3: "AI-пошук лідів",
+    featureSearchP:
+      "Ніша й місто → Gemini з Google Search grounding знаходить бізнеси з публічних джерел. Стартова точка для outbound, не «чорна база».",
+    featureAuditH3: "Playwright-аудит сайту",
+    featureAuditP:
+      "SSL, mobile viewport, title/h1, швидкість завантаження та email enrichment — факти для пітчу «ваш сайт втрачає клієнтів».",
+    featureScoreH3: "Opportunity Score",
+    featureScoreP:
+      "Оцінка 0–100 поєднує технічні проблеми та слабку веб-присутність — ви пишете спочатку тим, хто втрачає найбільше.",
+    featureCrmH3: "Kanban CRM",
+    featureCrmP:
+      "Статуси New → Contacted → Won, історія листів і AI-генерація — без HubSpot для малої команди.",
+    faqH2: "Питання",
+    faq1Q: "Чим Flux Leads відрізняється від CRM?",
+    faq1A:
+      "Це Lead Engine: пошук, аудит, пріоритет і листи. CRM — легка воронка поверх лідів.",
+    faq2Q: "Чи потрібен технічний досвід?",
+    faq2A:
+      "Ні. Вкажіть нішу та місто, запустіть аудит, відредагуйте AI-лист і надішліть.",
+    faq3Q: "Скільки коштує старт?",
+    faq3A: "Starter — $0, 20 лідів на місяць. Pro — $20, Agency — $60.",
+    ctaH2: "Готові до системного аутрічу?",
+    ctaP: "20 лідів на місяць безкоштовно. Без картки на Starter.",
+    ctaButton: "Увійти через Flux ID",
+  },
+  WebAgencies: {
+    h1: "Lead Engine для веб-студій",
+    intro:
+      "Пітч «ваш сайт коштує заявок» працює, коли є докази. Flux Leads збирає лідів, аудитує сайт і готує персоналізований лист.",
+    h2Pain: "Біль, який ми закриваємо",
+    pain1: "Години ручного пошуку в Maps і соцмережах",
+    pain2: "Шаблонні листи без фактів про сайт клієнта",
+    pain3: "Ліди губляться між таблицею, Notion і поштою",
+    h2How: "Як це працює",
+    step1: "AI знаходить бізнеси за нішею та містом",
+    step2: "Аудит фіксує SSL, mobile, SEO-сигнали",
+    step3: "Opportunity Score підказує, кому писати першим",
+    step4: "Kanban веде угоду до Won",
+    cta: "Спробувати безкоштовно",
   },
   LanguageSwitcher: {
     label: "Мова",

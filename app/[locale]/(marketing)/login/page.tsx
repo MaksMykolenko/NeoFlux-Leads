@@ -15,7 +15,7 @@ export default async function LoginPage({
 }) {
   const { locale } = await params;
   const user = await getCurrentUser();
-  if (user) redirect({ href: "/", locale });
+  if (user) redirect({ href: "/dashboard", locale });
 
   const t = await getTranslations({ locale, namespace: "Login" });
   const paramsSearch = await searchParams;
@@ -74,7 +74,7 @@ export default async function LoginPage({
               and break the OAuth flow. eslint rule doesn't know about that. */}
           {/* eslint-disable-next-line @next/next/no-html-link-for-pages */}
           <a
-            href="/api/auth/flux/login"
+            href={`/api/auth/flux/login?locale=${locale}`}
             className="mt-8 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-purple-500 px-4 py-3.5 text-sm font-bold text-white shadow-[0_4px_20px_rgba(168,85,247,0.4)] transition-all duration-200 hover:bg-purple-600 hover:-translate-y-0.5 active:scale-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-500 focus-visible:ring-offset-2 dark:bg-flux-purple dark:shadow-[0_4px_20px_rgba(106,0,255,0.5)] dark:hover:bg-flux-purple-hover dark:focus-visible:ring-flux-purple dark:focus-visible:ring-offset-flux-bg"
           >
             <svg

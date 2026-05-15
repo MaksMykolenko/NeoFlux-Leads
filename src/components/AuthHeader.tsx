@@ -32,10 +32,10 @@ export default async function AuthHeader() {
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-3 px-4 sm:px-6 lg:px-8">
         {/* ─── Brand ─── */}
         <Link
-          href="/"
+          href="/dashboard"
           className="group flex flex-shrink-0 items-center gap-3 rounded-md py-1 text-zinc-900 transition-all duration-200 hover:opacity-90 focus:outline-none focus-visible:ring-2 focus-visible:ring-flux-purple dark:text-flux-text"
         >
-          <BrandMark href="/" className="h-9 w-9" />
+          <BrandMark href="/dashboard" className="h-9 w-9" />
           <span className="hidden whitespace-nowrap text-base font-bold tracking-tight sm:inline">
             {t("productName")}
           </span>

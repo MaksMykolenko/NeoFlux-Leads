@@ -26,19 +26,19 @@ interface TabDef {
 const TABS: TabDef[] = [
   {
     id: "local",
-    href: "/",
+    href: "/dashboard",
     labelKey: "localLabel",
     hintKey: "localHint",
   },
   {
     id: "beats",
-    href: "/?mode=beats",
+    href: "/dashboard?mode=beats",
     labelKey: "beatsLabel",
     hintKey: "beatsHint",
   },
   {
     id: "universal",
-    href: "/?mode=universal",
+    href: "/dashboard?mode=universal",
     labelKey: "universalLabel",
     hintKey: "universalHint",
   },

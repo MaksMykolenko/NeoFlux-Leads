@@ -128,7 +128,7 @@ export async function createCheckoutSession(
         },
       },
       customer_email: user.email ?? undefined,
-      success_url: `${safeBase}/${safeLoc}/?checkout=success`,
+      success_url: `${safeBase}/${safeLoc}/dashboard?checkout=success`,
       cancel_url: `${safeBase}/${safeLoc}/pricing`,
       allow_promotion_codes: true,
     });

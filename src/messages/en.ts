@@ -6,7 +6,70 @@ const messages = {
   },
   Meta: {
     title: "Flux Leads",
-    description: "AI lead generation",
+    description: "AI Lead Engine for B2B outreach",
+  },
+  Marketing: {
+    productName: "Flux Leads",
+    navAria: "Main navigation",
+    navFeatures: "Features",
+    navPricing: "Pricing",
+    navWebAgencies: "For web agencies",
+    ctaLogin: "Log in",
+    ctaDashboard: "Dashboard",
+    footerTagline:
+      "Lead engine and micro-CRM for cold outreach. By NeoFlux Software.",
+    footerProduct: "Product",
+    footerCompany: "Company",
+    footerPolicy: "Privacy policy",
+    footerRights: "All rights reserved.",
+  },
+  MarketingHome: {
+    heroH1: "AI lead gen for web agencies",
+    heroSub:
+      "Find local prospects, audit their websites, and send cold email backed by real issues—not manual scraping or spreadsheet chaos.",
+    heroCta: "Start for free",
+    heroSecondary: "Pricing",
+    heroImageAlt: "Flux Leads product interface",
+    featuresH2: "From search to closed deal in one system",
+    featureSearchH3: "AI lead search",
+    featureSearchP:
+      "Niche + city → Gemini with Google Search grounding finds businesses from public sources. A starting point for outbound, not a certified database.",
+    featureAuditH3: "Playwright website audit",
+    featureAuditP:
+      "SSL, mobile viewport, title/h1, load time, and email enrichment—facts for the pitch that a weak site costs leads.",
+    featureScoreH3: "Opportunity Score",
+    featureScoreP:
+      "A 0–100 score blends technical issues and weak web presence so you outreach the highest-impact prospects first.",
+    featureCrmH3: "Kanban CRM",
+    featureCrmP:
+      "Statuses from New to Won, message history, and AI drafts—without HubSpot overhead for small teams.",
+    faqH2: "FAQ",
+    faq1Q: "How is Flux Leads different from a CRM?",
+    faq1A:
+      "It's a lead engine: search, audit, prioritize, and email. CRM is a lightweight pipeline on top.",
+    faq2Q: "Do I need technical skills?",
+    faq2A:
+      "No. Enter niche and city, run an audit, edit the AI email, and send.",
+    faq3Q: "What does it cost to start?",
+    faq3A: "Starter is $0 with 20 leads/month. Pro is $20, Agency is $60.",
+    ctaH2: "Ready for systematic outreach?",
+    ctaP: "20 leads per month free on Starter. No card required.",
+    ctaButton: "Sign in with Flux ID",
+  },
+  WebAgencies: {
+    h1: "Lead engine for web agencies",
+    intro:
+      "The pitch “your site is costing you leads” works when you have proof. Flux Leads finds prospects, audits the site, and drafts a personalized email.",
+    h2Pain: "Pain we solve",
+    pain1: "Hours of manual Maps and social search",
+    pain2: "Template emails with no site-specific facts",
+    pain3: "Leads lost between spreadsheets, Notion, and inbox",
+    h2How: "How it works",
+    step1: "AI finds businesses by niche and city",
+    step2: "Audit captures SSL, mobile, SEO signals",
+    step3: "Opportunity Score shows who to contact first",
+    step4: "Kanban tracks the deal to Won",
+    cta: "Try for free",
   },
   LanguageSwitcher: {
     label: "Language",
