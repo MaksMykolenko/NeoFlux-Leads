@@ -241,6 +241,10 @@ const messages = {
     toastDup: "No new unique leads for this query.",
     toastErr: "Error: {message}",
     searchFailed: "Search failed",
+    networkError:
+      "The server connection dropped or the request took too long: {message}. Try a shorter query and submit again.",
+    networkErrorGeneric:
+      "The server connection dropped (often a timeout on very heavy search). Simplify the prompt or try again later.",
     savedPrefix: "Saved to CRM:",
     recordOne: "record",
     recordMany: "records",

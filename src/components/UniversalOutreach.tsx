@@ -1,9 +1,10 @@
 "use client";
 
 import { useState, useTransition, type FormEvent } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/src/i18n/navigation";
 import { useTranslations } from "next-intl";
 import { searchUniversalLeads } from "@/src/actions/universalActions";
+import { MAX_UNIVERSAL_PROMPT_CHARS } from "@/src/lib/universalSearchConstants";
 
 export default function UniversalOutreach() {
   const router = useRouter();
@@ -22,12 +23,21 @@ export default function UniversalOutreach() {
     setLastSaved(null);
 
     startTransition(async () => {
-      const res = await searchUniversalLeads(trimmed);
-      if (res.success) {
-        setLastSaved(res.saved ?? 0);
-        router.refresh();
-      } else {
-        setError(res.error ?? t("searchFailed"));
+      try {
+        const res = await searchUniversalLeads(trimmed);
+        if (res.success) {
+          setLastSaved(res.saved ?? 0);
+          router.refresh();
+        } else {
+          setError(res.error ?? t("searchFailed"));
+        }
+      } catch (err) {
+        console.error("[UniversalOutreach]", err);
+        setError(
+          err instanceof Error && err.message
+            ? t("networkError", { message: err.message })
+            : t("networkErrorGeneric"),
+        );
       }
     });
   }
@@ -45,8 +55,7 @@ export default function UniversalOutreach() {
           id="universal-prompt"
           value={prompt}
           onChange={(e) => setPrompt(e.target.value)}
-          rows={6}
-          disabled={pending}
+          maxLength={MAX_UNIVERSAL_PROMPT_CHARS}
           placeholder={t("promptPlaceholder")}
           className="block w-full rounded-lg border border-zinc-200 bg-white px-4 py-3 text-sm text-zinc-900 shadow-sm placeholder:text-zinc-400 focus:border-purple-500 focus:outline-none focus:ring-2 focus:ring-purple-100 disabled:bg-zinc-50 disabled:text-zinc-500 dark:border-flux-border dark:bg-flux-card dark:text-zinc-50 dark:placeholder:text-zinc-500"
         />

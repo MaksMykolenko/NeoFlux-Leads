@@ -13,6 +13,7 @@ import {
   getPlanForUser,
   incrementLeadsProcessed,
 } from "@/src/lib/subscription";
+import { MAX_UNIVERSAL_PROMPT_CHARS } from "@/src/lib/universalSearchConstants";
 
 const MODEL = "gemini-2.5-flash";
 const MAX_RESULTS = 12;
@@ -22,11 +23,17 @@ export interface UniversalSearchResult {
   /** Скільки записів реально записано / оновлено в CRM */
   saved?: number;
   error?: string;
-  errorCode?: "LIMIT_REACHED";
+  errorCode?: "LIMIT_REACHED" | "PROMPT_TOO_LONG";
 }
 
 function buildUserPrompt(userRequest: string): string {
-  const systemBlock = `Ти — експерт з OSINT та пошуку лідів. Використай Google Search, щоб знайти компанії або людей за запитом користувача. Поверни результат ВИКЛЮЧНО у форматі JSON-масиву. Кожен об'єкт має містити: name (назва або ім'я), description (чим займаються, 1-2 речення), website (якщо є), email (якщо знайдено), та socialLinks (об'єкт з будь-якими знайденими соцмережами, наприклад, linkedin, twitter, instagram).`;
+  const systemBlock = `Ти — експерт з OSINT та пошуку лідів. Використай Google Search, щоб знайти компанії або людей за запитом користувача. Поверни результат ВИКЛЮЧНО у форматі JSON-масиву. Кожен об'єкт має містити:
+- name або companyName — назва;
+- description — короткий опис згідно з запитом (1–3 речення);
+- website — офіційний сайт компанії (URL), якщо є;
+- email — лише якщо знайдено в публічних джерелах;
+- vacancyUrl — пряме посилання на оголошення про роботу / вакансію (якщо користувач просив вакансії), або null якщо немає підтвердженого URL;
+- socialLinks — об'єкт з будь-якими іншими корисними посиланнями (linkedin, telegram, instagram тощо), значення лише строки URL.`;
 
   return `${systemBlock}
 
@@ -36,7 +43,8 @@ function buildUserPrompt(userRequest: string): string {
 - Поверни щонайбільше ${MAX_RESULTS} релевантних сутностей.
 - Тільки реальні публічні дані — не вигадуй URL чи email.
 - Якщо нічого не знайдено — поверни [].
-- Без markdown, без пояснень до або після масиву — лише сирий JSON-масив.`;
+- Без markdown, без пояснень до або після масиву — лише сирий JSON-масив.
+- Посилання лише HTTPS з реальних джерел.`;
 }
 
 function stripJsonFences(raw: string): string {
@@ -56,6 +64,11 @@ function stripJsonFences(raw: string): string {
 
 function parseLeadArray(raw: string): unknown[] {
   const cleaned = stripJsonFences(raw);
+  /** Захист від гігантських відповідей, які ламають парсер / пам’ять. */
+  if (cleaned.length > 500_000) {
+    console.warn("[universal] truncated JSON slice for parse");
+    return [];
+  }
   let parsed: unknown;
   try {
     parsed = JSON.parse(cleaned);
@@ -63,6 +76,24 @@ function parseLeadArray(raw: string): unknown[] {
     return [];
   }
   return Array.isArray(parsed) ? parsed : [];
+}
+
+function pickVacancyUrl(rec: Record<string, unknown>): string | null {
+  const keys = [
+    "vacancyUrl",
+    "vacancy_url",
+    "jobUrl",
+    "job_url",
+    "vacancy",
+    "careersUrl",
+  ];
+  for (const k of keys) {
+    const v = rec[k];
+    if (typeof v === "string" && v.trim().startsWith("http")) {
+      return v.trim().slice(0, 2048);
+    }
+  }
+  return null;
 }
 
 function sanitizeSocialLinks(raw: unknown): Prisma.InputJsonValue | undefined {
@@ -78,6 +109,16 @@ function sanitizeSocialLinks(raw: unknown): Prisma.InputJsonValue | undefined {
     out[key] = t.slice(0, 2048);
   }
   return Object.keys(out).length > 0 ? out : undefined;
+}
+
+function mergeNotes(description: string, vacancyUrl: string | null): string | null {
+  const desc = description.trim().slice(0, 7000);
+  const parts: string[] = [];
+  if (desc) parts.push(desc);
+  if (vacancyUrl) parts.push(`Вакансія / job posting: ${vacancyUrl}`);
+  const combined = parts.join("\n\n").trim();
+  if (!combined) return null;
+  return combined.slice(0, 8000);
 }
 
 /**
@@ -118,6 +159,13 @@ export async function searchUniversalLeads(
   if (!trimmed) {
     return { success: false, error: "Введіть запит для пошуку" };
   }
+  if (trimmed.length > MAX_UNIVERSAL_PROMPT_CHARS) {
+    return {
+      success: false,
+      errorCode: "PROMPT_TOO_LONG",
+      error: `Запис занадто довгий — максимум ${MAX_UNIVERSAL_PROMPT_CHARS} символів. Спробуйте коротший або розбийте запит.`,
+    };
+  }
 
   try {
     const ai = new GoogleGenAI({ apiKey });
@@ -127,6 +175,7 @@ export async function searchUniversalLeads(
       config: {
         tools: [{ googleSearch: {} }],
         temperature: 0.35,
+        maxOutputTokens: 6144,
       },
     });
 
@@ -140,7 +189,7 @@ export async function searchUniversalLeads(
       return {
         success: false,
         error:
-          "Не вдалося розпарсити відповідь AI або масив порожній. Спробуйте інший запит.",
+          "Не вдалося розпарсити відповідь AI або масив порожній. Спростіть або скорочено сформулюйте запит і спробуйте знову.",
       };
     }
 
@@ -168,7 +217,19 @@ export async function searchUniversalLeads(
         typeof rec.email === "string" && rec.email.trim()
           ? rec.email.trim()
           : null;
-      const socialJson = sanitizeSocialLinks(rec.socialLinks);
+
+      let socialJson = sanitizeSocialLinks(rec.socialLinks);
+      const vacancyUrl = pickVacancyUrl(rec);
+      if (vacancyUrl) {
+        const base =
+          typeof socialJson === "object" && socialJson !== null && !Array.isArray(socialJson)
+            ? { ...(socialJson as Record<string, string>) }
+            : {};
+        base.vacancy = vacancyUrl;
+        socialJson = base;
+      }
+
+      const notes = mergeNotes(description, vacancyUrl);
 
       const score = calculateLeadScore({ website, email }, null);
 
@@ -184,7 +245,7 @@ export async function searchUniversalLeads(
       });
 
       const payload = {
-        notes: description ? description.slice(0, 8000) : null,
+        notes,
         website,
         email,
         ...(socialJson !== undefined ? { socialLinks: socialJson } : {}),
@@ -224,16 +285,24 @@ export async function searchUniversalLeads(
       await incrementLeadsProcessed(userId, newLeadCount);
     }
 
-    await revalidateLocalizedPath("/");
+    await revalidateLocalizedPath("/dashboard");
     return { success: true, saved: written };
   } catch (error) {
     console.error("searchUniversalLeads error:", error);
-    return {
-      success: false,
-      error:
-        error instanceof Error
-          ? error.message
-          : "Невідома помилка під час універсального пошуку",
-    };
+    let msg =
+      error instanceof Error
+        ? error.message
+        : "Невідома помилка під час універсального пошуку";
+    const low = msg.toLowerCase();
+    if (
+      low.includes("timeout") ||
+      low.includes("deadline") ||
+      low.includes("aborted") ||
+      low.includes("504")
+    ) {
+      msg =
+        "Час очікування вичерпано (складний пошук займає довше). Скоростіть запит, обмежте кількість джерел або спробуйте ще раз.";
+    }
+    return { success: false, error: msg };
   }
 }

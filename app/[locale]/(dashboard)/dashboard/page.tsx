@@ -33,8 +33,8 @@ import UsageMeter from "@/src/components/UsageMeter";
 
 export const dynamic = "force-dynamic";
 
-/** Local AI search can exceed default serverless timeout on Vercel. */
-export const maxDuration = 60;
+/** Local + universal AI search + grounding — довші запити (див. також layout dashboard). */
+export const maxDuration = 180;
 
 function viewFromQuery(value: string | string[] | undefined): LeadView {
   const v = Array.isArray(value) ? value[0] : value;
