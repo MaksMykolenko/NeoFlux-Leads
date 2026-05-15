@@ -8,7 +8,7 @@ export default function MarketingLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="flex min-h-full flex-col bg-[#0b0c10] text-zinc-100">
+    <div className="flex min-h-full flex-col bg-[#0a0a0f] text-zinc-100">
       <Suspense fallback={null}>
         <MarketingHeader />
       </Suspense>

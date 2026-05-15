@@ -24,11 +24,13 @@ const messages = {
     footerRights: "Усі права захищено.",
   },
   MarketingHome: {
+    heroBadge: "Flux Leads · Lead Engine",
     heroH1: "AI-лідоген для веб-студій",
     heroSub:
       "Знаходьте локальних клієнтів, аудитуйте їхні сайти та надсилайте cold email з конкретними доказами — без ручного скрапінгу та хаосу в таблицях.",
     heroCta: "Почати безкоштовно",
-    heroSecondary: "Тарифи",
+    heroSecondary: "Можливості",
+    featuresEyebrow: "Можливості",
     heroImageAlt: "Інтерфейс Flux Leads",
     featuresH2: "Від пошуку до угоди — в одній системі",
     featureSearchH3: "AI-пошук лідів",

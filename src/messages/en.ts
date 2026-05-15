@@ -24,11 +24,13 @@ const messages = {
     footerRights: "All rights reserved.",
   },
   MarketingHome: {
+    heroBadge: "Flux Leads · Lead Engine",
     heroH1: "AI lead gen for web agencies",
     heroSub:
       "Find local prospects, audit their websites, and send cold email backed by real issues—not manual scraping or spreadsheet chaos.",
     heroCta: "Start for free",
-    heroSecondary: "Pricing",
+    heroSecondary: "Features",
+    featuresEyebrow: "Features",
     heroImageAlt: "Flux Leads product interface",
     featuresH2: "From search to closed deal in one system",
     featureSearchH3: "AI lead search",
