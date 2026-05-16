@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="uk" class="dark">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Flux Leads — UI kit</title>
+  <link rel="icon" href="../../assets/logo-mark.svg">
+  <link rel="stylesheet" href="../../colors_and_type.css">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    // Sync Tailwind's "purple" + custom "flux-*" tokens with the design system.
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            "flux-bg":           "#0b0c10",
+            "flux-card":         "#13141c",
+            "flux-card-2":       "#1a1b24",
+            "flux-text":         "#ffffff",
+            "flux-muted":        "#8a8d93",
+            "flux-border":       "rgba(255,255,255,0.05)",
+            "flux-border-strong":"rgba(255,255,255,0.10)",
+            "flux-purple":       "#6a00ff",
+            "flux-purple-hover": "#832bff",
+            "flux-purple-soft":  "#b580ff",
+            "flux-purple-tint":  "rgba(106,0,255,0.15)",
+            "flux-purple-ring":  "rgba(106,0,255,0.30)"
+          },
+          boxShadow: {
+            "flux-glow":      "0 4px 20px rgba(106,0,255,0.40)",
+            "flux-glow-lg":   "0 10px 30px rgba(106,0,255,0.25)",
+            "flux-glow-card": "0 10px 30px rgba(106,0,255,0.10)"
+          },
+          fontFamily: {
+            sans: ["Geist", "ui-sans-serif", "system-ui", "sans-serif"],
+            mono: ["Geist Mono", "ui-monospace", "Menlo", "monospace"]
+          }
+        }
+      }
+    };
+  </script>
+  <style>
+    body { font-family: var(--font-sans); }
+    /* Hide the design-system <style> reset on body since Tailwind handles it */
+  </style>
+</head>
+<body class="bg-zinc-50 dark:bg-flux-bg text-zinc-900 dark:text-flux-text" data-screen-label="Flux Leads">
+  <div id="app"></div>
+
+  <script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+  <script src="data.js"></script>
+  <script type="text/babel" src="Icons.jsx"></script>
+  <script type="text/babel" src="Card.jsx"></script>
+  <script type="text/babel" src="Buttons.jsx"></script>
+  <script type="text/babel" src="StatusPill.jsx"></script>
+  <script type="text/babel" src="AuthHeader.jsx"></script>
+  <script type="text/babel" src="UsageMeter.jsx"></script>
+  <script type="text/babel" src="KanbanView.jsx"></script>
+  <script type="text/babel" src="OpportunityScore.jsx"></script>
+  <script type="text/babel" src="AuditCard.jsx"></script>
+  <script type="text/babel" src="AIProposalCard.jsx"></script>
+  <script type="text/babel" src="BeatOutreach.jsx"></script>
+  <script type="text/babel" src="LeadList.jsx"></script>
+  <script type="text/babel" src="LeadDetail.jsx"></script>
+  <script type="text/babel" src="App.jsx"></script>
+</body>
+</html>

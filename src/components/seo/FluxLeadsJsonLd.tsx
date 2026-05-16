@@ -33,7 +33,7 @@ export default function FluxLeadsJsonLd({
         name: "Starter",
         price: "0",
         priceCurrency: "USD",
-        description: isUk ? "20 лідів на місяць" : "20 leads per month",
+        description: isUk ? "50 лідів на місяць" : "50 leads per month",
       },
       {
         "@type": "Offer",

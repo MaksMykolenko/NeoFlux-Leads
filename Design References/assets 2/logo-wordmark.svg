@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 64" role="img" aria-label="Flux Leads">
+  <rect x="4" y="8" width="48" height="48" rx="12" fill="#6a00ff"></rect>
+  <path d="M16 44V20h5l11 14V20h5v24h-5L21 30v14z" fill="#ffffff"></path>
+  <text x="64" y="42" font-family="Geist, ui-sans-serif, system-ui, sans-serif" font-size="28" font-weight="700" letter-spacing="-0.5">
+    <tspan fill="#0a0a0f">Flux</tspan><tspan fill="#6a00ff">Leads</tspan>
+  </text>
+</svg>

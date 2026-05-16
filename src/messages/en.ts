@@ -53,9 +53,9 @@ const messages = {
     faq2A:
       "No. Enter niche and city, run an audit, edit the AI email, and send.",
     faq3Q: "What does it cost to start?",
-    faq3A: "Starter is $0 with 20 leads/month. Pro is $20, Agency is $60.",
+    faq3A: "Starter is $0 with 50 leads/month. Pro is $20, Agency is $60.",
     ctaH2: "Ready for systematic outreach?",
-    ctaP: "20 leads per month free on Starter. No card required.",
+    ctaP: "50 leads per month free on Starter. No card required.",
     ctaButton: "Sign in with Flux ID",
   },
   WebAgencies: {

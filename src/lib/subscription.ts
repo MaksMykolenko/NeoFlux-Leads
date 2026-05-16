@@ -40,11 +40,11 @@ export const PLANS: Record<PlanId, Plan> = {
     id: "STARTER",
     name: "Starter",
     priceUsd: 0,
-    leadsPerMonth: 20,
+    leadsPerMonth: 50,
     tagline: "Безкоштовно",
     description: "Спробувати продукт і зрозуміти, як працює пошук лідів.",
     highlights: [
-      "20 нових лідів на місяць",
+      "50 нових лідів на місяць",
       "Локальний пошук (AI + Google)",
       "Спрощена AI-генерація листів",
     ],

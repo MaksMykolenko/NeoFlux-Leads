@@ -25,13 +25,13 @@ const COPY: Record<
     uk: {
       title: "Тарифи Flux Leads — від $0 до Agency",
       description:
-        "Starter: 20 лідів/міс безкоштовно. Pro $20 — аудит сайтів і AI-листи. Agency $60 — безліміт лідів і CSV. Оберіть план під ваш outbound.",
+        "Starter: 50 лідів/міс безкоштовно. Pro $20 — аудит сайтів і AI-листи. Agency $60 — безліміт лідів і CSV. Оберіть план під ваш outbound.",
       path: "/pricing",
     },
     en: {
       title: "Flux Leads Pricing — Starter to Agency",
       description:
-        "Starter: 20 leads/mo free. Pro $20 — site audits & AI emails. Agency $60 — unlimited leads & CSV. Pick the plan for your outreach volume.",
+        "Starter: 50 leads/mo free. Pro $20 — site audits & AI emails. Agency $60 — unlimited leads & CSV. Pick the plan for your outreach volume.",
       path: "/pricing",
     },
   },
