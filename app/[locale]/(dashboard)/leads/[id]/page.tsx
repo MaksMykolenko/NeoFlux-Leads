@@ -14,6 +14,7 @@ import {
 import {
   calculateArtistScore,
   calculateLeadScore,
+  calculateLocalLeadScore,
   getScoreContext,
 } from "@/src/lib/scoring";
 import {
@@ -86,23 +87,30 @@ export default async function LeadDetailPage({
 
   // Compute the score live for display so the UI stays accurate even if the
   // persisted `lead.score` lags (e.g. before the first audit run, or after a
-  // manual website edit). The persisted value is still kept in sync by the
-  // creating actions for query/sort use cases.
+  // manual website edit). Match the formula to the creation pipeline:
+  // LOCAL uses pain-points + booking signals; UNIVERSAL keeps the legacy
+  // website/email/audit-driven score; BEATS has its own artist scorer.
   const opportunityScore = isBeats
     ? calculateArtistScore({
         email: lead.email,
         followers: lead.followers,
         lookingForType: lead.lookingForType,
       })
-    : calculateLeadScore(
-        { website: lead.website, email: lead.email },
-        lead.audit
-          ? {
-              hasSSL: lead.audit.hasSSL,
-              mobileFriendly: lead.audit.mobileFriendly,
-            }
-          : null
-      );
+    : isUniversal
+      ? calculateLeadScore(
+          { website: lead.website, email: lead.email },
+          lead.audit
+            ? {
+                hasSSL: lead.audit.hasSSL,
+                mobileFriendly: lead.audit.mobileFriendly,
+              }
+            : null,
+        )
+      : calculateLocalLeadScore({
+          website: lead.website,
+          hasOnlineBooking: lead.hasOnlineBooking,
+          painPoints: lead.painPoints,
+        });
 
   const scoreCtx = getScoreContext(opportunityScore);
   const levelPillLabel =
@@ -119,7 +127,7 @@ export default async function LeadDetailPage({
         : t("scoreLabel.low");
   const scoreFootnote = isBeats
     ? t("scoreHintBeats")
-    : !isUniversal && !lead.audit
+    : !isUniversal
       ? t("scoreHintLocalNoAudit")
       : isUniversal && !lead.audit
         ? t("scoreHintUniversalNoAudit")

@@ -449,7 +449,7 @@ const messages = {
     scoreHintBeats:
       "Score weighs “looking for type beats”, email presence, and audience size.",
     scoreHintLocalNoAudit:
-      "Score uses available fields only. Run a website audit to factor in SSL and mobile.",
+      "Score is derived from AI search signals: missing website, no online booking, and pain points spotted in reviews and snippets.",
     scoreHintUniversalNoAudit:
       "Score uses email and site presence. Technical signals apply after an audit.",
     contactsTitle: "Contacts",

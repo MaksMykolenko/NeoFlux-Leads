@@ -14,6 +14,20 @@ export interface ScoringArtist {
   lookingForType: boolean | null;
 }
 
+export interface ScoringLocalLead {
+  website: string | null;
+  hasOnlineBooking: boolean;
+  painPoints: string[];
+}
+
+export function calculateLocalLeadScore(input: ScoringLocalLead): number {
+  let score = 50;
+  if (!input.website) score += 15;
+  if (!input.hasOnlineBooking) score += 20;
+  if (input.painPoints.length > 0) score += 30;
+  return Math.max(0, Math.min(100, score));
+}
+
 const BASE_SCORE = 50;
 
 const SSL_PENALTY = 30;
