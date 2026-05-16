@@ -1,0 +1,21 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "crons": [
+    {
+      "path": "/api/cron/autopilot/step-1-search",
+      "schedule": "0 6 * * *"
+    },
+    {
+      "path": "/api/cron/autopilot/step-2-audit",
+      "schedule": "15 * * * *"
+    },
+    {
+      "path": "/api/cron/autopilot/step-3-generate",
+      "schedule": "30 * * * *"
+    },
+    {
+      "path": "/api/cron/autopilot/step-4-deliver",
+      "schedule": "45 * * * *"
+    }
+  ]
+}
