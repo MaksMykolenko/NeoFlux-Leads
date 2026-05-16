@@ -86,6 +86,7 @@ const messages = {
   AuthHeader: {
     productName: "Flux Leads",
     admin: "Адмін",
+    autopilot: "Автопілот",
     settings: "Налаштування",
     signOut: "Вийти",
     fallbackUser: "Користувач",
@@ -806,6 +807,94 @@ const messages = {
     socialYoutube: "YouTube",
     socialTiktok: "TikTok",
     rightsReserved: "Усі права захищено.",
+  },
+  TelegramAuth: {
+    title: "Telegram акаунт",
+    subtitle:
+      "Підключіть свій номер, щоб Автопілот міг писати лідам прямо в Telegram.",
+    statusConnected: "Підключено",
+    statusDisconnected: "Не підключено",
+    connectedPhone: "Активний номер",
+    sentToday: "{count} повідомлень за сьогодні",
+    disconnect: "Відключити",
+    sendCode: "Надіслати код",
+    sending: "Надсилаю…",
+    verify: "Підтвердити",
+    verifying: "Перевіряю…",
+    cancel: "Скасувати",
+    codeInstruction:
+      "Введіть код, який Telegram надіслав на {phone} (in-app або SMS).",
+    passwordInstruction:
+      "Цей акаунт використовує двофакторну автентифікацію. Введіть Telegram-пароль (cloud password).",
+    passwordPlaceholder: "Cloud password",
+    confirmDisconnect:
+      "Відключити Telegram? Активні автопілот-конфіги з каналом Telegram перестануть слати повідомлення.",
+    infoCodeSent: "Код надіслано — перевірте Telegram.",
+    infoNeedsPassword: "Потрібен 2FA пароль.",
+    infoConnected: "Підключено успішно.",
+    infoDisconnected: "Відключено.",
+    errPhoneRequired: "Введіть номер телефону у міжнародному форматі.",
+    errCodeRequired: "Введіть код з Telegram.",
+    errPasswordRequired: "Введіть 2FA пароль.",
+    errStartFailed: "Не вдалося ініціювати авторизацію.",
+    errVerifyFailed: "Не вдалося завершити авторизацію.",
+    errDisconnectFailed: "Не вдалося відключити сесію.",
+    disclaimer:
+      "Ми зберігаємо сесію зашифрованою AES-256-GCM. Bot-token не використовується — це MTProto userbot під вашим акаунтом, тож дотримуйтесь правил Telegram (без масового спаму).",
+  },
+  Autopilot: {
+    back: "Назад до панелі",
+    title: "Автопілот",
+    subtitle:
+      "Налаштуйте повторюваний пошук лідів і автоматичну розсилку. Cron запускає конвеєр щодня: пошук → аудит → AI-лист → доставка.",
+    telegramHint:
+      "Щоб увімкнути канал Telegram, спершу підключіть номер у <link>Налаштуваннях</link>.",
+    modeName: {
+      LOCAL: "Локальний бізнес",
+      BEATS: "Артисти (біти)",
+      UNIVERSAL: "Універсальний AI",
+    },
+    searchQueryLabel: "Пошуковий запит",
+    searchQueryHint:
+      "Ніша / посада / жанр. Підставляється у промпт Gemini з Google Search grounding.",
+    searchQueryPlaceholder: {
+      LOCAL: "Зубні клініки",
+      BEATS: "Trap артисти 100k+ фоловерів",
+      UNIVERSAL: "SaaS founders looking for new SDR",
+    },
+    targetRegionLabel: "Регіон",
+    targetRegionHint:
+      "Регіон фокусу для AI: країна, місто або «Global». Можна залишити пустим.",
+    targetRegionPlaceholder: "Poland, London, Global…",
+    outputLanguageLabel: "Мова листа",
+    outputLanguageHint:
+      "Якою мовою Gemini генерує текст outreach. На пошук не впливає.",
+    language: {
+      English: "Англійська",
+      Ukrainian: "Українська",
+      Polish: "Польська",
+      German: "Німецька",
+    },
+    maxPerDayLabel: "Максимум лідів на день",
+    maxPerDayHint: "Обмеження конвеєра — щоб не вичерпати ліміт плану одним cron-запуском.",
+    channelsLabel: "Канали доставки",
+    channelsHint:
+      "Хоча б один канал має бути активний, інакше доставка не запуститься.",
+    channelEmail: "Email (через SMTP)",
+    channelTelegram: "Telegram (через ваш userbot)",
+    telegramNotReady: "Підключіть Telegram у Налаштуваннях",
+    activeLabel: "Активний",
+    activeHint: "Якщо вимкнено — cron пропускає цей конфіг.",
+    save: "Зберегти",
+    saving: "Зберігаю…",
+    delete: "Видалити",
+    confirmDelete:
+      "Видалити цей конфіг автопілота? Існуючі ліди залишаться, але cron більше не буде створювати нові.",
+    infoSaved: "Збережено.",
+    infoDeleted: "Видалено.",
+    errSaveFailed: "Не вдалося зберегти.",
+    errToggleFailed: "Не вдалося перемкнути активність.",
+    errDeleteFailed: "Не вдалося видалити.",
   },
 } satisfies AbstractIntlMessages;
 

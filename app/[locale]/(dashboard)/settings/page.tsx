@@ -3,6 +3,7 @@ import { Link } from "@/src/i18n/navigation";
 import { requireUser } from "@/src/lib/session";
 import { prisma } from "@/src/lib/prisma";
 import SmtpSettingsForm from "@/src/components/SmtpSettingsForm";
+import TelegramAuthCard from "@/src/components/TelegramAuthCard";
 
 export const dynamic = "force-dynamic";
 
@@ -28,6 +29,11 @@ export default async function SettingsPage({
       fromEmail: true,
       fromName: true,
     },
+  });
+
+  const telegram = await prisma.telegramSession.findUnique({
+    where: { userId: user.id },
+    select: { phone: true, isActive: true, dailyCount: true },
   });
 
   return (
@@ -75,6 +81,17 @@ export default async function SettingsPage({
               hasSmtpPass: !!fresh?.smtpPass,
               fromEmail: fresh?.fromEmail ?? null,
               fromName: fresh?.fromName ?? null,
+            }}
+          />
+        </section>
+
+        <section className="mt-10">
+          <TelegramAuthCard
+            initial={{
+              connected: !!telegram,
+              phone: telegram?.phone ?? null,
+              dailyCount: telegram?.dailyCount ?? 0,
+              isActive: telegram?.isActive ?? false,
             }}
           />
         </section>

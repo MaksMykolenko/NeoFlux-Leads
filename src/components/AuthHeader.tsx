@@ -46,6 +46,16 @@ export default async function AuthHeader() {
           <ThemeToggle />
           <LanguageSwitcher />
 
+          <Link
+            href="/autopilot"
+            title={t("autopilot")}
+            aria-label={t("autopilot")}
+            className="inline-flex h-8 items-center gap-1.5 rounded-md px-2.5 text-xs font-medium text-zinc-700 transition-all duration-200 hover:bg-zinc-100 hover:text-zinc-900 active:scale-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-flux-purple dark:text-flux-text dark:hover:bg-flux-card dark:hover:text-white"
+          >
+            <AutopilotIcon className="h-3.5 w-3.5" />
+            <span className="hidden sm:inline">{t("autopilot")}</span>
+          </Link>
+
           {userIsAdmin && (
             <Link
               href="/admin/users"
@@ -148,6 +158,24 @@ function initials(value: string): string {
     .slice(0, 2)
     .map((p) => p.charAt(0).toUpperCase())
     .join("");
+}
+
+function AutopilotIcon({ className = "" }: { className?: string }) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 20 20"
+      fill="currentColor"
+      className={className}
+      aria-hidden="true"
+    >
+      <path
+        fillRule="evenodd"
+        d="M10 1.5a.75.75 0 0 1 .75.75v1.06a6.502 6.502 0 0 1 5.94 5.94h1.06a.75.75 0 0 1 0 1.5h-1.06a6.502 6.502 0 0 1-5.94 5.94v1.06a.75.75 0 0 1-1.5 0v-1.06A6.502 6.502 0 0 1 3.31 10.75H2.25a.75.75 0 0 1 0-1.5h1.06A6.502 6.502 0 0 1 9.25 3.31V2.25A.75.75 0 0 1 10 1.5Zm0 3a5 5 0 1 0 0 10 5 5 0 0 0 0-10Zm0 2a3 3 0 1 1 0 6 3 3 0 0 1 0-6Z"
+        clipRule="evenodd"
+      />
+    </svg>
+  );
 }
 
 function LockIcon({ className = "" }: { className?: string }) {

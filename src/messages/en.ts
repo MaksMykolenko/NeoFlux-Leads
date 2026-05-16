@@ -86,6 +86,7 @@ const messages = {
   AuthHeader: {
     productName: "Flux Leads",
     admin: "Admin",
+    autopilot: "Autopilot",
     settings: "Settings",
     signOut: "Sign out",
     fallbackUser: "User",
@@ -801,6 +802,95 @@ const messages = {
     socialYoutube: "YouTube",
     socialTiktok: "TikTok",
     rightsReserved: "All rights reserved.",
+  },
+  TelegramAuth: {
+    title: "Telegram account",
+    subtitle:
+      "Connect your number so Autopilot can DM leads directly via Telegram.",
+    statusConnected: "Connected",
+    statusDisconnected: "Not connected",
+    connectedPhone: "Active number",
+    sentToday: "{count} messages today",
+    disconnect: "Disconnect",
+    sendCode: "Send code",
+    sending: "Sending…",
+    verify: "Verify",
+    verifying: "Verifying…",
+    cancel: "Cancel",
+    codeInstruction:
+      "Enter the code Telegram just sent to {phone} (in-app or SMS).",
+    passwordInstruction:
+      "This account has 2FA enabled. Enter your Telegram cloud password.",
+    passwordPlaceholder: "Cloud password",
+    confirmDisconnect:
+      "Disconnect Telegram? Active Autopilot configs with the Telegram channel will stop sending.",
+    infoCodeSent: "Code sent — check Telegram.",
+    infoNeedsPassword: "2FA password required.",
+    infoConnected: "Connected successfully.",
+    infoDisconnected: "Disconnected.",
+    errPhoneRequired: "Enter a phone number in international format.",
+    errCodeRequired: "Enter the Telegram code.",
+    errPasswordRequired: "Enter your 2FA password.",
+    errStartFailed: "Failed to start authorization.",
+    errVerifyFailed: "Failed to verify the code.",
+    errDisconnectFailed: "Failed to disconnect.",
+    disclaimer:
+      "Session stored AES-256-GCM-encrypted. No bot token — this is an MTProto userbot under your account, so follow Telegram rules (no mass spam).",
+  },
+  Autopilot: {
+    back: "Back to dashboard",
+    title: "Autopilot",
+    subtitle:
+      "Set up a recurring lead search and outreach. Cron runs the pipeline daily: search → audit → AI message → delivery.",
+    telegramHint:
+      "To enable the Telegram channel, connect your number in <link>Settings</link> first.",
+    modeName: {
+      LOCAL: "Local business",
+      BEATS: "Artists (beats)",
+      UNIVERSAL: "Universal AI",
+    },
+    searchQueryLabel: "Search query",
+    searchQueryHint:
+      "Niche / role / genre. Fed into the Gemini prompt with Google Search grounding.",
+    searchQueryPlaceholder: {
+      LOCAL: "Dental clinics",
+      BEATS: "Trap artists 100k+ followers",
+      UNIVERSAL: "SaaS founders looking for new SDR",
+    },
+    targetRegionLabel: "Region",
+    targetRegionHint:
+      "AI focus region: country, city, or 'Global'. Leave empty for unrestricted.",
+    targetRegionPlaceholder: "Poland, London, Global…",
+    outputLanguageLabel: "Message language",
+    outputLanguageHint:
+      "Language Gemini writes the outreach in. Does not affect search.",
+    language: {
+      English: "English",
+      Ukrainian: "Ukrainian",
+      Polish: "Polish",
+      German: "German",
+    },
+    maxPerDayLabel: "Max leads per day",
+    maxPerDayHint:
+      "Pipeline cap — keeps a single cron run from burning the plan quota.",
+    channelsLabel: "Delivery channels",
+    channelsHint:
+      "At least one channel must be active or delivery will not run.",
+    channelEmail: "Email (via SMTP)",
+    channelTelegram: "Telegram (via your userbot)",
+    telegramNotReady: "Connect Telegram in Settings",
+    activeLabel: "Active",
+    activeHint: "If disabled, cron skips this config.",
+    save: "Save",
+    saving: "Saving…",
+    delete: "Delete",
+    confirmDelete:
+      "Delete this Autopilot config? Existing leads stay, but cron stops creating new ones.",
+    infoSaved: "Saved.",
+    infoDeleted: "Deleted.",
+    errSaveFailed: "Failed to save.",
+    errToggleFailed: "Failed to toggle active state.",
+    errDeleteFailed: "Failed to delete.",
   },
 } satisfies AbstractIntlMessages;
 
