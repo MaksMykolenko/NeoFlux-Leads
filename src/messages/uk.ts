@@ -371,6 +371,36 @@ const messages = {
     unlimitedWord: "Безліміт",
     currentPlan: "Поточний план",
     upgradeNow: "Оновити зараз",
+    plans: {
+      STARTER: {
+        tagline: "Безкоштовно",
+        description:
+          "Спробувати продукт і зрозуміти, як працює пошук лідів.",
+        highlights: {
+          localSearch: "Локальний пошук (AI + Google)",
+          simpleAi: "Спрощена AI-генерація листів",
+        },
+      },
+      PRO: {
+        tagline: "Найпопулярніший",
+        description:
+          "Для фрилансерів і малих команд, які роблять outreach щодня.",
+        highlights: {
+          fullAudit: "Повний аудит сайтів (SSL, mobile, performance)",
+          emailEnrichment: "Email enrichment з HTML",
+          unlimitedAi: "Безлімітна AI-генерація листів (Gemini)",
+        },
+      },
+      AGENCY: {
+        tagline: "Без обмежень",
+        description:
+          "Для агенцій, які працюють з кількома нішами одночасно.",
+        highlights: {
+          allPro: "Усі функції Pro",
+          csvExport: "Експорт у CSV",
+        },
+      },
+    },
     checkoutLoading: "Перенаправляємо…",
     checkoutSuccessTitle: "Дякуємо за підписку!",
     checkoutSuccessBody:

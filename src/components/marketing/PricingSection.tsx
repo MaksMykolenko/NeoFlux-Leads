@@ -1,8 +1,10 @@
 import { getTranslations } from "next-intl/server";
 import { Link } from "@/src/i18n/navigation";
 import {
+  PLAN_HIGHLIGHT_KEYS,
   PLAN_ORDER,
   PLANS,
+  type PlanId,
   getPlanForUser,
 } from "@/src/lib/subscription";
 import { getCurrentUser } from "@/src/lib/session";
@@ -34,6 +36,7 @@ export default async function PricingSection({
       <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
         {PLAN_ORDER.map((id) => {
           const plan = PLANS[id];
+          const planId = id as PlanId;
           const isCurrent = currentPlan?.id === id;
           const isPro = plan.id === "PRO";
           const unlimited = !Number.isFinite(plan.leadsPerMonth);
@@ -41,6 +44,7 @@ export default async function PricingSection({
             ? t("unlimitedWord")
             : String(plan.leadsPerMonth);
           const perMonthSuffix = unlimited ? "" : t("perMonthSuffix");
+          const highlightKeys = PLAN_HIGHLIGHT_KEYS[planId];
 
           return (
             <article
@@ -52,7 +56,9 @@ export default async function PricingSection({
               }`}
             >
               <h2 className="text-xl font-bold text-white">{plan.name}</h2>
-              <p className="mt-1 text-sm text-zinc-500">{plan.tagline}</p>
+              <p className="mt-1 text-sm text-zinc-500">
+                {t(`plans.${planId}.tagline`)}
+              </p>
               <div className="mt-6 flex items-baseline gap-1">
                 <span className="text-5xl font-bold text-white">
                   {plan.priceUsd === 0 ? "$0" : `$${plan.priceUsd}`}
@@ -60,14 +66,16 @@ export default async function PricingSection({
                 <span className="text-zinc-500">{t("perMonth")}</span>
               </div>
               <p className="mt-4 text-sm leading-relaxed text-zinc-400">
-                {plan.description}
+                {t(`plans.${planId}.description`)}
               </p>
               <ul className="mt-6 flex-1 space-y-3 text-sm text-zinc-300">
                 <li>
                   {t("leadsLine", { formatted, perMonthSuffix })}
                 </li>
-                {plan.highlights.slice(1).map((h) => (
-                  <li key={h}>{h}</li>
+                {highlightKeys.map((key) => (
+                  <li key={key}>
+                    {t(`plans.${planId}.highlights.${key}`)}
+                  </li>
                 ))}
               </ul>
               <div className="mt-8">

@@ -369,6 +369,36 @@ const messages = {
     unlimitedWord: "Unlimited",
     currentPlan: "Current plan",
     upgradeNow: "Upgrade now",
+    plans: {
+      STARTER: {
+        tagline: "Free",
+        description:
+          "Try the product and learn how lead search works.",
+        highlights: {
+          localSearch: "Local search (AI + Google)",
+          simpleAi: "Simplified AI email drafts",
+        },
+      },
+      PRO: {
+        tagline: "Most popular",
+        description:
+          "For freelancers and small teams doing outreach every day.",
+        highlights: {
+          fullAudit: "Full website audit (SSL, mobile, performance)",
+          emailEnrichment: "Email enrichment from HTML",
+          unlimitedAi: "Unlimited AI email drafts (Gemini)",
+        },
+      },
+      AGENCY: {
+        tagline: "No limits",
+        description:
+          "For agencies working multiple niches at once.",
+        highlights: {
+          allPro: "Everything in Pro",
+          csvExport: "CSV export",
+        },
+      },
+    },
     checkoutLoading: "Redirecting…",
     checkoutSuccessTitle: "Thanks for subscribing!",
     checkoutSuccessBody: "Your limits will update in a few minutes.",

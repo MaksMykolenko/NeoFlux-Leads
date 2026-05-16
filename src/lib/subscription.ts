@@ -18,6 +18,13 @@ export type FeatureKey =
   | "unlimitedAi" // без обмежень на кількість AI-генерацій
   | "csvExport"; // експорт лідів у CSV
 
+/** Ключі перекладів у `Pricing.plans.{id}.highlights.*` (перший пункт — leadsLine). */
+export const PLAN_HIGHLIGHT_KEYS: Record<PlanId, readonly string[]> = {
+  STARTER: ["localSearch", "simpleAi"],
+  PRO: ["fullAudit", "emailEnrichment", "unlimitedAi"],
+  AGENCY: ["allPro", "csvExport"],
+};
+
 export interface Plan {
   id: PlanId;
   name: string;
@@ -25,9 +32,6 @@ export interface Plan {
   // Скільки нових лідів дозволено зберегти на місяць.
   // Number.POSITIVE_INFINITY = без обмежень.
   leadsPerMonth: number;
-  tagline: string;
-  description: string;
-  highlights: string[];
   features: Record<FeatureKey, boolean>;
   // Stripe Price ID (price_…) або Product ID (prod_…) для Checkout.
   // Якщо prod_ — при створенні сесії обирається активна recurring-ціна продукту.
@@ -41,13 +45,6 @@ export const PLANS: Record<PlanId, Plan> = {
     name: "Starter",
     priceUsd: 0,
     leadsPerMonth: 50,
-    tagline: "Безкоштовно",
-    description: "Спробувати продукт і зрозуміти, як працює пошук лідів.",
-    highlights: [
-      "50 нових лідів на місяць",
-      "Локальний пошук (AI + Google)",
-      "Спрощена AI-генерація листів",
-    ],
     features: {
       websiteAudit: false,
       emailEnrichment: false,
@@ -62,14 +59,6 @@ export const PLANS: Record<PlanId, Plan> = {
     name: "Pro",
     priceUsd: 20,
     leadsPerMonth: 1000,
-    tagline: "Найпопулярніший",
-    description: "Для фрилансерів і малих команд, які роблять outreach щодня.",
-    highlights: [
-      "1000 нових лідів на місяць",
-      "Повний аудит сайтів (SSL, mobile, performance)",
-      "Email enrichment з HTML",
-      "Безлімітна AI-генерація листів (Gemini)",
-    ],
     features: {
       websiteAudit: true,
       emailEnrichment: true,
@@ -84,13 +73,6 @@ export const PLANS: Record<PlanId, Plan> = {
     name: "Agency",
     priceUsd: 60,
     leadsPerMonth: Number.POSITIVE_INFINITY,
-    tagline: "Без обмежень",
-    description: "Для агенцій, які працюють з кількома нішами одночасно.",
-    highlights: [
-      "Безліміт лідів",
-      "Усі функції Pro",
-      "Експорт у CSV",
-    ],
     features: {
       websiteAudit: true,
       emailEnrichment: true,
