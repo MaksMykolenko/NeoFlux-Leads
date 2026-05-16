@@ -12,14 +12,24 @@ export interface LocalBusinessHit {
   hasOnlineBooking: boolean;
 }
 
-function buildPrompt(niche: string, city: string): string {
+function buildPrompt(
+  niche: string,
+  city: string,
+  region: string | null,
+): string {
   const n = JSON.stringify(niche.trim());
   const c = JSON.stringify(city.trim());
+  const regionLine =
+    region && region.trim()
+      ? `\nFocus search exclusively on entities located in or targeting: ${JSON.stringify(
+          region.trim(),
+        )}.\n`
+      : "";
   return `You help find real local businesses for B2B sales outreach.
 
 Use Google Search to find businesses matching:
 - Niche / business type: ${n}
-- City or area served: ${c}
+- City or area served: ${c}${regionLine}
 
 For every business, you MUST analyze Google search snippets, public review excerpts,
 business descriptions, social-media pages, and any directory listings (Google Maps,
@@ -112,11 +122,12 @@ export async function searchLocalBusinessesViaGemini(
   niche: string,
   city: string,
   apiKey: string,
+  region: string | null = null,
 ): Promise<LocalBusinessHit[]> {
   const ai = new GoogleGenAI({ apiKey });
   const response = await ai.models.generateContent({
     model: MODEL,
-    contents: buildPrompt(niche, city),
+    contents: buildPrompt(niche, city, region),
     config: {
       tools: [{ googleSearch: {} }],
       temperature: 0.25,

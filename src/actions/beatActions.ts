@@ -39,7 +39,8 @@ export interface ArtistSearchResult {
  * caller gets an empty array with a clear error message.
  */
 export async function searchBeatProspects(
-  query: string
+  query: string,
+  options: { region?: string | null } = {},
 ): Promise<ArtistSearchResult> {
   const user = await getCurrentUser();
   if (!user) {
@@ -76,7 +77,7 @@ export async function searchBeatProspects(
   try {
     const ai = new GoogleGenAI({ apiKey });
 
-    const prompt = buildSearchPrompt(trimmed);
+    const prompt = buildSearchPrompt(trimmed, options.region ?? null);
 
     const response = await ai.models.generateContent({
       model: SEARCH_MODEL,
@@ -120,8 +121,14 @@ export async function searchBeatProspects(
   }
 }
 
-function buildSearchPrompt(query: string): string {
-  return `Знайди до ${MAX_RESULTS} реальних активних артистів/виконавців, що відповідають цьому опису: "${query}".
+function buildSearchPrompt(query: string, region: string | null): string {
+  const regionLine =
+    region && region.trim()
+      ? `\nFocus search exclusively on entities located in or targeting: ${JSON.stringify(
+          region.trim(),
+        )}.\n`
+      : "";
+  return `Знайди до ${MAX_RESULTS} реальних активних артистів/виконавців, що відповідають цьому опису: "${query}".${regionLine}
 
 Шукай через Google їхні публічні профілі на SoundCloud, YouTube, Instagram, BeatStars, Spotify, TikTok, X (Twitter) тощо. Пріоритезуй тих, хто:
 - Активно випускає музику (релізи за останні 6-12 місяців)

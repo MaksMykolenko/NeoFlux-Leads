@@ -15,6 +15,16 @@ export interface ProposalResult {
 
 const MODELS = ["gemini-2.5-flash", "gemini-2.0-flash", "gemini-1.5-flash"];
 
+const DEFAULT_OUTPUT_LANGUAGE = "Ukrainian";
+
+function withOutputLanguage(
+  baseInstruction: string,
+  language: string | null | undefined,
+): string {
+  const lang = (language?.trim() || DEFAULT_OUTPUT_LANGUAGE).trim();
+  return `${baseInstruction}\n\nCRITICAL: The entire generated message MUST be written exclusively in ${lang}, maintaining a native and professional B2B tone.`;
+}
+
 const SYSTEM_INSTRUCTION = `Ти B2B-продажник веб-розробки в українській digital-агенції NeoFlux.
 Пишеш короткі (5–7 речень), персоналізовані холодні листи українською мовою.
 
@@ -84,7 +94,11 @@ function buildIssuesList(input: {
   return issues;
 }
 
-export async function generateProposal(leadId: string): Promise<ProposalResult> {
+export async function generateProposal(
+  leadId: string,
+  options: { language?: string | null } = {},
+): Promise<ProposalResult> {
+  const language = options.language ?? DEFAULT_OUTPUT_LANGUAGE;
   let apiKey: string;
   try {
     apiKey = requireGeminiKey();
@@ -148,9 +162,10 @@ export async function generateProposal(leadId: string): Promise<ProposalResult> 
             model,
             contents: userPrompt,
             config: {
-              systemInstruction: advancedAi
-                ? SYSTEM_INSTRUCTION
-                : SYSTEM_INSTRUCTION_STARTER,
+              systemInstruction: withOutputLanguage(
+                advancedAi ? SYSTEM_INSTRUCTION : SYSTEM_INSTRUCTION_STARTER,
+                language,
+              ),
               temperature: advancedAi ? 0.7 : 0.5,
               maxOutputTokens: advancedAi ? 800 : 300,
             },
@@ -213,9 +228,10 @@ export async function generateProposal(leadId: string): Promise<ProposalResult> 
           model,
           contents: userPrompt,
           config: {
-            systemInstruction: advancedAi
-              ? SYSTEM_INSTRUCTION
-              : SYSTEM_INSTRUCTION_STARTER,
+            systemInstruction: withOutputLanguage(
+              advancedAi ? SYSTEM_INSTRUCTION : SYSTEM_INSTRUCTION_STARTER,
+              language,
+            ),
             temperature: advancedAi ? 0.7 : 0.5,
             maxOutputTokens: advancedAi ? 800 : 300,
           },
@@ -272,7 +288,8 @@ export interface BeatProposalInput {
 }
 
 export async function generateBeatProposal(
-  input: BeatProposalInput
+  input: BeatProposalInput,
+  options: { language?: string | null } = {},
 ): Promise<ProposalResult> {
   let apiKey: string;
   try {
@@ -281,6 +298,7 @@ export async function generateBeatProposal(
     return { success: false, error: (err as Error).message };
   }
 
+  const language = options.language ?? DEFAULT_OUTPUT_LANGUAGE;
   const user = await getCurrentUser();
   if (!user) return { success: false, error: "Не авторизовано" };
   const advancedAi = checkSubscription(user, "advancedAi");
@@ -328,9 +346,10 @@ export async function generateBeatProposal(
           model,
           contents: userPrompt,
           config: {
-            systemInstruction: advancedAi
-              ? BEAT_SYSTEM_INSTRUCTION
-              : SYSTEM_INSTRUCTION_STARTER,
+            systemInstruction: withOutputLanguage(
+              advancedAi ? BEAT_SYSTEM_INSTRUCTION : SYSTEM_INSTRUCTION_STARTER,
+              language,
+            ),
             temperature: advancedAi ? 0.85 : 0.5,
             maxOutputTokens: advancedAi ? 600 : 250,
           },
@@ -392,6 +411,7 @@ const REWRITE_SYSTEM = `Ти редактор холодних B2B-листів.
 export async function rewriteProposal(
   currentText: string,
   instruction: RewriteInstruction,
+  options: { language?: string | null } = {},
 ): Promise<ProposalResult> {
   let apiKey: string;
   try {
@@ -400,6 +420,7 @@ export async function rewriteProposal(
     return { success: false, error: (err as Error).message };
   }
 
+  const language = options.language ?? DEFAULT_OUTPUT_LANGUAGE;
   const trimmed = currentText?.trim();
   if (!trimmed) return { success: false, error: "Текст порожній" };
 
@@ -422,7 +443,7 @@ export async function rewriteProposal(
           model,
           contents: userPrompt,
           config: {
-            systemInstruction: REWRITE_SYSTEM,
+            systemInstruction: withOutputLanguage(REWRITE_SYSTEM, language),
             temperature: 0.6,
             maxOutputTokens: 800,
           },
@@ -495,6 +516,7 @@ const STEP_LABELS = ["Pitch", "Follow-up", "Break-up"] as const;
 
 export async function generateSequence(
   leadId: string,
+  options: { language?: string | null } = {},
 ): Promise<SequenceResult> {
   let apiKey: string;
   try {
@@ -504,6 +526,7 @@ export async function generateSequence(
   }
   if (!leadId) return { success: false, error: "Missing lead id" };
 
+  const language = options.language ?? DEFAULT_OUTPUT_LANGUAGE;
   const user = await getCurrentUser();
   if (!user) return { success: false, error: "Не авторизовано" };
 
@@ -543,7 +566,7 @@ export async function generateSequence(
           model,
           contents: userPrompt,
           config: {
-            systemInstruction: SEQUENCE_SYSTEM,
+            systemInstruction: withOutputLanguage(SEQUENCE_SYSTEM, language),
             temperature: 0.7,
             maxOutputTokens: 2000,
             responseMimeType: "application/json",

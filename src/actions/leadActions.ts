@@ -27,7 +27,8 @@ export interface LeadActionResult {
 
 export async function searchAndSaveLeads(
   query: string,
-  city: string
+  city: string,
+  region: string | null = null,
 ): Promise<LeadActionResult> {
   try {
     const user = await getCurrentUser();
@@ -63,6 +64,7 @@ export async function searchAndSaveLeads(
       query,
       city,
       apiKey,
+      region,
     );
 
     if (scrapedLeads.length === 0) {

@@ -26,7 +26,10 @@ export interface UniversalSearchResult {
   errorCode?: "LIMIT_REACHED" | "PROMPT_TOO_LONG";
 }
 
-function buildUserPrompt(userRequest: string): string {
+function buildUserPrompt(
+  userRequest: string,
+  region: string | null,
+): string {
   const systemBlock = `Ти — експерт з OSINT та пошуку лідів. Використай Google Search, щоб знайти компанії або людей за запитом користувача. Поверни результат ВИКЛЮЧНО у форматі JSON-масиву. Кожен об'єкт має містити:
 - name або companyName — назва;
 - description — короткий опис згідно з запитом (1–3 речення);
@@ -35,7 +38,14 @@ function buildUserPrompt(userRequest: string): string {
 - vacancyUrl — пряме посилання на оголошення про роботу / вакансію (якщо користувач просив вакансії), або null якщо немає підтвердженого URL;
 - socialLinks — об'єкт з будь-якими іншими корисними посиланнями (linkedin, telegram, instagram тощо), значення лише строки URL.`;
 
-  return `${systemBlock}
+  const regionLine =
+    region && region.trim()
+      ? `\nFocus search exclusively on entities located in or targeting: ${JSON.stringify(
+          region.trim(),
+        )}.`
+      : "";
+
+  return `${systemBlock}${regionLine}
 
 Запит користувача: """${userRequest}"""
 
@@ -126,8 +136,13 @@ function mergeNotes(description: string, vacancyUrl: string | null): string | nu
  * `Lead` з mode=UNIVERSAL. Дедуп по (userId, mode, companyName) через
  * findFirst + create/update (аналог upsert без окремого унікального індексу).
  */
+interface SearchUniversalLeadsOptions {
+  region?: string | null;
+}
+
 export async function searchUniversalLeads(
   prompt: string,
+  options: SearchUniversalLeadsOptions = {},
 ): Promise<UniversalSearchResult> {
   const userId = await getRequestUserId();
   if (!userId) return { success: false, error: "Не авторизовано" };
@@ -171,7 +186,7 @@ export async function searchUniversalLeads(
     const ai = new GoogleGenAI({ apiKey });
     const response = await ai.models.generateContent({
       model: MODEL,
-      contents: buildUserPrompt(trimmed),
+      contents: buildUserPrompt(trimmed, options.region ?? null),
       config: {
         tools: [{ googleSearch: {} }],
         temperature: 0.35,
