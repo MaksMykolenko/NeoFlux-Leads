@@ -4,7 +4,7 @@ import createNextIntlPlugin from "next-intl/plugin";
 const withNextIntl = createNextIntlPlugin("./src/i18n/request.ts");
 
 const nextConfig: NextConfig = {
-  serverExternalPackages: ["playwright", "playwright-core"],
+  serverExternalPackages: ["playwright", "playwright-core", "telegram"],
   experimental: {
     // BEATS-флоу шле MP3-демо як FormData у `sendBeatViaEmail`. Дефолтний
     // ліміт у 1MB для Server Actions ріже навіть короткі біти; 15MB вистачає
