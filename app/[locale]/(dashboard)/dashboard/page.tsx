@@ -219,6 +219,9 @@ export default async function Home({
                 lookingForType: lead.lookingForType,
                 notes: lead.notes,
                 audit: lead.audit ? { issues: lead.audit.issues } : null,
+                score: lead.score,
+                painPoints: lead.painPoints,
+                hasOnlineBooking: lead.hasOnlineBooking,
               }))}
               isBeats={isBeats}
               isUniversal={isUniversal}

@@ -4,13 +4,24 @@ import { revalidateLocalizedPath } from "@/src/i18n/revalidateLocalized";
 import { requireGeminiKey } from "@/src/lib/gemini";
 import { searchLocalBusinessesViaGemini } from "@/src/lib/geminiLocalBusinessSearch";
 import { prisma } from "@/src/lib/prisma";
-import { calculateLeadScore } from "@/src/lib/scoring";
 import { getCurrentUser } from "@/src/lib/session";
 import {
   getLeadLimitStatus,
   getPlanForUser,
   incrementLeadsProcessed,
 } from "@/src/lib/subscription";
+
+function calculateLocalLeadScore(input: {
+  website: string | null;
+  hasOnlineBooking: boolean;
+  painPoints: string[];
+}): number {
+  let score = 50;
+  if (!input.website) score += 15;
+  if (!input.hasOnlineBooking) score += 20;
+  if (input.painPoints.length > 0) score += 30;
+  return Math.max(0, Math.min(100, score));
+}
 
 export interface LeadActionResult {
   success: boolean;
@@ -111,13 +122,11 @@ export async function searchAndSaveLeads(
           continue;
         }
 
-        // Initial Opportunity Score from data we have at import time.
-        // No audit yet, so SSL/mobile penalties don't apply; landing-platform
-        // bonus does (e.g. Instagram-only listings get an immediate boost).
-        const initialScore = calculateLeadScore(
-          { website: lead.website, email: null },
-          null
-        );
+        const initialScore = calculateLocalLeadScore({
+          website: lead.website,
+          hasOnlineBooking: lead.hasOnlineBooking,
+          painPoints: lead.painPoints,
+        });
 
         await prisma.lead.create({
           data: {
@@ -128,6 +137,8 @@ export async function searchAndSaveLeads(
             city,
             category: query,
             source: "Web search (AI)",
+            painPoints: lead.painPoints,
+            hasOnlineBooking: lead.hasOnlineBooking,
             score: initialScore,
           },
         });

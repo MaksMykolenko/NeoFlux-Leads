@@ -34,6 +34,8 @@ model Lead {
   followers      Int? // BEATS-only audience size
   lookingForType Boolean? // BEATS-only — is the artist publicly seeking type beats?
   socialLinks    Json? // BEATS-only: { instagram, soundcloud, youtube, tiktok, twitter, spotify, beatstars, discord, telegram, website }
+  painPoints       String[] @default([])
+  hasOnlineBooking Boolean  @default(false)
   score          Int      @default(0) // Opportunity Scoring (0-100)
   status         String   @default("New") // New, Qualified, Contacted, Replied, Won, Lost
   notes          String?  @db.Text

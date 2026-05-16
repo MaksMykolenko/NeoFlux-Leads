@@ -27,6 +27,9 @@ export interface SectionLead {
   lookingForType: boolean | null;
   notes?: string | null;
   audit: { issues: string[] } | null;
+  score: number;
+  painPoints: string[];
+  hasOnlineBooking: boolean;
 }
 
 interface LeadsTableSectionProps {
@@ -145,7 +148,7 @@ export default function LeadsTableSection({
   }
 
   return (
-    <div className="overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-sm dark:border-flux-border dark:bg-flux-card">
+    <div className="overflow-hidden rounded-2xl border border-zinc-200 bg-white dark:border-flux-border dark:bg-flux-card">
       <div className="flex items-center justify-between gap-3 border-b border-zinc-200 px-6 py-4 dark:border-flux-border">
         <h2 className="text-base font-medium text-zinc-900 dark:text-zinc-50">
           {title}
