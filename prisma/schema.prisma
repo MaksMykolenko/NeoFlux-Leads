@@ -17,30 +17,34 @@ enum LeadMode {
 }
 
 model Lead {
-  id             String   @id @default(uuid())
-  mode           LeadMode @default(LOCAL)
+  id               String   @id @default(uuid())
+  mode             LeadMode @default(LOCAL)
   // Власник ліда. Кожен юзер бачить тільки СВОЇ ліди — це поле обов'язкове
   // для всіх лідів, створених після запуску мульти-юзера. Старі (pre-auth)
   // ліди мають NULL і не з'являються в жодному запиті.
-  userId         String?
-  companyName    String // For BEATS this stores the artist handle, e.g. "@youngluna.beats"
-  realName       String? // BEATS-only: real / stage name behind the handle
-  website        String?
-  email          String?
-  phone          String?
-  city           String?
-  category       String? // LOCAL: business niche. BEATS: genre tags ("Trap / Drill")
-  source         String? // LOCAL: e.g. "Web search (AI)". BEATS: "SoundCloud" / "YouTube" / "Instagram"
-  followers      Int? // BEATS-only audience size
-  lookingForType Boolean? // BEATS-only — is the artist publicly seeking type beats?
-  socialLinks    Json? // BEATS-only: { instagram, soundcloud, youtube, tiktok, twitter, spotify, beatstars, discord, telegram, website }
+  userId           String?
+  companyName      String // For BEATS this stores the artist handle, e.g. "@youngluna.beats"
+  realName         String? // BEATS-only: real / stage name behind the handle
+  website          String?
+  email            String?
+  phone            String?
+  city             String?
+  category         String? // LOCAL: business niche. BEATS: genre tags ("Trap / Drill")
+  source           String? // LOCAL: e.g. "Web search (AI)". BEATS: "SoundCloud" / "YouTube" / "Instagram"
+  followers        Int? // BEATS-only audience size
+  lookingForType   Boolean? // BEATS-only — is the artist publicly seeking type beats?
+  socialLinks      Json? // BEATS-only: { instagram, soundcloud, youtube, tiktok, twitter, spotify, beatstars, discord, telegram, website }
   painPoints       String[] @default([])
   hasOnlineBooking Boolean  @default(false)
-  score          Int      @default(0) // Opportunity Scoring (0-100)
-  status         String   @default("New") // New, Qualified, Contacted, Replied, Won, Lost
-  notes          String?  @db.Text
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
+  score            Int      @default(0) // Opportunity Scoring (0-100)
+  status           String   @default("New") // New, Qualified, Contacted, Replied, Won, Lost
+  // Стан Autopilot pipeline (окремий від CRM-status). Cron-кроки фільтрують ліди
+  // саме по цьому полю. Значення: NEW | PENDING_AUDIT | PENDING_GENERATION |
+  // PENDING_DELIVERY | PROCESSED. Default NEW = лід ще не у конвеєрі.
+  pipelineStatus   String   @default("NEW")
+  notes            String?  @db.Text
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
 
   // Зв'язки
   user     User?     @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -48,6 +52,7 @@ model Lead {
   messages Message[]
 
   @@index([userId])
+  @@index([pipelineStatus, userId])
 }
 
 model Audit {
@@ -133,8 +138,10 @@ model User {
   fromEmail String?
   fromName  String?
 
-  sessions Session[]
-  leads    Lead[]
+  sessions         Session[]
+  leads            Lead[]
+  telegramSession  TelegramSession?
+  autopilotConfigs AutopilotConfig[]
 }
 
 model Session {
@@ -166,4 +173,44 @@ model AuditLog {
   @@index([adminId])
   @@index([targetUserId])
   @@index([timestamp])
+}
+
+// Telegram MTProto userbot сесія. Один юзер ↔ одна авторизація (мобільний номер).
+// `sessionKey` зберігаємо зашифрованим AES-256-GCM через src/lib/crypto.ts,
+// тож дамп БД не дозволяє отримати доступ до Telegram акаунта.
+// dailyCount / lastReset — для anti-spam rate-limit (Autopilot delivery).
+model TelegramSession {
+  id         String   @id @default(uuid())
+  userId     String   @unique
+  phone      String
+  sessionKey String   @db.Text
+  isActive   Boolean  @default(true)
+  dailyCount Int      @default(0)
+  lastReset  DateTime @default(now())
+  createdAt  DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+// Конфіг Autopilot — повторюваний пошук + outreach за розкладом cron.
+// Один юзер може мати кілька конфігів (різні ніші/регіони/мови).
+// `channels` — масив рядків: ["email"], ["telegram"], або обидва.
+// `mode` повторно використовує існуючий enum LeadMode.
+model AutopilotConfig {
+  id             String   @id @default(uuid())
+  userId         String
+  mode           LeadMode
+  searchQuery    String
+  targetRegion   String?
+  outputLanguage String   @default("English")
+  channels       String[] @default([])
+  maxLeadsPerDay Int      @default(10)
+  isActive       Boolean  @default(true)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, isActive])
+  @@index([isActive])
 }
