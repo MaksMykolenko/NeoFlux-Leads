@@ -4,7 +4,10 @@ import { assertCronAuth } from "@/src/lib/cron-auth";
 import { decrypt } from "@/src/lib/crypto";
 import { sendUserEmail } from "@/src/lib/mailer";
 import { prisma } from "@/src/lib/prisma";
-import { sendTelegramMessage } from "@/src/lib/telegram/userbot";
+import {
+  sendTelegramMessage,
+  type TelegramCreds,
+} from "@/src/lib/telegram/userbot";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -33,6 +36,7 @@ interface StepReport {
 }
 
 interface TelegramRuntime {
+  creds: TelegramCreds;
   sessionString: string;
   sessionId: string;
   userId: string;
@@ -57,6 +61,8 @@ async function loadTelegramRuntime(userId: string): Promise<TelegramRuntime | nu
     select: {
       id: true,
       userId: true,
+      apiId: true,
+      apiHash: true,
       sessionKey: true,
       isActive: true,
       dailyCount: true,
@@ -64,6 +70,7 @@ async function loadTelegramRuntime(userId: string): Promise<TelegramRuntime | nu
     },
   });
   if (!session || !session.isActive) return null;
+  if (!session.sessionKey) return null;
 
   let dailyCount = session.dailyCount;
   const lastResetMs = session.lastReset.getTime();
@@ -78,17 +85,20 @@ async function loadTelegramRuntime(userId: string): Promise<TelegramRuntime | nu
   if (dailyRemaining <= 0) return null;
 
   let sessionString: string;
+  let apiHash: string;
   try {
     sessionString = decrypt(session.sessionKey);
+    apiHash = decrypt(session.apiHash);
   } catch (err) {
     console.error(
-      `[cron/autopilot/step-4] decrypt TG session failed user=${userId}`,
+      `[cron/autopilot/step-4] decrypt TG creds/session failed user=${userId}`,
       err,
     );
     return null;
   }
 
   return {
+    creds: { apiId: session.apiId, apiHash },
     sessionString,
     sessionId: session.id,
     userId: session.userId,
@@ -241,6 +251,7 @@ export async function GET(req: NextRequest) {
           } else {
             try {
               const res = await sendTelegramMessage(
+                runtime.creds,
                 runtime.sessionString,
                 username,
                 messageBody,

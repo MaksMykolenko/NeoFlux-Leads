@@ -1,3 +1,5 @@
+import type { LeadMode } from "@/src/lib/leadMode";
+
 export interface ScoringLead {
   website: string | null;
   email: string | null;
@@ -20,6 +22,19 @@ export interface ScoringLocalLead {
   painPoints: string[];
 }
 
+export const SCORE_THRESHOLDS = {
+  HIGH: 80,
+  MEDIUM: 50,
+} as const;
+
+export type ScoreLevel = "high" | "medium" | "low";
+
+export function getScoreLevel(score: number): ScoreLevel {
+  if (score >= SCORE_THRESHOLDS.HIGH) return "high";
+  if (score >= SCORE_THRESHOLDS.MEDIUM) return "medium";
+  return "low";
+}
+
 export function calculateLocalLeadScore(input: ScoringLocalLead): number {
   let score = 50;
   if (!input.website) score += 15;
@@ -39,8 +54,6 @@ const TYPE_BUYER_BONUS = 30;
 const FOLLOWERS_PER_POINT = 1000;
 const FOLLOWERS_BONUS_CAP = 20;
 
-// Patterns that indicate the business uses a no-code/social profile in lieu of
-// a real website — these are prime targets for a landing-page upsell.
 const LANDING_PLATFORM_PATTERN =
   /instagram\.com|choiceqr\.(?:com|app)|linktr\.ee|facebook\.com\/(?!sharer)/i;
 
@@ -55,7 +68,7 @@ export function isLandingPlatformWebsite(website: string | null): boolean {
  */
 export function calculateLeadScore(
   lead: ScoringLead,
-  audit: ScoringAudit | null
+  audit: ScoringAudit | null,
 ): number {
   let score = BASE_SCORE;
 
@@ -69,9 +82,7 @@ export function calculateLeadScore(
 }
 
 /**
- * Opportunity Score for BEATS-mode artist prospects. Higher = better target
- * for a beat-pitch DM. Public "type beat" search signals + reachable email +
- * audience size are the main positive drivers.
+ * Opportunity Score for BEATS-mode artist prospects.
  */
 export function calculateArtistScore(artist: ScoringArtist): number {
   let score = BASE_SCORE;
@@ -82,7 +93,7 @@ export function calculateArtistScore(artist: ScoringArtist): number {
   if (artist.followers && artist.followers > 0) {
     const fb = Math.min(
       FOLLOWERS_BONUS_CAP,
-      Math.floor(artist.followers / FOLLOWERS_PER_POINT)
+      Math.floor(artist.followers / FOLLOWERS_PER_POINT),
     );
     score += fb;
   }
@@ -90,42 +101,110 @@ export function calculateArtistScore(artist: ScoringArtist): number {
   return Math.max(0, Math.min(100, score));
 }
 
+/**
+ * Mode-aware shape for `recalculateLeadScore`. Compatible with a full Prisma
+ * `Lead` row — pass it directly.
+ */
+export interface RecalcLeadInput {
+  mode: LeadMode;
+  website?: string | null;
+  email?: string | null;
+  hasOnlineBooking?: boolean | null;
+  painPoints?: string[] | null;
+  followers?: number | null;
+  lookingForType?: boolean | null;
+}
+
+/**
+ * Єдина точка перерахунку Opportunity Score. Диспатчить по `mode`:
+ *   LOCAL     → `calculateLocalLeadScore`  (painPoints + booking signals)
+ *   BEATS     → `calculateArtistScore`     (followers + type-buyer + email)
+ *   UNIVERSAL → `calculateLeadScore`       (audit booleans + landing platform + email)
+ *
+ * `audit` ігнорується для LOCAL/BEATS — їм аудит сайту не потрібен для скору.
+ */
+export function recalculateLeadScore(
+  lead: RecalcLeadInput,
+  audit: ScoringAudit | null,
+): number {
+  switch (lead.mode) {
+    case "BEATS":
+      return calculateArtistScore({
+        email: lead.email ?? null,
+        followers: lead.followers ?? null,
+        lookingForType: lead.lookingForType ?? null,
+      });
+    case "UNIVERSAL":
+      return calculateLeadScore(
+        { website: lead.website ?? null, email: lead.email ?? null },
+        audit,
+      );
+    case "LOCAL":
+    default:
+      return calculateLocalLeadScore({
+        website: lead.website ?? null,
+        hasOnlineBooking: lead.hasOnlineBooking ?? false,
+        painPoints: lead.painPoints ?? [],
+      });
+  }
+}
+
+/**
+ * Брендова палітра для пілюлі/бейджика скору. HIGH — флакс-фіолетовий,
+ * MEDIUM/LOW — нейтральні відтінки zinc (без яскравого зеленого/червоного).
+ * Повертає одну строку Tailwind-класів готову до вставки в `className`.
+ */
+export function getScoreColorClass(score: number): string {
+  const level = getScoreLevel(score);
+  if (level === "high") {
+    return "border-purple-300 bg-purple-50 text-purple-700 dark:border-flux-purple/40 dark:bg-flux-purple/15 dark:text-flux-purple-soft";
+  }
+  if (level === "medium") {
+    return "border-zinc-200 bg-zinc-50 text-zinc-600 dark:border-flux-border dark:bg-flux-card-2 dark:text-zinc-300";
+  }
+  return "border-zinc-200 bg-zinc-50 text-zinc-400 dark:border-flux-border dark:bg-flux-card-2 dark:text-zinc-500";
+}
+
 export interface ScoreContext {
   textColor: string;
   barColor: string;
   ringColor: string;
   bgColor: string;
-  /** i18n key suffix: `LeadDetail.score.label.${labelKey}` */
-  labelKey: "high" | "medium" | "low";
-  level: "high" | "medium" | "low";
+  labelKey: ScoreLevel;
+  level: ScoreLevel;
 }
 
+/**
+ * Розширена палітра для великого score-card на детальній сторінці. Узгоджена
+ * з `SCORE_THRESHOLDS` та брендовою палітрою.
+ */
 export function getScoreContext(score: number): ScoreContext {
-  if (score > 70) {
+  const level = getScoreLevel(score);
+  if (level === "high") {
     return {
-      textColor: "text-green-600",
-      barColor: "bg-green-500",
-      ringColor: "ring-green-200",
-      bgColor: "bg-green-50",
+      textColor: "text-purple-700 dark:text-flux-purple-soft",
+      barColor: "bg-purple-500 dark:bg-flux-purple",
+      ringColor: "ring-purple-200 dark:ring-flux-purple/30",
+      bgColor: "bg-purple-50 dark:bg-flux-purple/15",
       labelKey: "high",
       level: "high",
     };
   }
-  if (score > 40) {
+  if (level === "medium") {
     return {
-      textColor: "text-amber-600",
-      barColor: "bg-amber-500",
-      ringColor: "ring-amber-200",
-      bgColor: "bg-amber-50",
+      textColor: "text-zinc-700 dark:text-zinc-200",
+      barColor: "bg-zinc-400 dark:bg-zinc-500",
+      ringColor: "ring-zinc-200 dark:ring-flux-border",
+      bgColor: "bg-zinc-50 dark:bg-flux-card-2",
       labelKey: "medium",
       level: "medium",
     };
   }
   return {
-    textColor: "text-red-600",
-    barColor: "bg-red-500",
-    ringColor: "ring-red-200",
-    bgColor: "bg-red-50",
+    textColor: "text-zinc-500 dark:text-zinc-400",
+    barColor: "bg-zinc-300 dark:bg-zinc-600",
+    ringColor: "ring-zinc-200 dark:ring-flux-border",
+    bgColor: "bg-zinc-50 dark:bg-flux-card-2",
     labelKey: "low",
     level: "low",
   };

@@ -11,12 +11,7 @@ import {
   DeliveryStatusBadge,
   ReplyStatusEditor,
 } from "@/src/components/MessageStatusBadges";
-import {
-  calculateArtistScore,
-  calculateLeadScore,
-  calculateLocalLeadScore,
-  getScoreContext,
-} from "@/src/lib/scoring";
+import { getScoreContext } from "@/src/lib/scoring";
 import {
   CHANNELS,
   channelTranslated,
@@ -85,33 +80,11 @@ export default async function LeadDetailPage({
         ? "/dashboard?mode=universal"
         : "/dashboard";
 
-  // Compute the score live for display so the UI stays accurate even if the
-  // persisted `lead.score` lags (e.g. before the first audit run, or after a
-  // manual website edit). Match the formula to the creation pipeline:
-  // LOCAL uses pain-points + booking signals; UNIVERSAL keeps the legacy
-  // website/email/audit-driven score; BEATS has its own artist scorer.
-  const opportunityScore = isBeats
-    ? calculateArtistScore({
-        email: lead.email,
-        followers: lead.followers,
-        lookingForType: lead.lookingForType,
-      })
-    : isUniversal
-      ? calculateLeadScore(
-          { website: lead.website, email: lead.email },
-          lead.audit
-            ? {
-                hasSSL: lead.audit.hasSSL,
-                mobileFriendly: lead.audit.mobileFriendly,
-              }
-            : null,
-        )
-      : calculateLocalLeadScore({
-          website: lead.website,
-          hasOnlineBooking: lead.hasOnlineBooking,
-          painPoints: lead.painPoints,
-        });
-
+  // Single source of truth: `lead.score` з БД. Перерахунок відбувається в
+  // місцях запису (createLead, runAuditForLead, autopilot step-2-audit), а
+  // не на льоту при рендері — щоб усі поверхні (Table/Kanban/детальна) бачили
+  // однакове число.
+  const opportunityScore = lead.score;
   const scoreCtx = getScoreContext(opportunityScore);
   const levelPillLabel =
     scoreCtx.level === "high"

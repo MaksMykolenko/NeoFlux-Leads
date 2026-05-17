@@ -1,27 +1,36 @@
 import type { NextRequest } from "next/server";
-import { LeadMode } from "@prisma/client";
+import { Prisma } from "@prisma/client";
 import { assertCronAuth } from "@/src/lib/cron-auth";
+import { CHANNEL_ORDER } from "@/src/lib/channels";
 import { requireGeminiKey } from "@/src/lib/gemini";
+import { LeadMode } from "@/src/lib/leadMode";
+import type { BeatProspect } from "@/src/lib/beatProspects";
+import { coreSearchAndSaveLeads } from "@/src/lib/leadSearch/local";
+import { coreSearchBeatProspects } from "@/src/lib/leadSearch/beats";
+import { coreSearchUniversalLeads } from "@/src/lib/leadSearch/universal";
 import { prisma } from "@/src/lib/prisma";
-import { calculateLocalLeadScore } from "@/src/lib/scoring";
+import { calculateArtistScore } from "@/src/lib/scoring";
 import {
   getLeadLimitStatus,
   incrementLeadsProcessed,
 } from "@/src/lib/subscription";
-import { searchLocalBusinessesViaGemini } from "@/src/lib/geminiLocalBusinessSearch";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
 
+const INTER_CONFIG_DELAY_MS = 2000;
+const LOG = "[Autopilot Step 1]";
+
 interface StepReport {
   configsProcessed: number;
   configsSkipped: number;
+  configsFailed: number;
   leadsCreated: number;
-  errors: number;
   detail: Array<{
     configId: string;
     mode: LeadMode;
+    userId: string;
     saved?: number;
     skipped?: number;
     error?: string;
@@ -38,11 +47,10 @@ export async function GET(req: NextRequest) {
   const unauth = assertCronAuth(req);
   if (unauth) return unauth;
 
-  let apiKey: string;
   try {
-    apiKey = requireGeminiKey();
+    requireGeminiKey();
   } catch (err) {
-    console.error("[cron/autopilot/step-1] missing Gemini key", err);
+    console.error(`${LOG} missing Gemini key`, err);
     return Response.json(
       { error: (err as Error).message },
       { status: 500 },
@@ -52,8 +60,8 @@ export async function GET(req: NextRequest) {
   const report: StepReport = {
     configsProcessed: 0,
     configsSkipped: 0,
+    configsFailed: 0,
     leadsCreated: 0,
-    errors: 0,
     detail: [],
   };
 
@@ -63,40 +71,24 @@ export async function GET(req: NextRequest) {
       orderBy: { updatedAt: "asc" },
     });
 
+    console.log(`${LOG} Found ${configs.length} active configs.`);
+    if (configs.length === 0) {
+      return Response.json({
+        ok: true,
+        ...report,
+        message: "no active configs",
+      });
+    }
+
     const todayStart = startOfTodayUTC();
 
-    for (const cfg of configs) {
+    for (let i = 0; i < configs.length; i++) {
+      const cfg = configs[i];
+      console.log(
+        `${LOG} Processing ${cfg.mode} for User ${cfg.userId} (config=${cfg.id})`,
+      );
+
       try {
-        const user = await prisma.user.findUnique({
-          where: { id: cfg.userId },
-          select: {
-            id: true,
-            plan: true,
-            leadsProcessedCount: true,
-            planResetDate: true,
-          },
-        });
-        if (!user) {
-          report.configsSkipped++;
-          report.detail.push({
-            configId: cfg.id,
-            mode: cfg.mode,
-            error: "user not found",
-          });
-          continue;
-        }
-
-        const limitStatus = getLeadLimitStatus(user);
-        if (!limitStatus.allowed) {
-          report.configsSkipped++;
-          report.detail.push({
-            configId: cfg.id,
-            mode: cfg.mode,
-            error: "plan limit reached",
-          });
-          continue;
-        }
-
         const createdToday = await prisma.lead.count({
           where: {
             userId: cfg.userId,
@@ -111,56 +103,64 @@ export async function GET(req: NextRequest) {
           report.detail.push({
             configId: cfg.id,
             mode: cfg.mode,
+            userId: cfg.userId,
             error: "daily quota reached",
           });
+          console.log(
+            `${LOG} daily quota reached config=${cfg.id} (${createdToday}/${cfg.maxLeadsPerDay})`,
+          );
           continue;
         }
 
-        const planRemaining = limitStatus.unlimited
-          ? Number.POSITIVE_INFINITY
-          : limitStatus.remaining;
-        const cap = Math.max(0, Math.min(remainingToday, planRemaining));
+        const outcome = await processConfig(cfg, remainingToday);
 
-        if (cap <= 0) {
-          report.configsSkipped++;
-          continue;
+        if (outcome.error) {
+          report.configsFailed++;
+          report.detail.push({
+            configId: cfg.id,
+            mode: cfg.mode,
+            userId: cfg.userId,
+            saved: outcome.saved,
+            error: outcome.error,
+          });
+          console.error(
+            `${LOG} config=${cfg.id} failed: ${outcome.error}`,
+          );
+        } else {
+          report.configsProcessed++;
+          report.leadsCreated += outcome.saved;
+          report.detail.push({
+            configId: cfg.id,
+            mode: cfg.mode,
+            userId: cfg.userId,
+            saved: outcome.saved,
+          });
+          console.log(
+            `${LOG} Successfully saved ${outcome.saved} leads for User ${cfg.userId}`,
+          );
         }
-
-        const saved = await runSearchForConfig({
-          cfg,
-          userId: user.id,
-          apiKey,
-          cap,
-        });
-
-        if (saved > 0) {
-          await incrementLeadsProcessed(user.id, saved);
-        }
-
-        report.configsProcessed++;
-        report.leadsCreated += saved;
-        report.detail.push({
-          configId: cfg.id,
-          mode: cfg.mode,
-          saved,
-        });
       } catch (err) {
-        report.errors++;
-        console.error(
-          `[cron/autopilot/step-1] config=${cfg.id} mode=${cfg.mode} failed`,
-          err,
-        );
+        report.configsFailed++;
+        console.error(`${LOG} config=${cfg.id} threw:`, err);
         report.detail.push({
           configId: cfg.id,
           mode: cfg.mode,
+          userId: cfg.userId,
           error: err instanceof Error ? err.message : String(err),
         });
       }
+
+      if (i < configs.length - 1) {
+        await new Promise((r) => setTimeout(r, INTER_CONFIG_DELAY_MS));
+      }
     }
 
+    console.log(
+      `${LOG} done. processed=${report.configsProcessed} skipped=${report.configsSkipped} failed=${report.configsFailed} leads=${report.leadsCreated}`,
+    );
     return Response.json({ ok: true, ...report });
   } catch (err) {
-    console.error("[cron/autopilot/step-1] fatal", err);
+    console.error(`${LOG} fatal`, err);
     return Response.json(
       { error: err instanceof Error ? err.message : "Internal error" },
       { status: 500 },
@@ -168,96 +168,174 @@ export async function GET(req: NextRequest) {
   }
 }
 
-interface RunArgs {
-  cfg: {
-    id: string;
-    userId: string;
-    mode: LeadMode;
-    searchQuery: string;
-    targetRegion: string | null;
-  };
+interface ConfigRow {
+  id: string;
   userId: string;
-  apiKey: string;
+  mode: LeadMode;
+  searchQuery: string;
+  targetRegion: string | null;
+  maxLeadsPerDay: number;
+}
+
+interface ConfigOutcome {
+  saved: number;
+  error?: string;
+}
+
+async function processConfig(
+  cfg: ConfigRow,
+  remainingToday: number,
+): Promise<ConfigOutcome> {
+  switch (cfg.mode) {
+    case LeadMode.LOCAL: {
+      const city = cfg.targetRegion?.trim();
+      if (!city) {
+        return { saved: 0, error: "LOCAL: targetRegion is required" };
+      }
+      const result = await coreSearchAndSaveLeads({
+        userId: cfg.userId,
+        query: cfg.searchQuery,
+        city,
+        region: cfg.targetRegion,
+        pipelineStatus: "PENDING_AUDIT",
+        source: "Autopilot (LOCAL)",
+        revalidate: false,
+      });
+      if (!result.success) {
+        return { saved: result.count, error: result.error ?? "search failed" };
+      }
+      return { saved: result.count };
+    }
+
+    case LeadMode.UNIVERSAL: {
+      const result = await coreSearchUniversalLeads({
+        userId: cfg.userId,
+        prompt: cfg.searchQuery,
+        region: cfg.targetRegion,
+        pipelineStatus: "PENDING_AUDIT",
+        source: "Autopilot (UNIVERSAL)",
+        revalidate: false,
+      });
+      if (!result.success) {
+        return {
+          saved: result.saved ?? 0,
+          error: result.error ?? "search failed",
+        };
+      }
+      return { saved: result.saved ?? 0 };
+    }
+
+    case LeadMode.BEATS: {
+      const result = await coreSearchBeatProspects({
+        userId: cfg.userId,
+        query: cfg.searchQuery,
+        region: cfg.targetRegion,
+      });
+      if (!result.success) {
+        return { saved: 0, error: result.error ?? "search failed" };
+      }
+      const saved = await persistBeatsProspects({
+        userId: cfg.userId,
+        cap: remainingToday,
+        prospects: result.prospects,
+      });
+      return { saved };
+    }
+
+    default:
+      return { saved: 0, error: `unsupported mode: ${cfg.mode}` };
+  }
+}
+
+interface PersistBeatsInput {
+  userId: string;
   cap: number;
+  prospects: BeatProspect[];
 }
 
-async function runSearchForConfig(args: RunArgs): Promise<number> {
-  const { cfg, userId, apiKey, cap } = args;
+/**
+ * Зберігає `BeatProspect[]` як `Lead` (mode=BEATS, pipelineStatus=PENDING_GENERATION).
+ * Артистам не потрібен аудит сайту — одразу йдемо в генерацію.
+ * Дедуп per-(userId, mode=BEATS, companyName=handle).
+ */
+async function persistBeatsProspects({
+  userId,
+  cap,
+  prospects,
+}: PersistBeatsInput): Promise<number> {
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { plan: true, leadsProcessedCount: true, planResetDate: true },
+  });
+  if (!user) return 0;
 
-  if (cfg.mode === LeadMode.LOCAL) {
-    return runLocalSearch({ cfg, userId, apiKey, cap });
-  }
-  console.warn(
-    `[cron/autopilot/step-1] mode=${cfg.mode} not yet implemented in step-1 (only LOCAL is wired)`,
+  const limitStatus = getLeadLimitStatus(user);
+  if (!limitStatus.allowed) return 0;
+
+  let remaining = Math.min(
+    cap,
+    limitStatus.unlimited ? Number.POSITIVE_INFINITY : limitStatus.remaining,
   );
-  return 0;
-}
-
-async function runLocalSearch(args: RunArgs): Promise<number> {
-  const { cfg, userId, apiKey, cap } = args;
-  const city = cfg.targetRegion?.trim();
-  if (!city) {
-    console.warn(
-      `[cron/autopilot/step-1] config=${cfg.id} LOCAL skipped: targetRegion is required`,
-    );
-    return 0;
-  }
-
-  const hits = await searchLocalBusinessesViaGemini(
-    cfg.searchQuery,
-    city,
-    apiKey,
-    cfg.targetRegion,
-  );
-
-  if (hits.length === 0) return 0;
-
   let saved = 0;
-  for (const hit of hits) {
-    if (saved >= cap) break;
+
+  for (const artist of prospects) {
+    if (remaining <= 0) break;
+    const handle = artist.handle?.trim();
+    if (!handle) continue;
     try {
       const existing = await prisma.lead.findFirst({
-        where: {
-          userId,
-          OR: [
-            ...(hit.website ? [{ website: hit.website }] : []),
-            { companyName: hit.companyName, city },
-          ],
-        },
+        where: { userId, mode: LeadMode.BEATS, companyName: handle },
         select: { id: true },
       });
       if (existing) continue;
 
-      const score = calculateLocalLeadScore({
-        website: hit.website,
-        hasOnlineBooking: hit.hasOnlineBooking,
-        painPoints: hit.painPoints,
+      const socialLinks = sanitizeContactsForJson(artist.contacts);
+      const score = calculateArtistScore({
+        email: artist.email,
+        followers: artist.followers,
+        lookingForType: artist.lookingForType,
       });
 
       await prisma.lead.create({
         data: {
           userId,
-          mode: LeadMode.LOCAL,
-          companyName: hit.companyName,
-          website: hit.website,
-          phone: hit.phone,
-          city,
-          category: cfg.searchQuery,
-          source: `Autopilot · ${cfg.searchQuery}`,
-          painPoints: hit.painPoints,
-          hasOnlineBooking: hit.hasOnlineBooking,
+          mode: LeadMode.BEATS,
+          companyName: handle,
+          realName: artist.realName || handle,
+          category: artist.genre || null,
+          source: "Autopilot (BEATS)",
+          website: artist.profileUrl,
+          email: artist.email,
+          followers: artist.followers,
+          lookingForType: artist.lookingForType,
           score,
-          pipelineStatus: "PENDING_AUDIT",
+          pipelineStatus: "PENDING_GENERATION",
+          ...(socialLinks !== undefined ? { socialLinks } : {}),
         },
       });
-      saved++;
+      saved += 1;
+      remaining -= 1;
     } catch (err) {
-      console.error(
-        `[cron/autopilot/step-1] config=${cfg.id} save lead "${hit.companyName}" failed`,
-        err,
-      );
+      console.error(`${LOG} BEATS save artist=${handle} failed`, err);
     }
   }
 
+  if (saved > 0) {
+    await incrementLeadsProcessed(userId, saved);
+  }
   return saved;
+}
+
+function sanitizeContactsForJson(
+  contacts: BeatProspect["contacts"] | undefined,
+): Prisma.InputJsonValue | undefined {
+  if (!contacts) return undefined;
+  const out: Record<string, string> = {};
+  for (const key of CHANNEL_ORDER) {
+    const v = contacts[key];
+    if (typeof v === "string" && v.trim()) {
+      out[key] = v.trim();
+    }
+  }
+  return Object.keys(out).length > 0 ? out : undefined;
 }

@@ -33,7 +33,13 @@ export default async function SettingsPage({
 
   const telegram = await prisma.telegramSession.findUnique({
     where: { userId: user.id },
-    select: { phone: true, isActive: true, dailyCount: true },
+    select: {
+      apiId: true,
+      phone: true,
+      sessionKey: true,
+      isActive: true,
+      dailyCount: true,
+    },
   });
 
   return (
@@ -88,7 +94,9 @@ export default async function SettingsPage({
         <section className="mt-10">
           <TelegramAuthCard
             initial={{
-              connected: !!telegram,
+              hasCredentials: !!telegram,
+              connected: !!telegram?.sessionKey && !!telegram?.isActive,
+              apiId: telegram?.apiId ?? null,
               phone: telegram?.phone ?? null,
               dailyCount: telegram?.dailyCount ?? 0,
               isActive: telegram?.isActive ?? false,

@@ -32,28 +32,25 @@ const PENDING_TTL_SECONDS = 10 * 60;
 const HUMAN_DELAY_MIN_MS = 2000;
 const HUMAN_DELAY_MAX_MS = 5000;
 
-function readCredentials(): { apiId: number; apiHash: string } {
-  const apiIdRaw = process.env.TELEGRAM_API_ID?.trim();
-  const apiHash = process.env.TELEGRAM_API_HASH?.trim();
-  if (!apiIdRaw || !apiHash) {
-    throw new Error(
-      "Telegram credentials missing. Set TELEGRAM_API_ID + TELEGRAM_API_HASH in .env (https://my.telegram.org/apps).",
-    );
-  }
-  const apiId = Number.parseInt(apiIdRaw, 10);
-  if (!Number.isFinite(apiId) || apiId <= 0) {
-    throw new Error(`Invalid TELEGRAM_API_ID: ${apiIdRaw}`);
-  }
-  return { apiId, apiHash };
+export interface TelegramCreds {
+  apiId: number;
+  apiHash: string;
 }
 
-function buildClient(sessionString: string): TelegramClient {
-  const { apiId, apiHash } = readCredentials();
-  return new TelegramClient(new StringSession(sessionString), apiId, apiHash, {
-    connectionRetries: 3,
-    useWSS: false,
-    requestRetries: 2,
-  });
+function buildClient(
+  creds: TelegramCreds,
+  sessionString: string,
+): TelegramClient {
+  return new TelegramClient(
+    new StringSession(sessionString),
+    creds.apiId,
+    creds.apiHash,
+    {
+      connectionRetries: 3,
+      useWSS: false,
+      requestRetries: 2,
+    },
+  );
 }
 
 async function setPendingCookie(sessionString: string): Promise<void> {
@@ -114,7 +111,10 @@ export interface SendAuthCodeResult {
  * Крок 1 auth: ініціює видачу SMS/in-app коду на номер.
  * Returns phoneCodeHash, який треба передати у `verifyAuthCode`.
  */
-export async function sendAuthCode(phone: string): Promise<SendAuthCodeResult> {
+export async function sendAuthCode(
+  creds: TelegramCreds,
+  phone: string,
+): Promise<SendAuthCodeResult> {
   const cleaned = phone.trim();
   if (!cleaned) {
     return { success: false, error: "Phone number is required" };
@@ -122,12 +122,11 @@ export async function sendAuthCode(phone: string): Promise<SendAuthCodeResult> {
 
   let client: TelegramClient | null = null;
   try {
-    const { apiId, apiHash } = readCredentials();
-    client = buildClient("");
+    client = buildClient(creds, "");
     await client.connect();
 
     const result = await client.sendCode(
-      { apiId, apiHash },
+      { apiId: creds.apiId, apiHash: creds.apiHash },
       cleaned,
     );
 
@@ -174,6 +173,7 @@ export interface VerifyAuthCodeResult {
  *   в TelegramSession.sessionKey.
  */
 export async function verifyAuthCode(
+  creds: TelegramCreds,
   phone: string,
   phoneCodeHash: string,
   code: string,
@@ -200,7 +200,7 @@ export async function verifyAuthCode(
 
   let client: TelegramClient | null = null;
   try {
-    client = buildClient(pending);
+    client = buildClient(creds, pending);
     await client.connect();
 
     try {
@@ -281,6 +281,7 @@ export type SendTelegramMessageResult =
  *   людську поведінку і знизити ризик FLOOD_WAIT / ban.
  */
 export async function sendTelegramMessage(
+  creds: TelegramCreds,
   sessionString: string,
   username: string,
   message: string,
@@ -299,7 +300,7 @@ export async function sendTelegramMessage(
 
   let client: TelegramClient | null = null;
   try {
-    client = buildClient(sessionString);
+    client = buildClient(creds, sessionString);
     await client.connect();
 
     await sleep(humanDelayMs());

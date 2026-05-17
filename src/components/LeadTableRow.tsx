@@ -8,6 +8,10 @@ import {
   resolveBeatsProfileHref,
   resolveUniversalSiteHref,
 } from "@/src/lib/channels";
+import {
+  SCORE_THRESHOLDS,
+  getScoreColorClass,
+} from "@/src/lib/scoring";
 import AuditButton from "@/src/components/AuditButton";
 import StatusPill from "@/src/components/StatusPill";
 
@@ -36,8 +40,6 @@ interface LeadRowProps {
   };
 }
 
-const HIGH_SCORE_THRESHOLD = 80;
-
 function stopPropagation(e: React.MouseEvent | React.KeyboardEvent) {
   e.stopPropagation();
 }
@@ -52,7 +54,7 @@ export default function LeadTableRow({ lead, selection }: LeadRowProps) {
   const t = useTranslations("LeadTableRow");
   const isBeats = lead.mode === LeadMode.BEATS;
   const isUniversal = lead.mode === LeadMode.UNIVERSAL;
-  const isHighScore = lead.score >= HIGH_SCORE_THRESHOLD;
+  const isHighScore = lead.score >= SCORE_THRESHOLDS.HIGH;
 
   const profileHref = isBeats
     ? resolveBeatsProfileHref(
@@ -190,15 +192,9 @@ export default function LeadTableRow({ lead, selection }: LeadRowProps) {
 }
 
 function ScorePill({ score }: { score: number }) {
-  const tone =
-    score >= HIGH_SCORE_THRESHOLD
-      ? "border-purple-300 bg-purple-50 text-purple-700 dark:border-flux-purple/40 dark:bg-flux-purple/15 dark:text-flux-purple-soft"
-      : score >= 50
-        ? "border-zinc-200 bg-zinc-50 text-zinc-600 dark:border-flux-border dark:bg-flux-card-2 dark:text-zinc-300"
-        : "border-zinc-200 bg-zinc-50 text-zinc-400 dark:border-flux-border dark:bg-flux-card-2 dark:text-zinc-500";
   return (
     <span
-      className={`inline-flex items-center rounded-md border px-1.5 py-0.5 text-[10px] font-semibold tabular-nums tracking-wider ${tone}`}
+      className={`inline-flex items-center rounded-md border px-1.5 py-0.5 text-[10px] font-semibold tabular-nums tracking-wider ${getScoreColorClass(score)}`}
     >
       {score}
     </span>

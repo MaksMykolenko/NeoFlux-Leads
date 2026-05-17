@@ -175,16 +175,31 @@ model AuditLog {
   @@index([timestamp])
 }
 
-// Telegram MTProto userbot сесія. Один юзер ↔ одна авторизація (мобільний номер).
-// `sessionKey` зберігаємо зашифрованим AES-256-GCM через src/lib/crypto.ts,
-// тож дамп БД не дозволяє отримати доступ до Telegram акаунта.
-// dailyCount / lastReset — для anti-spam rate-limit (Autopilot delivery).
+// Telegram MTProto userbot сесія. Один юзер ↔ одна авторизація.
+//
+// Юзер сам реєструє свій Telegram App на https://my.telegram.org/apps та
+// вводить `apiId` + `apiHash` у Settings. Це дає кожному юзеру власний
+// rate-limit budget і ізолює спам-incidents між клієнтами.
+//
+// Шифрування (AES-256-GCM через src/lib/crypto.ts):
+//   - `apiHash`     — Telegram App secret
+//   - `sessionKey`  — MTProto session token
+// Дамп БД без `ENCRYPTION_KEY` нічого не дає атакуючому.
+//
+// Стани рядка:
+//   1) Тільки apiId/apiHash         → юзер зберіг ключі, ще не вводив телефон
+//   2) + phone (sessionKey=null)    → у процесі phone-auth (рідко зберігається)
+//   3) + sessionKey, isActive=true  → авторизовано, готово до розсилки
+//
+// dailyCount / lastReset — anti-spam rate-limit (Autopilot delivery).
 model TelegramSession {
   id         String   @id @default(uuid())
   userId     String   @unique
-  phone      String
-  sessionKey String   @db.Text
-  isActive   Boolean  @default(true)
+  apiId      Int
+  apiHash    String   @db.Text
+  phone      String?
+  sessionKey String?  @db.Text
+  isActive   Boolean  @default(false)
   dailyCount Int      @default(0)
   lastReset  DateTime @default(now())
   createdAt  DateTime @default(now())

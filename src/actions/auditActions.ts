@@ -1,7 +1,7 @@
 "use server";
 
 import { prisma } from "@/src/lib/prisma";
-import { calculateLeadScore } from "@/src/lib/scoring";
+import { recalculateLeadScore } from "@/src/lib/scoring";
 import { getCurrentUser } from "@/src/lib/session";
 import { checkSubscription } from "@/src/lib/subscription";
 
@@ -65,13 +65,13 @@ export async function runAuditForLead(
       },
     });
 
-    // Compute Opportunity Score using the freshest data: the email might
-    // have just been discovered during this audit run, and we use the
-    // updated audit booleans rather than the stale stored ones.
+    // Mode-aware recompute з найсвіжішими даними: щойно знайдений email +
+    // оновлені audit-булеві. Для LOCAL береться painPoints/hasOnlineBooking
+    // самого ліда, для UNIVERSAL — audit + email, для BEATS — артистні поля.
     const freshEmail = result.email ?? lead.email;
-    const opportunityScore = calculateLeadScore(
-      { website: lead.website, email: freshEmail },
-      { hasSSL: result.ssl, mobileFriendly: result.mobileFriendly }
+    const opportunityScore = recalculateLeadScore(
+      { ...lead, email: freshEmail },
+      { hasSSL: result.ssl, mobileFriendly: result.mobileFriendly },
     );
 
     const leadUpdate: { score: number; email?: string } = {

@@ -16,6 +16,7 @@ import {
   type LeadStatus,
 } from "@/src/lib/leadStatus";
 import { LeadMode } from "@/src/lib/leadMode";
+import { getScoreColorClass } from "@/src/lib/scoring";
 import { updateLeadStatus } from "@/src/actions/statusActions";
 
 export interface KanbanLead {
@@ -291,27 +292,11 @@ function KanbanCard({ lead }: { lead: KanbanLead }) {
 }
 
 function ScoreIndicator({ score }: { score: number }) {
-  const tone =
-    score >= 70 ? "score-high" : score >= 40 ? "score-mid" : "score-low";
-  const dotClass =
-    tone === "score-high"
-      ? "bg-emerald-500"
-      : tone === "score-mid"
-        ? "bg-amber-500"
-        : "bg-red-500";
-  const textClass =
-    tone === "score-high"
-      ? "text-emerald-600 dark:text-emerald-400"
-      : tone === "score-mid"
-        ? "text-amber-600 dark:text-amber-400"
-        : "text-red-600 dark:text-red-400";
-
   return (
-    <span className="inline-flex flex-shrink-0 items-center gap-1">
-      <span className={`inline-block h-1.5 w-1.5 rounded-full ${dotClass}`} />
-      <span className={`text-xs font-semibold tabular-nums ${textClass}`}>
-        {score}
-      </span>
+    <span
+      className={`inline-flex flex-shrink-0 items-center rounded-md border px-1.5 py-0.5 text-xs font-semibold tabular-nums tracking-wider ${getScoreColorClass(score)}`}
+    >
+      {score}
     </span>
   );
 }
