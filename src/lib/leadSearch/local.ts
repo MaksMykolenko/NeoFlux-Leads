@@ -6,7 +6,8 @@ import { calculateLocalLeadScore } from "@/src/lib/scoring";
 import {
   getLeadLimitStatus,
   getPlanForUser,
-  incrementLeadsProcessed,
+  incrementLeadsProcessedInTx,
+  withUserLeadLimitLock,
 } from "@/src/lib/subscription";
 
 export interface CoreLocalSearchInput {
@@ -82,6 +83,9 @@ export async function coreSearchAndSaveLeads(
     };
   }
 
+  // Pre-flight UX check — return a friendly LIMIT_REACHED before we spend a
+  // Gemini call. The real, race-safe enforcement happens via
+  // `tryClaimLeadSlots` after we know how many leads the AI returned.
   const limitStatus = getLeadLimitStatus(user);
   if (!limitStatus.allowed) {
     const plan = getPlanForUser(user);
@@ -108,73 +112,114 @@ export async function coreSearchAndSaveLeads(
     return { success: true, count: 0, skipped: 0, noMatches: true };
   }
 
-  let savedCount = 0;
-  let skippedCount = 0;
-  let remaining = limitStatus.unlimited
-    ? Number.POSITIVE_INFINITY
-    : limitStatus.remaining;
+  const saveResult = await withUserLeadLimitLock(userId, async (tx) => {
+    const lockedUser = await tx.user.findUnique({
+      where: { id: userId },
+      select: { plan: true, leadsProcessedCount: true, planResetDate: true },
+    });
+    if (!lockedUser) {
+      return {
+        success: false as const,
+        count: 0,
+        skipped: 0,
+        errorCode: "USER_NOT_FOUND" as const,
+        error: "Користувача не знайдено",
+      };
+    }
 
-  for (const lead of scrapedLeads) {
-    try {
-      const existing = await prisma.lead.findFirst({
-        where: {
-          userId,
-          OR: [
-            ...(lead.website ? [{ website: lead.website }] : []),
-            { companyName: lead.companyName, city: trimmedCity },
-          ],
-        },
-        select: { id: true },
-      });
+    const lockedLimit = getLeadLimitStatus(lockedUser);
+    if (!lockedLimit.allowed) {
+      const plan = getPlanForUser(lockedUser);
+      return {
+        success: false as const,
+        count: 0,
+        skipped: 0,
+        errorCode: "LIMIT_REACHED" as const,
+        limit: plan.leadsPerMonth,
+        used: lockedLimit.used,
+        error: `Ліміт плану ${plan.name} вичерпано (${lockedLimit.used}/${plan.leadsPerMonth}). Оновіть тариф на /pricing.`,
+      };
+    }
 
-      if (existing) {
-        await prisma.lead.update({
-          where: { id: existing.id },
-          data: { updatedAt: new Date() },
+    let savedCount = 0;
+    let skippedCount = 0;
+    let remaining = lockedLimit.unlimited
+      ? Number.POSITIVE_INFINITY
+      : lockedLimit.remaining;
+
+    for (const lead of scrapedLeads) {
+      try {
+        const existing = await tx.lead.findFirst({
+          where: {
+            userId,
+            OR: [
+              ...(lead.website ? [{ website: lead.website }] : []),
+              { companyName: lead.companyName, city: trimmedCity },
+            ],
+          },
+          select: { id: true },
         });
-        skippedCount++;
-        continue;
-      }
 
-      if (remaining <= 0) {
-        skippedCount++;
-        continue;
-      }
+        if (existing) {
+          await tx.lead.update({
+            where: { id: existing.id },
+            data: { updatedAt: new Date() },
+          });
+          skippedCount++;
+          continue;
+        }
 
-      const initialScore = calculateLocalLeadScore({
-        website: lead.website,
-        hasOnlineBooking: lead.hasOnlineBooking,
-        painPoints: lead.painPoints,
-      });
+        if (remaining <= 0) {
+          skippedCount++;
+          continue;
+        }
 
-      await prisma.lead.create({
-        data: {
-          userId,
-          companyName: lead.companyName,
+        const initialScore = calculateLocalLeadScore({
           website: lead.website,
-          phone: lead.phone,
-          city: trimmedCity,
-          category: trimmedQuery,
-          source: lead.sourceUrl ? `Google Search: ${lead.sourceUrl}` : source,
-          notes: buildSearchContextNotes(trimmedService, trimmedLanguage),
-          painPoints: lead.painPoints,
           hasOnlineBooking: lead.hasOnlineBooking,
-          score: initialScore,
-          ...(pipelineStatus ? { pipelineStatus } : {}),
-        },
-      });
-      savedCount++;
-      remaining -= 1;
-    } catch (dbError) {
-      console.error(`Failed to process lead "${lead.companyName}":`, dbError);
-    }
-  }
+          painPoints: lead.painPoints,
+        });
 
-  if (savedCount > 0) {
-    await incrementLeadsProcessed(userId, savedCount);
-    if (revalidate) {
-      await revalidateLocalizedPath("/");
+        await tx.lead.create({
+          data: {
+            userId,
+            companyName: lead.companyName,
+            website: lead.website,
+            phone: lead.phone,
+            city: trimmedCity,
+            category: trimmedQuery,
+            source: lead.sourceUrl ? `Google Search: ${lead.sourceUrl}` : source,
+            notes: buildSearchContextNotes(trimmedService, trimmedLanguage),
+            painPoints: lead.painPoints,
+            hasOnlineBooking: lead.hasOnlineBooking,
+            score: initialScore,
+            ...(pipelineStatus ? { pipelineStatus } : {}),
+          },
+        });
+        savedCount++;
+        remaining -= 1;
+      } catch (dbError) {
+        console.error(`Failed to process lead "${lead.companyName}":`, dbError);
+      }
     }
+
+    if (savedCount > 0) {
+      await incrementLeadsProcessedInTx(tx, userId, savedCount);
+    }
+
+    return {
+      success: true as const,
+      count: savedCount,
+      skipped: skippedCount,
+    };
+  });
+
+  if (!saveResult.success) return saveResult;
+
+  const { count: savedCount, skipped: skippedCount } = saveResult;
+
+  if (savedCount > 0 && revalidate) {
+    await revalidateLocalizedPath("/");
   }
 
   return {
