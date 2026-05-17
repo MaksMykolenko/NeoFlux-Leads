@@ -138,10 +138,11 @@ model User {
   fromEmail String?
   fromName  String?
 
-  sessions         Session[]
-  leads            Lead[]
-  telegramSession  TelegramSession?
-  autopilotConfigs AutopilotConfig[]
+  sessions             Session[]
+  leads                Lead[]
+  fluxPromoteCampaigns FluxPromoteCampaign[]
+  telegramSession      TelegramSession?
+  autopilotConfigs     AutopilotConfig[]
 }
 
 model Session {
@@ -228,4 +229,76 @@ model AutopilotConfig {
 
   @@index([userId, isActive])
   @@index([isActive])
+}
+
+model FluxPromoteCampaign {
+  id        String   @id @default(uuid())
+  userId    String
+  companyId String
+  projectId String
+  goal      String
+  audience  String[] @default([])
+  channel   String
+  region    String
+  language  String
+  cta       String
+  tone      String
+  status    String   @default("Active")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user    User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  targets FluxPromoteTarget[]
+
+  @@index([userId])
+  @@index([companyId, projectId])
+}
+
+model FluxPromoteTarget {
+  id                     String   @id @default(uuid())
+  campaignId             String
+  name                   String
+  type                   String
+  companyId              String
+  projectId              String
+  platform               String?
+  sourceUrl              String?  @db.Text
+  websiteUrl             String?  @db.Text
+  socialUrl              String?  @db.Text
+  contactUrl             String?  @db.Text
+  email                  String?
+  country                String?
+  language               String?
+  audienceType           String?
+  projectFitScore        Int      @default(0)
+  fitReasons             String[] @default([])
+  suggestedAngle         String?  @db.Text
+  recommendedMessageType String?
+  status                 String   @default("New")
+  notes                  String?  @db.Text
+  createdAt              DateTime @default(now())
+  updatedAt              DateTime @updatedAt
+
+  campaign FluxPromoteCampaign  @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  messages FluxPromoteMessage[]
+
+  @@index([campaignId])
+  @@index([companyId, projectId])
+  @@index([status])
+}
+
+model FluxPromoteMessage {
+  id        String   @id @default(uuid())
+  targetId  String
+  type      String
+  subject   String?
+  body      String   @db.Text
+  status    String   @default("DRAFT") // DRAFT | REVIEWED | SENT_MANUALLY | FAILED
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  target FluxPromoteTarget @relation(fields: [targetId], references: [id], onDelete: Cascade)
+
+  @@index([targetId])
+  @@index([status])
 }

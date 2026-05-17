@@ -58,6 +58,18 @@ export default async function AuthHeader() {
 
           {userIsAdmin && (
             <Link
+              href="/flux-promote"
+              title={t("fluxPromote")}
+              aria-label={t("fluxPromote")}
+              className="inline-flex h-8 items-center gap-1.5 rounded-md bg-purple-50 px-2.5 text-xs font-medium text-purple-800 ring-1 ring-inset ring-purple-200 transition-all duration-200 hover:bg-purple-100 active:scale-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-flux-purple dark:bg-flux-purple-tint dark:text-flux-purple-soft dark:ring-flux-purple-ring dark:hover:bg-flux-purple/20"
+            >
+              <PromoteIcon className="h-3.5 w-3.5" />
+              <span className="hidden sm:inline">Flux Promote</span>
+            </Link>
+          )}
+
+          {userIsAdmin && (
+            <Link
               href="/admin/users"
               title={t("admin")}
               aria-label={t("admin")}
@@ -192,6 +204,20 @@ function LockIcon({ className = "" }: { className?: string }) {
         d="M10 1a4.5 4.5 0 0 0-4.5 4.5V9H5a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-6a2 2 0 0 0-2-2h-.5V5.5A4.5 4.5 0 0 0 10 1Zm3 8V5.5a3 3 0 1 0-6 0V9h6Z"
         clipRule="evenodd"
       />
+    </svg>
+  );
+}
+
+function PromoteIcon({ className = "" }: { className?: string }) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 20 20"
+      fill="currentColor"
+      className={className}
+      aria-hidden="true"
+    >
+      <path d="M13.5 2.5a1 1 0 0 1 1.48.878l-.28 2.252a7.04 7.04 0 0 1 1.67 1.67l2.252-.28a1 1 0 0 1 .878 1.48l-1.34 2.01c.22.717.22 1.483 0 2.2l1.34 2.01a1 1 0 0 1-.878 1.48l-2.252-.28a7.04 7.04 0 0 1-1.67 1.67l.28 2.252a1 1 0 0 1-1.48.878l-2.01-1.34a4.074 4.074 0 0 1-2.2 0l-2.01 1.34a1 1 0 0 1-1.48-.878l.28-2.252a7.04 7.04 0 0 1-1.67-1.67l-2.252.28a1 1 0 0 1-.878-1.48l1.34-2.01a4.074 4.074 0 0 1 0-2.2L1.28 8.5a1 1 0 0 1 .878-1.48l2.252.28a7.04 7.04 0 0 1 1.67-1.67L5.8 3.378A1 1 0 0 1 7.28 2.5l2.01 1.34a4.074 4.074 0 0 1 2.2 0L13.5 2.5ZM10.39 7a3.39 3.39 0 1 0 0 6.78 3.39 3.39 0 0 0 0-6.78Z" />
     </svg>
   );
 }

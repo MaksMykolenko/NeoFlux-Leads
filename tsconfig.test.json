@@ -16,7 +16,13 @@
     "src/lib/ai/promptSafety.ts",
     "src/lib/autopilotDeliveryGuards.ts",
     "src/lib/emailDeliveryState.ts",
+    "src/lib/leadMode.ts",
     "src/lib/leadSlotMath.ts",
+    "src/lib/promotion/access.ts",
+    "src/lib/promotion/fluxPromoteProfiles.ts",
+    "src/lib/promotion/projectFitScore.ts",
+    "src/lib/promotion/promotePrompt.ts",
+    "src/lib/promotion/status.ts",
     "src/lib/security/urlSafety.ts"
   ]
 }
