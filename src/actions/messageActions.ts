@@ -1,15 +1,25 @@
 "use server";
 
+import { createHash } from "node:crypto";
 import { revalidateLocalizedPath } from "@/src/i18n/revalidateLocalized";
 import { prisma } from "@/src/lib/prisma";
 import { isReplyStatus } from "@/src/lib/replyStatus";
 import { getRequestUserId } from "@/src/lib/session";
-import { sendUserEmail } from "@/src/lib/mailer";
+import {
+  markMessageDeliveryResult,
+  sendUserEmail,
+} from "@/src/lib/mailer";
 
 export interface SaveMessageResult {
   success: boolean;
   error?: string;
-  errorCode?: "NO_SMTP" | "NO_EMAIL" | "SEND_FAILED";
+  errorCode?:
+    | "NO_SMTP"
+    | "NO_EMAIL"
+    | "SEND_FAILED"
+    | "DO_NOT_CONTACT"
+    | "ALREADY_SENT"
+    | "SEND_IN_FLIGHT";
   messageId?: string;
 }
 
@@ -152,60 +162,39 @@ export async function sendAndSaveEmail(
     return { success: false, error: "Текст листа не може бути порожнім" };
   }
 
-  const lead = await prisma.lead.findFirst({
-    where: { id: leadId, userId },
-    select: { id: true, email: true },
+  const claim = await claimLeadEmailMessage({
+    userId,
+    leadId,
+    subject: trimmedSubject,
+    body: trimmedBody,
   });
-  if (!lead) {
-    return { success: false, error: "Лід не знайдено" };
-  }
-  if (!lead.email) {
-    return {
-      success: false,
-      errorCode: "NO_EMAIL",
-      error: "У ліда немає email — додайте його перед відправкою.",
-    };
-  }
+  if (!claim.success) return claim;
 
   const sendResult = await sendUserEmail(
     userId,
-    lead.email,
+    claim.email,
     trimmedSubject,
     trimmedBody,
   );
+  await markMessageDeliveryResult(claim.messageId, sendResult);
 
-  // Запис у `Message` створюємо в обох випадках — це аудит-лог реальних спроб.
   try {
-    const message = await prisma.$transaction(async (tx) => {
-      const created = await tx.message.create({
-        data: {
-          leadId,
-          subject: trimmedSubject,
-          body: trimmedBody,
-          deliveryStatus: sendResult.success ? "SENT" : "FAILED",
-          errorLog: sendResult.success ? null : sendResult.error,
-        },
+    if (sendResult.success) {
+      await prisma.lead.updateMany({
+        where: { id: leadId, userId, status: { not: "Do not contact" } },
+        data: { status: "Contacted" },
       });
-
-      if (sendResult.success) {
-        await tx.lead.update({
-          where: { id: leadId },
-          data: { status: "Contacted" },
-        });
-      }
-
-      return created;
-    });
+    }
 
     await revalidateLocalizedPath(`/leads/${leadId}`);
 
     if (sendResult.success) {
-      return { success: true, messageId: message.id };
+      return { success: true, messageId: claim.messageId };
     }
 
     return {
       success: false,
-      messageId: message.id,
+      messageId: claim.messageId,
       errorCode:
         "code" in sendResult && sendResult.code === "NO_SMTP"
           ? "NO_SMTP"
@@ -221,4 +210,121 @@ export async function sendAndSaveEmail(
         error instanceof Error ? error.message : "An unexpected error occurred",
     };
   }
+}
+
+type LeadEmailMessageClaim =
+  | { success: true; messageId: string; email: string }
+  | (Omit<SaveMessageResult, "success"> & { success: false });
+
+async function claimLeadEmailMessage({
+  userId,
+  leadId,
+  subject,
+  body,
+}: {
+  userId: string;
+  leadId: string;
+  subject: string;
+  body: string;
+}): Promise<LeadEmailMessageClaim> {
+  return prisma.$transaction(async (tx) => {
+    await tx.$executeRawUnsafe(
+      `SELECT pg_advisory_xact_lock(${messageSendLockKey(
+        userId,
+        leadId,
+        subject,
+        body,
+      )}::bigint)`,
+    );
+
+    const lead = await tx.lead.findFirst({
+      where: { id: leadId, userId },
+      select: { id: true, email: true, status: true },
+    });
+    if (!lead) {
+      return { success: false, error: "Лід не знайдено" };
+    }
+    if (lead.status === "Do not contact") {
+      return {
+        success: false,
+        errorCode: "DO_NOT_CONTACT",
+        error: "Лід позначений як Do not contact — відправку заблоковано.",
+      };
+    }
+    if (!lead.email) {
+      return {
+        success: false,
+        errorCode: "NO_EMAIL",
+        error: "У ліда немає email — додайте його перед відправкою.",
+      };
+    }
+
+    const existing = await tx.message.findFirst({
+      where: {
+        leadId,
+        subject,
+        body,
+        deliveryStatus: { in: ["SENDING", "SENT", "FAILED"] },
+      },
+      orderBy: { sentAt: "desc" },
+      select: { id: true, deliveryStatus: true },
+    });
+
+    if (existing?.deliveryStatus === "SENT") {
+      return {
+        success: false,
+        messageId: existing.id,
+        errorCode: "ALREADY_SENT",
+        error: "Цей лист уже був надісланий.",
+      };
+    }
+    if (existing?.deliveryStatus === "SENDING") {
+      return {
+        success: false,
+        messageId: existing.id,
+        errorCode: "SEND_IN_FLIGHT",
+        error: "Відправка цього листа вже виконується.",
+      };
+    }
+    if (existing?.deliveryStatus === "FAILED") {
+      const claim = await tx.message.updateMany({
+        where: { id: existing.id, deliveryStatus: "FAILED" },
+        data: { deliveryStatus: "SENDING" },
+      });
+      if (claim.count === 0) {
+        return {
+          success: false,
+          messageId: existing.id,
+          errorCode: "SEND_IN_FLIGHT",
+          error: "Відправка цього листа вже виконується.",
+        };
+      }
+      return { success: true, messageId: existing.id, email: lead.email };
+    }
+
+    const created = await tx.message.create({
+      data: {
+        leadId,
+        subject,
+        body,
+        deliveryStatus: "SENDING",
+      },
+      select: { id: true },
+    });
+
+    return { success: true, messageId: created.id, email: lead.email };
+  });
+}
+
+function messageSendLockKey(
+  userId: string,
+  leadId: string,
+  subject: string,
+  body: string,
+): string {
+  const hash = createHash("sha256")
+    .update(`${userId}\0${leadId}\0${subject}\0${body}`)
+    .digest();
+  const key = hash.readBigInt64BE(0) & BigInt("0x7fffffffffffffff");
+  return key.toString();
 }

@@ -1,6 +1,10 @@
 import "server-only";
 import nodemailer, { type Transporter } from "nodemailer";
 import { decrypt } from "@/src/lib/crypto";
+import {
+  claimReasonForDeliveryStatus,
+  type MessageClaimReason,
+} from "@/src/lib/emailDeliveryState";
 import { prisma } from "@/src/lib/prisma";
 import { getEnvSiteHref } from "@/src/lib/siteOrigin";
 
@@ -167,6 +171,72 @@ function buildCustomTransporter(user: UserMailRow): Transporter {
     secure: user.smtpPort === 465,
     auth: { user: user.smtpUser, pass: plaintextPass },
     ...SMTP_TIMEOUTS,
+  });
+}
+
+/**
+ * Idempotency guard for outgoing email. Atomically transitions a Message row
+ * from DRAFT (or previously FAILED) → SENDING. Returns `true` if THIS caller
+ * is the rightful sender, `false` if somebody else already claimed the row.
+ *
+ * Wire it into every send-call-site like so:
+ *
+ *   const claimed = await claimMessageForSend(messageId);
+ *   if (!claimed.ok) {
+ *     // already SENT, already SENDING (in-flight), or row was deleted —
+ *     // return without sending. `claimed.alreadySent` tells the caller
+ *     // whether to surface success vs "in-flight, try again later".
+ *     return ...;
+ *   }
+ *   const result = await sendUserEmail(...);
+ *   await markMessageDeliveryResult(messageId, result);
+ *
+ * This closes the C4 race: double-click on "Send", server-action retry, or
+ * cron firing twice for the same row will all see `ok: false` on the second
+ * attempt. The first attempt holds the slot until it sets SENT or FAILED.
+ */
+export interface MessageClaim {
+  ok: boolean;
+  /** Set when ok === false. Helps the caller pick the right UI message. */
+  reason?: MessageClaimReason;
+}
+
+export async function claimMessageForSend(
+  messageId: string,
+): Promise<MessageClaim> {
+  const updated = await prisma.message.updateMany({
+    where: {
+      id: messageId,
+      deliveryStatus: { in: ["DRAFT", "FAILED"] },
+    },
+    data: { deliveryStatus: "SENDING" },
+  });
+  if (updated.count > 0) return { ok: true };
+
+  const current = await prisma.message.findUnique({
+    where: { id: messageId },
+    select: { deliveryStatus: true },
+  });
+  return {
+    ok: false,
+    reason: claimReasonForDeliveryStatus(current?.deliveryStatus ?? null),
+  };
+}
+
+/**
+ * Finalize the SENDING state set by `claimMessageForSend`. SENT on success,
+ * FAILED on error — and the row becomes claimable again only via FAILED so
+ * a manual "resend" can retry safely.
+ */
+export async function markMessageDeliveryResult(
+  messageId: string,
+  result: SendEmailResult,
+): Promise<void> {
+  await prisma.message.update({
+    where: { id: messageId },
+    data: result.success
+      ? { deliveryStatus: "SENT", errorLog: null }
+      : { deliveryStatus: "FAILED", errorLog: result.error },
   });
 }
 
