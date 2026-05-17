@@ -3,12 +3,14 @@ import type { Prisma } from "@prisma/client";
 import { revalidateLocalizedPath } from "@/src/i18n/revalidateLocalized";
 import { requireGeminiKey } from "@/src/lib/gemini";
 import { LeadMode } from "@/src/lib/leadMode";
+import { consumeLeadSlot } from "@/src/lib/leadSlotMath";
 import { prisma } from "@/src/lib/prisma";
 import { calculateLeadScore } from "@/src/lib/scoring";
 import {
   getLeadLimitStatus,
   getPlanForUser,
-  incrementLeadsProcessed,
+  incrementLeadsProcessedInTx,
+  withUserLeadLimitLock,
 } from "@/src/lib/subscription";
 import { MAX_UNIVERSAL_PROMPT_CHARS } from "@/src/lib/universalSearchConstants";
 
@@ -30,6 +32,8 @@ export interface CoreUniversalSearchInput {
 export interface CoreUniversalSearchResult {
   success: boolean;
   saved?: number;
+  skipped?: number;
+  limitReached?: boolean;
   error?: string;
   errorCode?: "LIMIT_REACHED" | "PROMPT_TOO_LONG" | "USER_NOT_FOUND";
 }
@@ -118,70 +122,112 @@ export async function coreSearchUniversalLeads(
       };
     }
 
-    let written = 0;
-    let newLeadCount = 0;
-
-    for (const item of items) {
-      if (!item || typeof item !== "object") continue;
-      const rec = item as Record<string, unknown>;
-      const name =
-        typeof rec.name === "string"
-          ? rec.name.trim()
-          : typeof rec.companyName === "string"
-            ? rec.companyName.trim()
-            : "";
-      if (!name) continue;
-
-      const description =
-        typeof rec.description === "string" ? rec.description.trim() : "";
-      const website =
-        typeof rec.website === "string" && rec.website.trim()
-          ? rec.website.trim()
-          : null;
-      const email =
-        typeof rec.email === "string" && rec.email.trim()
-          ? rec.email.trim()
-          : null;
-
-      let socialJson = sanitizeSocialLinks(rec.socialLinks);
-      const vacancyUrl = pickVacancyUrl(rec);
-      if (vacancyUrl) {
-        const base =
-          typeof socialJson === "object" &&
-          socialJson !== null &&
-          !Array.isArray(socialJson)
-            ? { ...(socialJson as Record<string, string>) }
-            : {};
-        base.vacancy = vacancyUrl;
-        socialJson = base;
+    const saveResult = await withUserLeadLimitLock(userId, async (tx) => {
+      const lockedUser = await tx.user.findUnique({
+        where: { id: userId },
+        select: { plan: true, leadsProcessedCount: true, planResetDate: true },
+      });
+      if (!lockedUser) {
+        return {
+          success: false as const,
+          saved: 0,
+          skipped: 0,
+          errorCode: "USER_NOT_FOUND" as const,
+          error: "Користувача не знайдено",
+        };
       }
 
-      const notes = mergeNotes(description, vacancyUrl);
-      const score = calculateLeadScore({ website, email }, null);
-      const companyName = name.slice(0, 500);
+      const lockedLimit = getLeadLimitStatus(lockedUser);
+      if (!lockedLimit.allowed) {
+        const plan = getPlanForUser(lockedUser);
+        return {
+          success: false as const,
+          saved: 0,
+          skipped: 0,
+          errorCode: "LIMIT_REACHED" as const,
+          error: `Ліміт плану ${plan.name} вичерпано (${lockedLimit.used}/${plan.leadsPerMonth}). Оновіть тариф на /pricing.`,
+        };
+      }
 
-      const existing = await prisma.lead.findFirst({
-        where: { userId, mode: LeadMode.UNIVERSAL, companyName },
-        select: { id: true },
-      });
+      let written = 0;
+      let newLeadCount = 0;
+      let skipped = 0;
+      let limitReached = false;
+      let remaining = lockedLimit.unlimited
+        ? Number.POSITIVE_INFINITY
+        : lockedLimit.remaining;
 
-      const payload: Prisma.LeadUncheckedUpdateInput = {
-        notes,
-        website,
-        email,
-        ...(socialJson !== undefined ? { socialLinks: socialJson } : {}),
-        score,
-        source,
-      };
+      for (let index = 0; index < items.length; index++) {
+        const item = items[index];
+        if (!item || typeof item !== "object") continue;
+        const rec = item as Record<string, unknown>;
+        const name =
+          typeof rec.name === "string"
+            ? rec.name.trim()
+            : typeof rec.companyName === "string"
+              ? rec.companyName.trim()
+              : "";
+        if (!name) continue;
 
-      if (existing) {
-        await prisma.lead.update({
-          where: { id: existing.id },
-          data: payload,
+        const description =
+          typeof rec.description === "string" ? rec.description.trim() : "";
+        const website =
+          typeof rec.website === "string" && rec.website.trim()
+            ? rec.website.trim()
+            : null;
+        const email =
+          typeof rec.email === "string" && rec.email.trim()
+            ? rec.email.trim()
+            : null;
+
+        let socialJson = sanitizeSocialLinks(rec.socialLinks);
+        const vacancyUrl = pickVacancyUrl(rec);
+        if (vacancyUrl) {
+          const base =
+            typeof socialJson === "object" &&
+            socialJson !== null &&
+            !Array.isArray(socialJson)
+              ? { ...(socialJson as Record<string, string>) }
+              : {};
+          base.vacancy = vacancyUrl;
+          socialJson = base;
+        }
+
+        const notes = mergeNotes(description, vacancyUrl);
+        const score = calculateLeadScore({ website, email }, null);
+        const companyName = name.slice(0, 500);
+
+        const existing = await tx.lead.findFirst({
+          where: { userId, mode: LeadMode.UNIVERSAL, companyName },
+          select: { id: true },
         });
-        written++;
-      } else {
-        await prisma.lead.create({
+
+        const payload: Prisma.LeadUncheckedUpdateInput = {
+          notes,
+          website,
+          email,
+          ...(socialJson !== undefined ? { socialLinks: socialJson } : {}),
+          score,
+          source,
+        };
+
+        if (existing) {
+          await tx.lead.update({
+            where: { id: existing.id },
+            data: payload,
+          });
+          written++;
+          continue;
+        }
+
+        const slot = consumeLeadSlot(remaining);
+        if (!slot.allowed) {
+          skipped += countPotentialLeadItems(items, index);
+          limitReached = true;
+          break;
+        }
+
+        await tx.lead.create({
           data: {
             userId,
             mode: LeadMode.UNIVERSAL,
@@ -192,8 +238,24 @@ export async function coreSearchUniversalLeads(
         });
         written++;
         newLeadCount++;
+        remaining = slot.remaining;
       }
-    }
+
+      if (newLeadCount > 0) {
+        await incrementLeadsProcessedInTx(tx, userId, newLeadCount);
+      }
+
+      return {
+        success: true as const,
+        saved: written,
+        skipped,
+        limitReached,
+      };
+    });
+
+    if (!saveResult.success) return saveResult;
+
+    const { saved: written, skipped, limitReached } = saveResult;
 
     if (written === 0) {
       return {
@@ -203,14 +265,10 @@ export async function coreSearchUniversalLeads(
       };
     }
 
-    if (newLeadCount > 0) {
-      await incrementLeadsProcessed(userId, newLeadCount);
-    }
-
     if (revalidate) {
       await revalidateLocalizedPath("/dashboard");
     }
-    return { success: true, saved: written };
+    return { success: true, saved: written, skipped, limitReached };
   } catch (error) {
     console.error("coreSearchUniversalLeads error:", error);
     let msg =
@@ -229,6 +287,23 @@ export async function coreSearchUniversalLeads(
     }
     return { success: false, error: msg };
   }
+}
+
+function countPotentialLeadItems(items: unknown[], startIndex: number): number {
+  let count = 0;
+  for (let i = startIndex; i < items.length; i++) {
+    const item = items[i];
+    if (!item || typeof item !== "object") continue;
+    const rec = item as Record<string, unknown>;
+    const name =
+      typeof rec.name === "string"
+        ? rec.name.trim()
+        : typeof rec.companyName === "string"
+          ? rec.companyName.trim()
+          : "";
+    if (name) count++;
+  }
+  return count;
 }
 
 function buildUserPrompt(userRequest: string, region: string | null): string {

@@ -10,6 +10,8 @@ export interface UniversalSearchResult {
   success: boolean;
   /** Скільки записів реально записано / оновлено в CRM */
   saved?: number;
+  skipped?: number;
+  limitReached?: boolean;
   error?: string;
   errorCode?: "LIMIT_REACHED" | "PROMPT_TOO_LONG";
 }
@@ -39,6 +41,8 @@ function toActionResult(
   return {
     success: core.success,
     saved: core.saved,
+    skipped: core.skipped,
+    limitReached: core.limitReached,
     error: core.error,
     errorCode:
       core.errorCode === "LIMIT_REACHED"
