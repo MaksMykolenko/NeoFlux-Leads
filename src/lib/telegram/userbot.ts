@@ -1,9 +1,15 @@
 import "server-only";
 import { cookies } from "next/headers";
-import { TelegramClient, Api } from "telegram";
-import { StringSession } from "telegram/sessions";
-import { computeCheck } from "telegram/Password";
+// IMPORTANT: import everything from the single "telegram" entry point.
+// Importing StringSession from "telegram/sessions" creates a second module
+// instance when `telegram` is in `serverExternalPackages` (next.config.ts),
+// which makes `instanceof StringSession` inside TelegramClient fail with
+// "Only StringSession and StoreSessions are supported currently :(".
+import { TelegramClient, Api, sessions, password } from "telegram";
 import { decrypt, encrypt } from "@/src/lib/crypto";
+
+const { StringSession } = sessions;
+const { computeCheck } = password;
 
 /**
  * Telegram MTProto userbot service (GramJS).
