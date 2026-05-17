@@ -7,15 +7,15 @@
     },
     {
       "path": "/api/cron/autopilot/step-2-audit",
-      "schedule": "15 * * * *"
+      "schedule": "0 10 * * *"
     },
     {
       "path": "/api/cron/autopilot/step-3-generate",
-      "schedule": "30 * * * *"
+      "schedule": "0 14 * * *"
     },
     {
       "path": "/api/cron/autopilot/step-4-deliver",
-      "schedule": "45 * * * *"
+      "schedule": "0 18 * * *"
     }
   ]
 }
