@@ -1,0 +1,22 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "allowJs": false,
+    "incremental": false,
+    "isolatedModules": false,
+    "module": "commonjs",
+    "moduleResolution": "node",
+    "noEmit": false,
+    "outDir": ".test-dist",
+    "target": "ES2022",
+    "types": ["node"]
+  },
+  "include": [
+    "tests/**/*.ts",
+    "src/lib/ai/promptSafety.ts",
+    "src/lib/autopilotDeliveryGuards.ts",
+    "src/lib/emailDeliveryState.ts",
+    "src/lib/leadSlotMath.ts",
+    "src/lib/security/urlSafety.ts"
+  ]
+}

@@ -1,8 +1,16 @@
 import type { NextRequest } from "next/server";
 import { LeadMode } from "@prisma/client";
 import { assertCronAuth } from "@/src/lib/cron-auth";
+import {
+  pendingDeliveryLeadWhere,
+  pendingDoNotContactLeadWhere,
+} from "@/src/lib/autopilotDeliveryGuards";
 import { decrypt } from "@/src/lib/crypto";
-import { sendUserEmail } from "@/src/lib/mailer";
+import {
+  claimMessageForSend,
+  markMessageDeliveryResult,
+  sendUserEmail,
+} from "@/src/lib/mailer";
 import { prisma } from "@/src/lib/prisma";
 import {
   sendTelegramMessage,
@@ -119,14 +127,34 @@ export async function GET(req: NextRequest) {
   };
 
   try {
+    // Pick a batch that's pending delivery AND not opt-ed out. The
+    // `status: { not: "Do not contact" }` guard is critical — without it,
+    // a lead marked DNC after entering the pipeline still gets messaged,
+    // which is a compliance bug (GDPR/CAN-SPAM unsubscribe-respect).
+    // We still bump pipelineStatus to PROCESSED for DNC leads below so
+    // they don't linger in the queue forever.
     const leads = await prisma.lead.findMany({
-      where: { pipelineStatus: "PENDING_DELIVERY" },
+      where: pendingDeliveryLeadWhere(),
       orderBy: { createdAt: "asc" },
       take: BATCH_SIZE,
       include: {
         messages: { orderBy: { sentAt: "desc" }, take: 1 },
       },
     });
+
+    // Sweep DNC leads stuck in PENDING_DELIVERY: mark them PROCESSED so the
+    // queue drains. This is a separate query so the main batch isn't
+    // contaminated by skipped leads counting against BATCH_SIZE.
+    const dncSwept = await prisma.lead.updateMany({
+      where: pendingDoNotContactLeadWhere(),
+      data: { pipelineStatus: "PROCESSED" },
+    });
+    if (dncSwept.count > 0) {
+      report.skipped += dncSwept.count;
+      console.log(
+        `[cron/autopilot/step-4] swept ${dncSwept.count} do-not-contact lead(s) to PROCESSED`,
+      );
+    }
 
     if (leads.length === 0) {
       return Response.json({ ok: true, ...report, message: "no work" });
@@ -186,33 +214,47 @@ export async function GET(req: NextRequest) {
         if (!lead.email) {
           detailRow.email = { status: "skipped", error: "lead has no email" };
         } else {
-          try {
+          // Idempotency: atomically transition DRAFT/FAILED → SENDING. If
+          // another cron run or a duplicate request already claimed the slot
+          // (or the message is already SENT), bail out here without ever
+          // hitting SMTP. Eliminates duplicate sends on Vercel retries.
+          const claim = await claimMessageForSend(draft!.id);
+          if (!claim.ok) {
+            detailRow.email =
+              claim.reason === "ALREADY_SENT"
+                ? { status: "sent" }
+                : {
+                    status: "skipped",
+                    error:
+                      claim.reason === "IN_FLIGHT"
+                        ? "send already in-flight (idempotency)"
+                        : "message not found",
+                  };
+            if (claim.reason === "ALREADY_SENT") anyDelivered = true;
+            // skip the SMTP call entirely — fall through to telegram branch
+          } else try {
             const res = await sendUserEmail(
               lead.userId,
               lead.email,
               messageSubject,
               messageBody,
             );
+            await markMessageDeliveryResult(draft!.id, res);
             if (res.success) {
-              await prisma.message.update({
-                where: { id: draft!.id },
-                data: { deliveryStatus: "SENT", errorLog: null },
-              });
               detailRow.email = { status: "sent" };
               anyDelivered = true;
             } else {
-              await prisma.message.update({
-                where: { id: draft!.id },
-                data: {
-                  deliveryStatus: "FAILED",
-                  errorLog: res.error,
-                },
-              });
               detailRow.email = { status: "failed", error: res.error };
               anyFailed = true;
             }
           } catch (err) {
             const msg = err instanceof Error ? err.message : String(err);
+            // Unexpected throw — release the SENDING claim back to FAILED so
+            // future retries are possible.
+            await markMessageDeliveryResult(draft!.id, {
+              success: false,
+              error: msg,
+            });
             detailRow.email = { status: "failed", error: msg };
             anyFailed = true;
             console.error(
