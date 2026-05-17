@@ -50,7 +50,7 @@ export default async function LeadQualityFilters({ active, mode }: Props) {
               className={`inline-flex h-8 items-center rounded-md border px-3 text-xs font-medium transition-colors ${
                 selected
                   ? "border-purple-500 bg-purple-50 text-purple-700 dark:border-flux-purple dark:bg-flux-purple/15 dark:text-flux-purple-soft"
-                  : "border-zinc-200 bg-zinc-50 text-zinc-600 hover:border-zinc-300 hover:bg-zinc-100 dark:border-flux-border dark:bg-flux-card-2 dark:text-zinc-300 dark:hover:border-flux-border-strong"
+                  : "border-zinc-200 bg-zinc-50 text-zinc-600 hover:border-zinc-300 hover:bg-zinc-100 hover:text-zinc-900 dark:border-flux-border dark:bg-flux-card-2 dark:text-zinc-300 dark:hover:border-flux-border-strong dark:hover:bg-flux-card dark:hover:text-zinc-50"
               }`}
             >
               {t(`items.${filter}`)}
