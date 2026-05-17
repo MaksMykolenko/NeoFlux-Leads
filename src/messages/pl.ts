@@ -218,6 +218,17 @@ const messages = {
     en: "English",
     pl: "Polski",
   },
+  ModeTabs: {
+    ...enMessages.ModeTabs,
+    localLabel: "Lokalny biznes",
+    localHint: "AI + Google · strony i telefony z publicznych źródeł",
+    beatsLabel: "Artyści dla bitów",
+    beatsHint: "SoundCloud · YouTube · Instagram",
+    universalLabel: "Uniwersalne wyszukiwanie AI",
+    universalHint: "Gemini + Google Search · OSINT",
+    promoteLabel: "Flux Promote",
+    promoteHint: "Admin · PR outreach dla projektów NeoFlux",
+  },
   AuthHeader: {
     ...enMessages.AuthHeader,
     admin: "Admin",

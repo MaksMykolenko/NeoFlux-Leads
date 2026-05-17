@@ -7,6 +7,7 @@ import {
   modeFromQuery,
   modeKeyFromMode,
 } from "@/src/lib/leadMode";
+import { canUseFluxPromote } from "@/src/lib/promotion/access";
 import { requireUser } from "@/src/lib/session";
 import {
   getLeadLimitStatus,
@@ -195,7 +196,10 @@ export default async function Home({
 
         {!isBoard && (
           <div className="mt-6">
-            <ModeTabs active={modeKeyFromMode(mode)} />
+            <ModeTabs
+              active={modeKeyFromMode(mode)}
+              showPromote={canUseFluxPromote(user)}
+            />
           </div>
         )}
 

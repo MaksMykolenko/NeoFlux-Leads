@@ -297,6 +297,8 @@ const messages = {
     beatsHint: "SoundCloud · YouTube · Instagram",
     universalLabel: "Universal AI search",
     universalHint: "Gemini + Google Search · OSINT",
+    promoteLabel: "Flux Promote",
+    promoteHint: "Admin · PR outreach for NeoFlux projects",
   },
   Home: {
     title: "Flux Leads",
