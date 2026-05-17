@@ -9,61 +9,61 @@ const COPY: Record<
 > = {
   home: {
     uk: {
-      title: "Flux Leads — AI лідоген і CRM для аутрічу",
+      title: "AI-лідогенерація для веб-студій | Flux Leads",
       description:
-        "Знаходьте локальних клієнтів, аудитуйте сайти, рахуйте Opportunity Score і надсилайте персоналізований cold email — одна платформа для веб-студій.",
+        "Знаходьте бізнеси зі слабкими сайтами, автоматично перевіряйте їх і генеруйте персоналізовані cold email на основі реальних проблем.",
       path: "/",
     },
     en: {
-      title: "Flux Leads — AI Lead Gen & Outreach CRM",
+      title: "AI Lead Generation for Web Agencies | Flux Leads",
       description:
-        "Find local businesses, audit websites, score sales opportunities, and send personalized cold emails—one platform built for web agencies.",
+        "Find local businesses with weak websites, audit them automatically, and generate personalized cold emails based on real issues.",
       path: "/",
     },
     pl: {
-      title: "Flux Leads — AI lead gen i CRM do outreach",
+      title: "Pozyskiwanie leadów dla agencji webowych | Flux Leads",
       description:
-        "Znajduj lokalne firmy ze slabymi stronami, audytuj je automatycznie i generuj spersonalizowane cold emaile dla agencji webowych.",
+        "Znajduj lokalne firmy ze słabymi stronami, wykonuj audyty i twórz spersonalizowane wiadomości sprzedażowe.",
       path: "/",
     },
   },
   pricing: {
     uk: {
-      title: "Тарифи Flux Leads — від $0 до Agency",
+      title: "Ціни Flux Leads | AI-лідогенерація для веб-студій",
       description:
-        "Starter: 50 лідів/міс безкоштовно. Pro $20 — аудит сайтів і AI-листи. Agency $60 — 10 000 лідів і CSV. Оберіть план під ваш outbound.",
+        "Почніть безкоштовно з 50 лідів на місяць. Порівняйте Starter, Pro та Agency для пошуку лідів, аудиту сайтів, email drafts і CRM.",
       path: "/pricing",
     },
     en: {
-      title: "Flux Leads Pricing — Starter to Agency",
+      title: "Flux Leads Pricing | AI Lead Generation for Web Agencies",
       description:
-        "Starter: 50 leads/mo free. Pro $20 — site audits & AI emails. Agency $60 — 10,000 leads & CSV. Pick the plan for your outreach volume.",
+        "Start free with 50 leads per month. Compare Starter, Pro, and Agency plans for AI lead search, website audits, email drafts, and CRM.",
       path: "/pricing",
     },
     pl: {
-      title: "Cennik Flux Leads — Starter, Pro i Agency",
+      title: "Cennik Flux Leads | Pozyskiwanie leadów dla agencji webowych",
       description:
-        "Starter: 50 leadow/mies. za darmo. Pro $20 — audyty stron i emaile AI. Agency $60 — 10 000 leadow i CSV.",
+        "Zacznij za darmo z 50 leadami miesięcznie. Porównaj plany Starter, Pro i Agency dla wyszukiwania leadów, audytów stron, wiadomości AI i CRM.",
       path: "/pricing",
     },
   },
   webAgencies: {
     uk: {
-      title: "Flux Leads для веб-студій — клієнти з аудиту",
+      title: "Лідогенерація для веб-студій | Outreach через аудит сайтів",
       description:
-        "Знаходьте бізнеси з слабким сайтом, отримуйте докази для пітчу (SSL, mobile, SEO) і закривайте угоди в Kanban-воронці — без таблиць і хаосу.",
+        "Flux Leads допомагає веб-студіям знаходити локальні бізнеси, аудитувати слабкі сайти, пріоритизувати ліди та писати персоналізовані повідомлення.",
       path: "/solutions/web-agencies",
     },
     en: {
-      title: "Flux Leads for Web Agencies — Audit-Led Sales",
+      title: "Lead Generation for Web Agencies | Audit-Led Outreach",
       description:
-        "Find businesses with weak websites, get proof for your pitch (SSL, mobile, SEO), and close deals in a Kanban pipeline—no spreadsheet chaos.",
+        "Flux Leads helps web agencies find local businesses, audit weak websites, prioritize prospects, and turn website issues into personalized outreach.",
       path: "/solutions/web-agencies",
     },
     pl: {
-      title: "Flux Leads dla agencji webowych — sprzedaz przez audyt",
+      title: "Pozyskiwanie klientów dla agencji webowych | Flux Leads",
       description:
-        "Znajduj firmy ze slabymi stronami, zbieraj dowody do pitchu (SSL, mobile, SEO) i zamykaj deale w pipeline Kanban.",
+        "Flux Leads pomaga agencjom webowym znajdować lokalne firmy, audytować słabe strony i przygotowywać skuteczny outreach.",
       path: "/solutions/agencje-webowe",
     },
   },
