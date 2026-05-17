@@ -909,6 +909,7 @@ const messages = {
       "AI lead engine for cold outreach. Find local businesses, artists, and companies via Gemini + Google Search.",
     projectsTitle: "Our projects",
     accountTitle: "Account",
+    resourcesTitle: "Resources",
     companyTitle: "NeoFlux Software",
     linkFluxId: "Flux ID",
     linkMarketplace: "Flux MarketPlace",

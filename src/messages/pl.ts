@@ -222,6 +222,7 @@ const messages = {
       "AI lead engine do cold outreach. Znajduj lokalne firmy, artystow i spolki przez Gemini + Google Search.",
     projectsTitle: "Nasze projekty",
     accountTitle: "Konto",
+    resourcesTitle: "Zasoby",
     linkPricing: "Cennik",
     linkSettings: "Ustawienia",
     linkLogin: "Zaloguj",

@@ -913,6 +913,7 @@ const messages = {
       "AI-генератор лідів для холодного outreach. Шукай локальний бізнес, артистів і компанії через Gemini + Google Search.",
     projectsTitle: "Наші проєкти",
     accountTitle: "Акаунт",
+    resourcesTitle: "Ресурси",
     companyTitle: "NeoFlux Software",
     linkFluxId: "Flux ID",
     linkMarketplace: "Flux MarketPlace",

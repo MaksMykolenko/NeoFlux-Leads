@@ -50,11 +50,15 @@ export default async function Footer() {
 
         {/* ─── Account col ─── */}
         <FooterColumn title={t("accountTitle")}>
-          <FooterLocaleLink href="/pricing">{t("linkPricing")}</FooterLocaleLink>
           <FooterLocaleLink href="/settings">
             {t("linkSettings")}
           </FooterLocaleLink>
           <FooterLocaleLink href="/login">{t("linkLogin")}</FooterLocaleLink>
+        </FooterColumn>
+
+        {/* ─── Resources col ─── */}
+        <FooterColumn title={t("resourcesTitle")}>
+          <FooterLocaleLink href="/pricing">{t("linkPricing")}</FooterLocaleLink>
           <FooterLocaleLink href="/privacy">
             {t("linkPolicy")}
           </FooterLocaleLink>

@@ -390,7 +390,7 @@ export default async function MarketingHomeContent() {
             </p>
             <Link
               href="/login"
-              className="mt-10 inline-flex h-12 items-center rounded-xl bg-white px-8 text-sm font-bold text-[#0a0a0f] transition-colors hover:bg-zinc-200"
+              className="mt-10 inline-flex h-12 items-center rounded-xl bg-[#6a00ff] px-8 text-sm font-bold text-white transition-colors hover:bg-[#5a00d9]"
             >
               {t("ctaButton")}
             </Link>
