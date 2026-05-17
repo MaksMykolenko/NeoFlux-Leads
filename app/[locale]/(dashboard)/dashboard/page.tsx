@@ -20,6 +20,9 @@ import CheckoutSuccessBanner from "@/src/components/CheckoutSuccessBanner";
 import ManageSubscriptionButton from "@/src/components/ManageSubscriptionButton";
 import BrandMark from "@/src/components/BrandMark";
 import LeadsTableSection from "@/src/components/LeadsTableSection";
+import CampaignSummary, {
+  type CampaignSummaryItem,
+} from "@/src/components/CampaignSummary";
 import LeadKanbanBoard, {
   type KanbanLead,
 } from "@/src/components/LeadKanbanBoard";
@@ -28,8 +31,14 @@ import LeadViewToggle, {
 } from "@/src/components/LeadViewToggle";
 import ModeTabs from "@/src/components/ModeTabs";
 import OnboardingTour from "@/src/components/OnboardingTour";
+import OnboardingFirstSearch from "@/src/components/OnboardingFirstSearch";
 import DatabaseConfigBanner from "@/src/components/DatabaseConfigBanner";
 import UsageMeter from "@/src/components/UsageMeter";
+import LeadQualityFilters from "@/src/components/LeadQualityFilters";
+import {
+  applyLeadFilters,
+  parseLeadFilters,
+} from "@/src/lib/leadFilters";
 
 export const dynamic = "force-dynamic";
 
@@ -50,6 +59,7 @@ export default async function Home({
     mode?: string | string[];
     view?: string | string[];
     checkout?: string | string[];
+    filter?: string | string[];
   }>;
 }) {
   const { locale } = await params;
@@ -63,12 +73,14 @@ export default async function Home({
   const query = await searchParams;
   const mode = modeFromQuery(query.mode);
   const view = viewFromQuery(query.view);
+  const filters = parseLeadFilters(query.filter);
   const checkoutParam = Array.isArray(query.checkout)
     ? query.checkout[0]
     : query.checkout;
   const showCheckoutSuccess = checkoutParam === "success";
   const isBeats = mode === LeadMode.BEATS;
   const isUniversal = mode === LeadMode.UNIVERSAL;
+  const isLocal = mode === LeadMode.LOCAL;
   const isBoard = view === "board";
 
   const missingDbEnv =
@@ -81,11 +93,29 @@ export default async function Home({
 
   let leads: LeadWithAudit[] = [];
   let kanbanLeads: KanbanLead[] = [];
+  let localLeadCount = 0;
+  let campaigns: CampaignSummaryItem[] = [];
   let dbQueryFailed = false;
   let dbQueryError: string | null = null;
 
   if (!missingDbEnv) {
     try {
+      const localCampaignRows = await prisma.lead.findMany({
+        where: { userId: user.id, mode: LeadMode.LOCAL },
+        orderBy: { createdAt: "desc" },
+        take: 500,
+        select: {
+          category: true,
+          city: true,
+          status: true,
+          notes: true,
+        },
+      });
+      localLeadCount = await prisma.lead.count({
+        where: { userId: user.id, mode: LeadMode.LOCAL },
+      });
+      campaigns = buildCampaigns(localCampaignRows);
+
       if (isBoard) {
         // Дошка — універсальний вид: ВСІ ліди юзера незалежно від mode,
         // обмежено 200 (досить для огляду воронки в межах одного юзера).
@@ -105,10 +135,14 @@ export default async function Home({
         });
         kanbanLeads = all;
       } else {
+        const where = applyLeadFilters(
+          { mode, userId: user.id },
+          filters,
+        );
         leads = await prisma.lead.findMany({
-          where: { mode, userId: user.id },
+          where,
           orderBy: { createdAt: "desc" },
-          take: 10,
+          take: 50,
           include: { audit: true },
         });
       }
@@ -180,6 +214,8 @@ export default async function Home({
               <BeatOutreach />
             ) : isUniversal ? (
               <UniversalOutreach />
+            ) : localLeadCount === 0 && !dbQueryFailed ? (
+              <OnboardingFirstSearch />
             ) : (
               <ScraperForm />
             )}
@@ -187,7 +223,7 @@ export default async function Home({
           </div>
         )}
 
-        <div className="mt-10" id="tour-leads-table">
+        <div className="mt-10 space-y-4" id="tour-leads-table">
           {isBoard ? (
             <div className="overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-sm dark:border-flux-border dark:bg-flux-card">
               <div className="flex flex-col gap-3 border-b border-zinc-200 px-5 py-4 dark:border-flux-border sm:flex-row sm:items-center sm:justify-between sm:gap-4">
@@ -204,35 +240,44 @@ export default async function Home({
               <LeadKanbanBoard leads={kanbanLeads} />
             </div>
           ) : (
-            <LeadsTableSection
-              leads={leads.map((lead) => ({
-                id: lead.id,
-                mode: lead.mode,
-                companyName: lead.companyName,
-                category: lead.category,
-                city: lead.city,
-                website: lead.website,
-                socialLinks: lead.socialLinks,
-                status: lead.status,
-                source: lead.source,
-                followers: lead.followers,
-                lookingForType: lead.lookingForType,
-                notes: lead.notes,
-                audit: lead.audit ? { issues: lead.audit.issues } : null,
-                score: lead.score,
-                painPoints: lead.painPoints,
-                hasOnlineBooking: lead.hasOnlineBooking,
-              }))}
-              isBeats={isBeats}
-              isUniversal={isUniversal}
-              title={
-                isBeats
-                  ? t("tableTitleBeats")
-                  : isUniversal
-                    ? t("tableTitleUniversal")
-                    : t("tableTitleLocal")
-              }
-            />
+            <>
+              {isLocal && <CampaignSummary campaigns={campaigns} />}
+              {isLocal && (
+                <LeadQualityFilters
+                  active={filters}
+                  mode={modeKeyFromMode(mode)}
+                />
+              )}
+              <LeadsTableSection
+                leads={leads.map((lead) => ({
+                  id: lead.id,
+                  mode: lead.mode,
+                  companyName: lead.companyName,
+                  category: lead.category,
+                  city: lead.city,
+                  website: lead.website,
+                  socialLinks: lead.socialLinks,
+                  status: lead.status,
+                  source: lead.source,
+                  followers: lead.followers,
+                  lookingForType: lead.lookingForType,
+                  notes: lead.notes,
+                  audit: lead.audit ? { issues: lead.audit.issues } : null,
+                  score: lead.score,
+                  painPoints: lead.painPoints,
+                  hasOnlineBooking: lead.hasOnlineBooking,
+                }))}
+                isBeats={isBeats}
+                isUniversal={isUniversal}
+                title={
+                  isBeats
+                    ? t("tableTitleBeats")
+                    : isUniversal
+                      ? t("tableTitleUniversal")
+                      : t("tableTitleLocal")
+                }
+              />
+            </>
           )}
         </div>
 
@@ -242,4 +287,62 @@ export default async function Home({
       </div>
     </div>
   );
+}
+
+function buildCampaigns(
+  rows: Array<{
+    category: string | null;
+    city: string | null;
+    status: string;
+    notes: string | null;
+  }>,
+): CampaignSummaryItem[] {
+  const map = new Map<string, CampaignSummaryItem>();
+
+  for (const row of rows) {
+    const niche = row.category || null;
+    const city = row.city || null;
+    const key = `${niche ?? "unknown"}::${city ?? "unknown"}`.toLowerCase();
+    const existing =
+      map.get(key) ??
+      ({
+        key,
+        name: [niche, city].filter(Boolean).join(" in ") || "Untitled campaign",
+        niche,
+        city,
+        ...parseCampaignContext(row.notes),
+        leads: 0,
+        contacted: 0,
+        replies: 0,
+        won: 0,
+      } satisfies CampaignSummaryItem);
+
+    existing.leads += 1;
+    if (["Contacted", "Replied", "Won", "Lost"].includes(row.status)) {
+      existing.contacted += 1;
+    }
+    if (row.status === "Replied") existing.replies += 1;
+    if (row.status === "Won") existing.won += 1;
+    map.set(key, existing);
+  }
+
+  return Array.from(map.values()).slice(0, 6);
+}
+
+function parseCampaignContext(notes: string | null): {
+  goal: string | null;
+  language: string | null;
+} {
+  const context = { goal: null as string | null, language: null as string | null };
+  if (!notes) return context;
+
+  for (const row of notes.split(/\r?\n/)) {
+    const [rawKey, ...rest] = row.split(":");
+    const value = rest.join(":").trim();
+    const key = rawKey?.trim().toLowerCase();
+    if (!value) continue;
+    if (key === "offer" || key === "service") context.goal = value;
+    if (key === "language") context.language = value;
+  }
+  return context;
 }

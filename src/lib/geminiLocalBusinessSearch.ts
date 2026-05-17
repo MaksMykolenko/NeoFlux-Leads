@@ -7,29 +7,45 @@ const MAX_PAIN_POINTS = 5;
 export interface LocalBusinessHit {
   companyName: string;
   website: string | null;
+  sourceUrl: string | null;
   phone: string | null;
   painPoints: string[];
   hasOnlineBooking: boolean;
+}
+
+interface SearchContext {
+  service?: string | null;
+  language?: string | null;
 }
 
 function buildPrompt(
   niche: string,
   city: string,
   region: string | null,
+  context: SearchContext = {},
 ): string {
   const n = JSON.stringify(niche.trim());
   const c = JSON.stringify(city.trim());
+  const service = context.service?.trim();
+  const language = context.language?.trim();
   const regionLine =
     region && region.trim()
       ? `\nFocus search exclusively on entities located in or targeting: ${JSON.stringify(
           region.trim(),
         )}.\n`
       : "";
+  const contextLine =
+    service || language
+      ? `\nCampaign context:
+${service ? `- User's service/offer: ${JSON.stringify(service)}\n` : ""}${
+          language ? `- Preferred outreach language: ${JSON.stringify(language)}\n` : ""
+        }Prefer businesses where the offer can be relevant, but never invent evidence.\n`
+      : "";
   return `You help find real local businesses for B2B sales outreach.
 
 Use Google Search to find businesses matching:
 - Niche / business type: ${n}
-- City or area served: ${c}${regionLine}
+- City or area served: ${c}${regionLine}${contextLine}
 
 For every business, you MUST analyze Google search snippets, public review excerpts,
 business descriptions, social-media pages, and any directory listings (Google Maps,
@@ -50,6 +66,8 @@ Rules:
   single row unless one clear brand).
 - Prefer businesses with a public official website. Include a phone only if it
   appears on authoritative public pages.
+- "sourceUrl" must be the public page where you found or verified this business
+  (official website, Google-indexed directory/listing, or social page), or null.
 - Do NOT invent company names, URLs, phone numbers, pain points, or booking
   capabilities. If unknown, use null/false/[].
 - "website" must be a full http(s) URL when present, or null.
@@ -58,12 +76,13 @@ Return ONLY a valid JSON array. No markdown code fences, no text before or after
 Each object MUST have exactly these keys:
 "companyName" (string, required),
 "website" (string or null),
+"sourceUrl" (string or null),
 "phone" (string or null),
 "painPoints" (string[]),
 "hasOnlineBooking" (boolean).
 
 Example:
-[{"companyName":"Example Clinic","website":"https://example.com","phone":"+380501234567","painPoints":["no answer","slow website"],"hasOnlineBooking":false}]`;
+[{"companyName":"Example Clinic","website":"https://example.com","sourceUrl":"https://example.com","phone":"+380501234567","painPoints":["no answer","slow website"],"hasOnlineBooking":false}]`;
 }
 
 function stripJsonFences(raw: string): string {
@@ -123,11 +142,12 @@ export async function searchLocalBusinessesViaGemini(
   city: string,
   apiKey: string,
   region: string | null = null,
+  context: SearchContext = {},
 ): Promise<LocalBusinessHit[]> {
   const ai = new GoogleGenAI({ apiKey });
   const response = await ai.models.generateContent({
     model: MODEL,
-    contents: buildPrompt(niche, city, region),
+    contents: buildPrompt(niche, city, region, context),
     config: {
       tools: [{ googleSearch: {} }],
       temperature: 0.25,
@@ -161,6 +181,9 @@ export async function searchLocalBusinessesViaGemini(
     const website = normalizeWebsite(
       typeof rec.website === "string" ? rec.website : null,
     );
+    const sourceUrl = normalizeWebsite(
+      typeof rec.sourceUrl === "string" ? rec.sourceUrl : null,
+    );
 
     const phoneRaw =
       typeof rec.phone === "string" && rec.phone.trim()
@@ -173,6 +196,7 @@ export async function searchLocalBusinessesViaGemini(
     out.push({
       companyName: companyName.slice(0, 500),
       website,
+      sourceUrl,
       phone: phoneRaw,
       painPoints,
       hasOnlineBooking,

@@ -14,6 +14,10 @@ export interface CoreLocalSearchInput {
   query: string;
   city: string;
   region?: string | null;
+  /** User's offer for this search, e.g. "website redesign". */
+  service?: string | null;
+  /** Preferred outreach language for the campaign. */
+  language?: string | null;
   /** Лейбл джерела для `Lead.source`. UI default — "Web search (AI)". */
   source?: string;
   /** Якщо задано — присвоюється `Lead.pipelineStatus` (для Автопілота). */
@@ -46,6 +50,8 @@ export async function coreSearchAndSaveLeads(
     query,
     city,
     region = null,
+    service = null,
+    language = null,
     source = "Web search (AI)",
     pipelineStatus,
     revalidate = true,
@@ -53,6 +59,8 @@ export async function coreSearchAndSaveLeads(
 
   const trimmedQuery = query.trim();
   const trimmedCity = city.trim();
+  const trimmedService = service?.trim() || null;
+  const trimmedLanguage = language?.trim() || null;
   if (!trimmedQuery || !trimmedCity) {
     return {
       success: false,
@@ -93,6 +101,7 @@ export async function coreSearchAndSaveLeads(
     trimmedCity,
     apiKey,
     region,
+    { service: trimmedService, language: trimmedLanguage },
   );
 
   if (scrapedLeads.length === 0) {
@@ -146,7 +155,8 @@ export async function coreSearchAndSaveLeads(
           phone: lead.phone,
           city: trimmedCity,
           category: trimmedQuery,
-          source,
+          source: lead.sourceUrl ? `Google Search: ${lead.sourceUrl}` : source,
+          notes: buildSearchContextNotes(trimmedService, trimmedLanguage),
           painPoints: lead.painPoints,
           hasOnlineBooking: lead.hasOnlineBooking,
           score: initialScore,
@@ -172,4 +182,15 @@ export async function coreSearchAndSaveLeads(
     count: savedCount,
     skipped: skippedCount,
   };
+}
+
+function buildSearchContextNotes(
+  service: string | null,
+  language: string | null,
+): string | undefined {
+  const rows = [
+    service ? `Offer: ${service}` : null,
+    language ? `Language: ${language}` : null,
+  ].filter(Boolean);
+  return rows.length > 0 ? rows.join("\n") : undefined;
 }

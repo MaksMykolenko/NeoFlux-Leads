@@ -37,7 +37,7 @@ model Lead {
   painPoints       String[] @default([])
   hasOnlineBooking Boolean  @default(false)
   score            Int      @default(0) // Opportunity Scoring (0-100)
-  status           String   @default("New") // New, Qualified, Contacted, Replied, Won, Lost
+  status           String   @default("New") // New, Qualified, Contacted, Replied, Won, Lost, Do not contact
   // Стан Autopilot pipeline (окремий від CRM-status). Cron-кроки фільтрують ліди
   // саме по цьому полю. Значення: NEW | PENDING_AUDIT | PENDING_GENERATION |
   // PENDING_DELIVERY | PROCESSED. Default NEW = лід ще не у конвеєрі.

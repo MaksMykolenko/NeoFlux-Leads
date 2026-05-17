@@ -12,6 +12,7 @@ import {
   ReplyStatusEditor,
 } from "@/src/components/MessageStatusBadges";
 import { getScoreContext } from "@/src/lib/scoring";
+import { buildLeadInsights, type ScoreBreakdownItem } from "@/src/lib/leadInsights";
 import {
   CHANNELS,
   channelTranslated,
@@ -105,7 +106,23 @@ export default async function LeadDetailPage({
       ? t("scoreHintLocalNoAudit")
       : isUniversal && !lead.audit
         ? t("scoreHintUniversalNoAudit")
-        : null;
+      : null;
+  const leadInsights = buildLeadInsights({
+    mode: lead.mode,
+    website: lead.website,
+    email: lead.email,
+    phone: lead.phone,
+    source: lead.source,
+    category: lead.category,
+    city: lead.city,
+    notes: lead.notes,
+    painPoints: lead.painPoints,
+    hasOnlineBooking: lead.hasOnlineBooking,
+    followers: lead.followers,
+    lookingForType: lead.lookingForType,
+    audit: lead.audit,
+    updatedAt: lead.updatedAt,
+  });
 
   return (
     <div className="min-h-screen bg-zinc-50 dark:bg-flux-card">
@@ -172,6 +189,22 @@ export default async function LeadDetailPage({
             footnote={scoreFootnote}
             scoreHeading={t("scoreHeading")}
             scoreTitle={t("scoreTitle")}
+            breakdown={leadInsights.scoreBreakdown}
+            breakdownTitle={t("scoreBreakdownTitle")}
+          />
+        </div>
+
+        <div className="mt-6">
+          <LeadContextCard
+            why={leadInsights.why}
+            suggestedAngle={leadInsights.suggestedAngle}
+            source={lead.source}
+            website={lead.website}
+            contactPage={null}
+            lastChecked={formatDateLocalized(leadInsights.lastCheckedAt)}
+            offer={leadInsights.searchContext.offer}
+            language={leadInsights.searchContext.language}
+            t={t}
           />
         </div>
 
@@ -251,6 +284,8 @@ function OpportunityScoreCard({
   footnote,
   scoreHeading,
   scoreTitle,
+  breakdown,
+  breakdownTitle,
 }: {
   score: number;
   styles: ReturnType<typeof getScoreContext>;
@@ -259,6 +294,8 @@ function OpportunityScoreCard({
   footnote: string | null;
   scoreHeading: string;
   scoreTitle: string;
+  breakdown: ScoreBreakdownItem[];
+  breakdownTitle: string;
 }) {
   return (
     <section className="bg-white rounded-xl shadow-sm border border-zinc-200 p-6 dark:bg-flux-card dark:border-flux-border">
@@ -301,8 +338,165 @@ function OpportunityScoreCard({
           <p className="mt-3 text-xs text-zinc-500 dark:text-zinc-400">{footnote}</p>
         ) : null}
       </div>
+
+      {breakdown.length > 0 && (
+        <div className="mt-5 rounded-lg border border-zinc-200 bg-zinc-50 p-3 dark:border-flux-border dark:bg-flux-card-2">
+          <h3 className="text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
+            {breakdownTitle}
+          </h3>
+          <ul className="mt-2 grid gap-2 sm:grid-cols-2">
+            {breakdown.map((item) => (
+              <li
+                key={`${item.label}-${item.points}`}
+                className="flex items-center justify-between gap-3 rounded-md bg-white px-3 py-2 text-xs ring-1 ring-zinc-200 dark:bg-flux-card dark:ring-flux-border"
+              >
+                <span className="text-zinc-600 dark:text-zinc-300">
+                  {item.label}
+                </span>
+                <span
+                  className={`font-semibold tabular-nums ${
+                    item.points >= 0
+                      ? "text-purple-700 dark:text-flux-purple-soft"
+                      : "text-zinc-500 dark:text-zinc-400"
+                  }`}
+                >
+                  {item.points > 0 ? `+${item.points}` : item.points}
+                </span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
     </section>
   );
+}
+
+function LeadContextCard({
+  why,
+  suggestedAngle,
+  source,
+  website,
+  contactPage,
+  lastChecked,
+  offer,
+  language,
+  t,
+}: {
+  why: string;
+  suggestedAngle: string;
+  source: string | null;
+  website: string | null;
+  contactPage: string | null;
+  lastChecked: string;
+  offer: string | null;
+  language: string | null;
+  t: (key: string, values?: Record<string, string | number>) => string;
+}) {
+  const sourceHref = extractFirstUrl(source);
+
+  return (
+    <section className="rounded-xl border border-zinc-200 bg-white p-6 shadow-sm dark:border-flux-border dark:bg-flux-card">
+      <div className="grid gap-5 lg:grid-cols-[1.2fr_1fr]">
+        <div>
+          <h2 className="text-base font-semibold text-zinc-900 dark:text-zinc-50">
+            {t("whyThisLeadTitle")}
+          </h2>
+          <p className="mt-2 text-sm leading-relaxed text-zinc-600 dark:text-zinc-300">
+            {why}
+          </p>
+          <h3 className="mt-5 text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
+            {t("suggestedAngleTitle")}
+          </h3>
+          <p className="mt-2 text-sm leading-relaxed text-zinc-700 dark:text-zinc-200">
+            {suggestedAngle}
+          </p>
+        </div>
+
+        <dl className="grid gap-3 text-sm sm:grid-cols-2 lg:grid-cols-1">
+          <ContextField
+            label={t("sourceUrl")}
+            value={source}
+            emptyLabel={t("notProvided")}
+            href={sourceHref}
+          />
+          <ContextField
+            label={t("websiteUrl")}
+            value={website}
+            emptyLabel={t("notProvided")}
+            href={website}
+          />
+          <ContextField
+            label={t("contactPageUrl")}
+            value={contactPage}
+            emptyLabel={t("notProvided")}
+            href={contactPage}
+          />
+          <ContextField
+            label={t("lastChecked")}
+            value={lastChecked}
+            emptyLabel={t("notProvided")}
+          />
+          {offer && (
+            <ContextField
+              label={t("campaignOffer")}
+              value={offer}
+              emptyLabel={t("notProvided")}
+            />
+          )}
+          {language && (
+            <ContextField
+              label={t("campaignLanguage")}
+              value={language}
+              emptyLabel={t("notProvided")}
+            />
+          )}
+        </dl>
+      </div>
+    </section>
+  );
+}
+
+function ContextField({
+  label,
+  value,
+  emptyLabel,
+  href,
+}: {
+  label: string;
+  value: string | null;
+  emptyLabel: string;
+  href?: string | null;
+}) {
+  const displayValue = value ? (
+    href ? (
+      <a
+        href={href}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="truncate text-purple-600 hover:text-purple-800 hover:underline dark:text-flux-purple-soft dark:hover:text-white"
+      >
+        {href === value ? stripProtocol(value) : value}
+      </a>
+    ) : (
+      <span className="truncate text-zinc-900 dark:text-zinc-50">{value}</span>
+    )
+  ) : (
+    <span className="text-zinc-400 dark:text-zinc-500">{emptyLabel}</span>
+  );
+
+  return (
+    <div className="min-w-0 rounded-lg border border-zinc-200 bg-zinc-50 px-3 py-2 dark:border-flux-border dark:bg-flux-card-2">
+      <dt className="text-[11px] font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
+        {label}
+      </dt>
+      <dd className="mt-1 flex min-w-0">{displayValue}</dd>
+    </div>
+  );
+}
+
+function extractFirstUrl(value: string | null): string | null {
+  const match = value?.match(/https?:\/\/\S+/);
+  return match?.[0] ?? null;
 }
 
 interface ContactsCardProps {

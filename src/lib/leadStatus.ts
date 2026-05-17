@@ -5,6 +5,7 @@ export const LEAD_STATUSES = [
   "Replied",
   "Won",
   "Lost",
+  "Do not contact",
 ] as const;
 
 export type LeadStatus = (typeof LEAD_STATUSES)[number];
@@ -26,6 +27,8 @@ const STATUS_STYLES: Record<LeadStatus, string> = {
     "bg-rose-50 text-rose-700 ring-rose-200 dark:bg-rose-500/10 dark:text-rose-300 dark:ring-rose-500/30",
   Won: "bg-emerald-50 text-emerald-700 ring-emerald-200 dark:bg-emerald-500/10 dark:text-emerald-300 dark:ring-emerald-500/30",
   Lost: "bg-red-50 text-red-700 ring-red-200 dark:bg-red-500/10 dark:text-red-300 dark:ring-red-500/30",
+  "Do not contact":
+    "bg-zinc-100 text-zinc-600 ring-zinc-200 dark:bg-zinc-800 dark:text-zinc-300 dark:ring-zinc-700",
 };
 
 export function getStatusClasses(status: string): string {
@@ -41,6 +44,7 @@ export const KANBAN_COLUMN_ACCENT: Record<LeadStatus, string> = {
   Replied: "border-l-4 border-l-rose-500",
   Won: "border-l-4 border-l-emerald-500",
   Lost: "border-l-4 border-l-red-500",
+  "Do not contact": "border-l-4 border-l-zinc-500",
 };
 
 /** Сегменти стрічки воронки (розподіл за статусами). */
@@ -51,4 +55,5 @@ export const KANBAN_FUNNEL_SEGMENT: Record<LeadStatus, string> = {
   Replied: "bg-rose-500 dark:bg-rose-400",
   Won: "bg-emerald-500 dark:bg-emerald-400",
   Lost: "bg-red-500 dark:bg-red-400",
+  "Do not contact": "bg-zinc-500 dark:bg-zinc-400",
 };

@@ -337,6 +337,7 @@ function groupByStatus(leads: KanbanLead[]): Record<LeadStatus, KanbanLead[]> {
     Replied: [],
     Won: [],
     Lost: [],
+    "Do not contact": [],
   };
   for (const lead of leads) {
     const status = isKnownStatus(lead.status) ? lead.status : "New";

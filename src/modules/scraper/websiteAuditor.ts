@@ -7,6 +7,7 @@ export interface AuditResult {
   mobileFriendly: boolean;
   seoOptimized: boolean;
   email: string | null;
+  phone: string | null;
   issues: string[];
 }
 
@@ -14,6 +15,14 @@ const SLOW_THRESHOLD_MS = 3000;
 const PENALTY_PER_ISSUE = 20;
 
 const EMAIL_REGEX = /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/g;
+const PHONE_REGEX =
+  /(?:\+?\d[\s().-]?){7,}\d/g;
+const CONTACT_HREF_REGEX =
+  /(contact|kontakt|contacts|kontaktai|contato|impressum)/i;
+const CTA_TEXT_REGEX =
+  /\b(contact|book|call|quote|reserve|appointment|consultation|start|buy|order|get in touch|kontakt|umow|rezerw|zadzwo)\b/i;
+const SOCIAL_HREF_REGEX =
+  /(facebook\.com|instagram\.com|linkedin\.com|tiktok\.com|youtube\.com|x\.com|twitter\.com)/i;
 
 // Patterns that indicate a regex hit that ISN'T a real contact email.
 // Covers asset filenames accidentally matching `name@2x.png`, plus the most
@@ -39,6 +48,33 @@ function extractEmailFromHtml(html: string): string | null {
     if (FAKE_EMAIL_PATTERNS.some((re) => re.test(lower))) continue;
 
     return candidate;
+  }
+  return null;
+}
+
+function extractPhoneFromText(text: string): string | null {
+  const matches = text.match(PHONE_REGEX);
+  if (!matches) return null;
+
+  for (const candidate of matches) {
+    const digits = candidate.replace(/\D/g, "");
+    if (digits.length >= 8 && digits.length <= 16) {
+      return candidate.trim().slice(0, 64);
+    }
+  }
+  return null;
+}
+
+function findOutdatedCopyrightYear(text: string): number | null {
+  const currentYear = new Date().getFullYear();
+  const years = Array.from(
+    text.matchAll(/(?:copyright|©)\s*(?:\D{0,20})?((?:19|20)\d{2})/gi),
+  )
+    .map((match) => Number(match[1]))
+    .filter((year) => Number.isFinite(year));
+  const oldestRecent = Math.max(...years, 0);
+  if (oldestRecent > 0 && oldestRecent < currentYear - 1) {
+    return oldestRecent;
   }
   return null;
 }
@@ -77,6 +113,7 @@ export async function analyzeWebsite(url: string): Promise<AuditResult> {
         mobileFriendly: false,
         seoOptimized: false,
         email: null,
+        phone: null,
         issues: ["Сайт недоступний або не завантажується"],
       };
     }
@@ -108,23 +145,85 @@ export async function analyzeWebsite(url: string): Promise<AuditResult> {
     const hasTitle = !!titleText?.trim();
     if (!hasTitle) {
       issues.push("Відсутній тег <title>");
+    } else if (titleText.trim().length < 20) {
+      issues.push("Слабкий SEO title");
     }
 
-    const seoOptimized = hasH1 && hasTitle;
+    const metaDescription = await page
+      .locator('meta[name="description"]')
+      .getAttribute("content")
+      .catch(() => null);
+    if (!metaDescription?.trim()) {
+      issues.push("Відсутній meta description");
+    }
+
+    const seoOptimized = hasH1 && hasTitle && !!metaDescription?.trim();
 
     if (loadTimeMs > SLOW_THRESHOLD_MS) {
       issues.push(`Повільне завантаження (${loadTimeMs}мс)`);
     }
 
     const email = extractEmailFromHtml(html);
+    if (!email) {
+      issues.push("Контактний email не знайдено");
+    }
+
+    const bodyText = await page.locator("body").innerText().catch(() => "");
+    const phone = extractPhoneFromText(bodyText);
+    if (!phone) {
+      issues.push("Телефон не знайдено");
+    }
+
+    const anchors = await page
+      .locator("a")
+      .evaluateAll((nodes) =>
+        nodes.map((node) => ({
+          href: node.getAttribute("href") ?? "",
+          text: node.textContent ?? "",
+        })),
+      )
+      .catch(() => []);
+    const hasContactPage = anchors.some(
+      (anchor) =>
+        CONTACT_HREF_REGEX.test(anchor.href) ||
+        CONTACT_HREF_REGEX.test(anchor.text),
+    );
+    if (!hasContactPage) {
+      issues.push("Сторінку контактів не знайдено");
+    }
+
+    const ctaTexts = await page
+      .locator("a,button")
+      .evaluateAll((nodes) =>
+        nodes.map((node) => node.textContent?.trim() ?? "").filter(Boolean),
+      )
+      .catch(() => []);
+    const hasClearCta = ctaTexts.some((text) => CTA_TEXT_REGEX.test(text));
+    if (!hasClearCta) {
+      issues.push("Немає чіткого CTA");
+    }
+
+    const hasSocialLinks = anchors.some((anchor) =>
+      SOCIAL_HREF_REGEX.test(anchor.href),
+    );
+    if (!hasSocialLinks) {
+      issues.push("Соцпосилання не знайдено");
+    }
+
+    const outdatedYear = findOutdatedCopyrightYear(bodyText);
+    if (outdatedYear) {
+      issues.push(`Застарілий copyright (${outdatedYear})`);
+    }
 
     await browser.close();
+    browser = null;
 
     return {
       ssl,
       mobileFriendly,
       seoOptimized,
       email,
+      phone,
       issues,
     };
   } catch (error) {
@@ -134,6 +233,7 @@ export async function analyzeWebsite(url: string): Promise<AuditResult> {
       mobileFriendly: false,
       seoOptimized: false,
       email: null,
+      phone: null,
       issues: [
         `Помилка аналізу: ${error instanceof Error ? error.message : "Unknown error"}`,
       ],

@@ -23,6 +23,7 @@ export async function searchAndSaveLeads(
   query: string,
   city: string,
   region: string | null = null,
+  context?: { service?: string | null; language?: string | null },
 ): Promise<LeadActionResult> {
   try {
     const user = await getCurrentUser();
@@ -35,6 +36,8 @@ export async function searchAndSaveLeads(
       query,
       city,
       region,
+      service: context?.service,
+      language: context?.language,
     });
     return toActionResult(result);
   } catch (error) {

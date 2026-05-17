@@ -8,6 +8,7 @@ export interface ScoringLead {
 export interface ScoringAudit {
   hasSSL: boolean;
   mobileFriendly: boolean;
+  issues?: string[];
 }
 
 export interface ScoringArtist {
@@ -35,11 +36,20 @@ export function getScoreLevel(score: number): ScoreLevel {
   return "low";
 }
 
-export function calculateLocalLeadScore(input: ScoringLocalLead): number {
+export function calculateLocalLeadScore(
+  input: ScoringLocalLead,
+  audit: ScoringAudit | null = null,
+): number {
   let score = 50;
   if (!input.website) score += 15;
   if (!input.hasOnlineBooking) score += 20;
   if (input.painPoints.length > 0) score += 30;
+  if (audit) {
+    if (!audit.hasSSL) score += 10;
+    if (!audit.mobileFriendly) score += 15;
+    const issueBonus = Math.min(25, (audit.issues?.length ?? 0) * 5);
+    score += issueBonus;
+  }
   return Math.max(0, Math.min(100, score));
 }
 
@@ -121,7 +131,7 @@ export interface RecalcLeadInput {
  *   BEATS     → `calculateArtistScore`     (followers + type-buyer + email)
  *   UNIVERSAL → `calculateLeadScore`       (audit booleans + landing platform + email)
  *
- * `audit` ігнорується для LOCAL/BEATS — їм аудит сайту не потрібен для скору.
+ * LOCAL бере audit-сигнали після перевірки сайту; BEATS їх ігнорує.
  */
 export function recalculateLeadScore(
   lead: RecalcLeadInput,
@@ -145,7 +155,7 @@ export function recalculateLeadScore(
         website: lead.website ?? null,
         hasOnlineBooking: lead.hasOnlineBooking ?? false,
         painPoints: lead.painPoints ?? [],
-      });
+      }, audit);
   }
 }
 

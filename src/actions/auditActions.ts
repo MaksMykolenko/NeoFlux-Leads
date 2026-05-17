@@ -71,14 +71,21 @@ export async function runAuditForLead(
     const freshEmail = result.email ?? lead.email;
     const opportunityScore = recalculateLeadScore(
       { ...lead, email: freshEmail },
-      { hasSSL: result.ssl, mobileFriendly: result.mobileFriendly },
+      {
+        hasSSL: result.ssl,
+        mobileFriendly: result.mobileFriendly,
+        issues: result.issues,
+      },
     );
 
-    const leadUpdate: { score: number; email?: string } = {
+    const leadUpdate: { score: number; email?: string; phone?: string } = {
       score: opportunityScore,
     };
     if (result.email && result.email !== lead.email) {
       leadUpdate.email = result.email;
+    }
+    if (result.phone && !lead.phone) {
+      leadUpdate.phone = result.phone;
     }
 
     await prisma.lead.update({
