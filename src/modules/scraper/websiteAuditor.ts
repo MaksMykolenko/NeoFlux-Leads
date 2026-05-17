@@ -1,6 +1,7 @@
 "use server";
 
 import { chromium, type Browser } from "playwright";
+import { validateExternalUrl } from "@/src/lib/security/urlSafety";
 
 export interface AuditResult {
   ssl: boolean;
@@ -11,8 +12,19 @@ export interface AuditResult {
   issues: string[];
 }
 
+class UnsafeUrlError extends Error {
+  constructor(
+    public readonly reason: string,
+    message: string,
+  ) {
+    super(message);
+    this.name = "UnsafeUrlError";
+  }
+}
+
 const SLOW_THRESHOLD_MS = 3000;
 const PENALTY_PER_ISSUE = 20;
+const MAX_MAIN_NAVIGATION_REQUESTS = 8;
 
 const EMAIL_REGEX = /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/g;
 const PHONE_REGEX =
@@ -80,6 +92,16 @@ function findOutdatedCopyrightYear(text: string): number | null {
 }
 
 export async function analyzeWebsite(url: string): Promise<AuditResult> {
+  // SSRF guard: reject non-http(s), userinfo URLs, and any host that resolves
+  // to a loopback / private / link-local / cloud-metadata IP. Without this,
+  // Playwright would happily fetch `http://169.254.169.254/latest/meta-data`
+  // or `http://localhost:5432` from inside our serverless function.
+  const safety = await validateExternalUrl(url);
+  if (!safety.ok) {
+    throw new UnsafeUrlError(safety.reason, safety.message);
+  }
+  const startUrl = safety.normalizedUrl;
+
   let browser: Browser | null = null;
 
   try {
@@ -95,19 +117,70 @@ export async function analyzeWebsite(url: string): Promise<AuditResult> {
 
     const page = await context.newPage();
     const issues: string[] = [];
+    const safetyCache = new Map<string, ReturnType<typeof validateExternalUrl>>();
+    let blockedNavigationMessage: string | null = null;
+    let blockedSubresourceCount = 0;
+    let mainNavigationRequests = 0;
+
+    const checkUrl = (targetUrl: string) => {
+      const cached = safetyCache.get(targetUrl);
+      if (cached) return cached;
+      const check = validateExternalUrl(targetUrl);
+      safetyCache.set(targetUrl, check);
+      return check;
+    };
+
+    await context.route("**/*", async (route) => {
+      const request = route.request();
+      const requestUrl = request.url();
+      const isMainNavigation =
+        request.isNavigationRequest() && request.frame() === page.mainFrame();
+
+      if (isMainNavigation) {
+        mainNavigationRequests += 1;
+        if (mainNavigationRequests > MAX_MAIN_NAVIGATION_REQUESTS) {
+          blockedNavigationMessage = "Забагато redirect-ів під час аудиту сайту.";
+          await route.abort("blockedbyclient");
+          return;
+        }
+      }
+
+      const requestSafety = await checkUrl(requestUrl);
+      if (!requestSafety.ok) {
+        if (isMainNavigation) {
+          blockedNavigationMessage = requestSafety.message;
+        } else {
+          blockedSubresourceCount += 1;
+        }
+        await route.abort("blockedbyclient");
+        return;
+      }
+
+      await route.continue();
+    });
 
     const startTime = Date.now();
     let finalUrl: string;
     let html = "";
 
     try {
-      await page.goto(url, {
+      await page.goto(startUrl, {
         waitUntil: "domcontentloaded",
         timeout: 15000,
       });
       finalUrl = page.url();
+      const finalSafety = await validateExternalUrl(finalUrl);
+      if (!finalSafety.ok) {
+        throw new UnsafeUrlError(finalSafety.reason, finalSafety.message);
+      }
       html = await page.content().catch(() => "");
-    } catch {
+    } catch (err) {
+      if (err instanceof UnsafeUrlError) {
+        throw err;
+      }
+      if (blockedNavigationMessage) {
+        throw new UnsafeUrlError("PRIVATE_IP", blockedNavigationMessage);
+      }
       return {
         ssl: false,
         mobileFriendly: false,
@@ -213,6 +286,11 @@ export async function analyzeWebsite(url: string): Promise<AuditResult> {
     const outdatedYear = findOutdatedCopyrightYear(bodyText);
     if (outdatedYear) {
       issues.push(`Застарілий copyright (${outdatedYear})`);
+    }
+    if (blockedSubresourceCount > 0) {
+      issues.push(
+        `Заблоковано небезпечні внутрішні ресурси (${blockedSubresourceCount})`,
+      );
     }
 
     await browser.close();
