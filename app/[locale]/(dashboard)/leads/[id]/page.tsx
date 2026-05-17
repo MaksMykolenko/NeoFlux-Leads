@@ -43,7 +43,8 @@ export default async function LeadDetailPage({
   const t = await getTranslations("LeadDetail");
   const tc = await getTranslations("Channels");
 
-  const dateLocale = locale === "en" ? "en-US" : "uk-UA";
+  const dateLocale =
+    locale === "en" ? "en-US" : locale === "pl" ? "pl-PL" : "uk-UA";
   const dateFormatter = new Intl.DateTimeFormat(dateLocale, {
     day: "2-digit",
     month: "long",
@@ -936,4 +937,3 @@ function MessageChannelsBadge({
     </div>
   );
 }
-

@@ -1,5 +1,5 @@
 type FluxLeadsJsonLdProps = {
-  locale: "uk" | "en";
+  locale: "uk" | "en" | "pl";
   canonicalUrl: string;
 };
 
@@ -8,6 +8,7 @@ export default function FluxLeadsJsonLd({
   canonicalUrl,
 }: FluxLeadsJsonLdProps) {
   const isUk = locale === "uk";
+  const isPl = locale === "pl";
 
   const softwareApplication = {
     "@context": "https://schema.org",
@@ -20,7 +21,9 @@ export default function FluxLeadsJsonLd({
     url: canonicalUrl,
     description: isUk
       ? "B2B Lead Engine і мікро-CRM для веб-студій: AI-пошук локальних бізнесів, автоматичний аудит сайтів, Opportunity Score та персоналізований cold email."
-      : "B2B lead engine and micro-CRM for web agencies: AI local business search, automated website audits, opportunity scoring, and personalized cold email.",
+      : isPl
+        ? "B2B lead engine i mikro-CRM dla agencji webowych: AI search lokalnych firm, automatyczne audyty stron, Opportunity Score i spersonalizowane cold emaile."
+        : "B2B lead engine and micro-CRM for web agencies: AI local business search, automated website audits, opportunity scoring, and personalized cold email.",
     brand: { "@type": "Brand", name: "NeoFlux Software" },
     publisher: {
       "@type": "Organization",
@@ -33,7 +36,11 @@ export default function FluxLeadsJsonLd({
         name: "Starter",
         price: "0",
         priceCurrency: "USD",
-        description: isUk ? "50 лідів на місяць" : "50 leads per month",
+        description: isUk
+          ? "50 лідів на місяць"
+          : isPl
+            ? "50 leadow miesiecznie"
+            : "50 leads per month",
       },
       {
         "@type": "Offer",
@@ -42,14 +49,20 @@ export default function FluxLeadsJsonLd({
         priceCurrency: "USD",
         description: isUk
           ? "1000 лідів, аудит сайтів, AI-листи"
-          : "1000 leads, website audits, AI emails",
+          : isPl
+            ? "1000 leadow, audyty stron, emaile AI"
+            : "1000 leads, website audits, AI emails",
       },
       {
         "@type": "Offer",
         name: "Agency",
         price: "60",
         priceCurrency: "USD",
-        description: isUk ? "Безліміт лідів, CSV export" : "Unlimited leads, CSV export",
+        description: isUk
+          ? "10 000 лідів, CSV export"
+          : isPl
+            ? "10 000 leadow, CSV export"
+            : "10,000 leads, CSV export",
       },
     ],
     featureList: isUk
@@ -60,18 +73,28 @@ export default function FluxLeadsJsonLd({
           "AI-генерація персоналізованих cold email",
           "Kanban-воронка продажів",
         ]
-      : [
-          "AI lead search (Google Gemini + Google Search grounding)",
-          "Automated website audits (Playwright)",
-          "Opportunity Score 0–100",
-          "AI personalized cold email generation",
-          "Sales Kanban pipeline",
-        ],
+      : isPl
+        ? [
+            "AI lead search (Google Gemini + Google Search grounding)",
+            "Automatyczne audyty stron (Playwright)",
+            "Opportunity Score 0–100",
+            "AI generowanie spersonalizowanych cold email",
+            "Pipeline Kanban",
+          ]
+        : [
+            "AI lead search (Google Gemini + Google Search grounding)",
+            "Automated website audits (Playwright)",
+            "Opportunity Score 0–100",
+            "AI personalized cold email generation",
+            "Sales Kanban pipeline",
+          ],
     audience: {
       "@type": "BusinessAudience",
       audienceType: isUk
         ? "Веб-студії, digital-агенції, B2B outbound-фрілансери"
-        : "Web agencies, digital studios, B2B outbound freelancers",
+        : isPl
+          ? "Agencje webowe, studia digital, freelancerzy B2B outbound"
+          : "Web agencies, digital studios, B2B outbound freelancers",
     },
   };
 

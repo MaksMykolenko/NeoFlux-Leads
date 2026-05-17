@@ -6,8 +6,6 @@ export function resolveMetadataBase(): URL {
   return new URL(getEnvSiteHref());
 }
 
-type Locale = (typeof routing.locales)[number];
-
 export function localeAlternates(
   pathname: string,
   locale: string,
@@ -45,7 +43,7 @@ export function buildPageMetadata({
     alternates: localeAlternates(pathname, locale),
     openGraph: {
       type: "website",
-      locale: locale === "en" ? "en_US" : "uk_UA",
+      locale: locale === "en" ? "en_US" : locale === "pl" ? "pl_PL" : "uk_UA",
       url: pagePath,
       siteName: "Flux Leads",
       title,

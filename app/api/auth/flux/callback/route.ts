@@ -227,7 +227,8 @@ export async function GET(req: NextRequest) {
 
   const localeCookie = req.cookies.get("neoflux_oauth_locale")?.value;
   const locale =
-    localeCookie && routing.locales.includes(localeCookie as "uk" | "en")
+    localeCookie &&
+    (routing.locales as readonly string[]).includes(localeCookie)
       ? localeCookie
       : routing.defaultLocale;
   const home = new URL(`/${locale}/dashboard`, getPublicAppOrigin(req));

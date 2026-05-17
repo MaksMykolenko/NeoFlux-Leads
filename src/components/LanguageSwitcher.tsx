@@ -31,6 +31,12 @@ export default function LanguageSwitcher() {
         active={locale === "en"}
         label={t("en")}
       />
+      <LangLink
+        href={pathname}
+        locale="pl"
+        active={locale === "pl"}
+        label={t("pl")}
+      />
     </div>
   );
 }
@@ -42,7 +48,7 @@ function LangLink({
   label,
 }: {
   href: string;
-  locale: "uk" | "en";
+  locale: "uk" | "en" | "pl";
   active: boolean;
   label: string;
 }) {

@@ -55,9 +55,14 @@ export default async function Footer() {
             {t("linkSettings")}
           </FooterLocaleLink>
           <FooterLocaleLink href="/login">{t("linkLogin")}</FooterLocaleLink>
-          <FooterExternalLink href="https://maksmykolenko.github.io/NeoFlux-Software/">
+          <FooterLocaleLink href="/privacy">
             {t("linkPolicy")}
-          </FooterExternalLink>
+          </FooterLocaleLink>
+          <FooterLocaleLink href="/terms">{t("linkTerms")}</FooterLocaleLink>
+          <FooterLocaleLink href="/cookies">{t("linkCookies")}</FooterLocaleLink>
+          <FooterLocaleLink href="/acceptable-use">
+            {t("linkAcceptableUse")}
+          </FooterLocaleLink>
         </FooterColumn>
 
         {/* ─── Social col ─── */}

@@ -1,6 +1,9 @@
 import type { MetadataRoute } from "next";
 import { routing } from "@/src/i18n/routing";
-import { SITEMAP_PATHNAMES } from "@/src/lib/seo/publicPaths";
+import {
+  LOCALIZED_SITEMAP_PATHNAMES,
+  SITEMAP_PATHNAMES,
+} from "@/src/lib/seo/publicPaths";
 import { getEnvSiteHref } from "@/src/lib/siteOrigin";
 
 const PRIORITY: Record<string, number> = {
@@ -40,6 +43,15 @@ export default function sitemap(): MetadataRoute.Sitemap {
         },
       });
     }
+  }
+
+  for (const { locale, pathname } of LOCALIZED_SITEMAP_PATHNAMES) {
+    entries.push({
+      url: `${base}/${locale}${pathname}`,
+      lastModified: now,
+      changeFrequency: CHANGE_FREQ[pathname] ?? "monthly",
+      priority: PRIORITY[pathname] ?? 0.75,
+    });
   }
 
   return entries;

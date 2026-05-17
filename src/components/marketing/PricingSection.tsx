@@ -42,9 +42,10 @@ export default async function PricingSection({
           const unlimited = !Number.isFinite(plan.leadsPerMonth);
           const formatted = unlimited
             ? t("unlimitedWord")
-            : String(plan.leadsPerMonth);
+            : new Intl.NumberFormat(locale).format(plan.leadsPerMonth);
           const perMonthSuffix = unlimited ? "" : t("perMonthSuffix");
           const highlightKeys = PLAN_HIGHLIGHT_KEYS[planId];
+          const ctaLabel = t(`plans.${planId}.cta`);
 
           return (
             <article
@@ -91,7 +92,7 @@ export default async function PricingSection({
                   <UpgradeButton
                     priceId={plan.stripePriceId}
                     locale={locale}
-                    label={t("upgradeNow")}
+                    label={ctaLabel}
                     className="inline-flex w-full items-center justify-center rounded-lg bg-[#6a00ff] py-3 text-sm font-semibold text-white hover:bg-[#5a00d9]"
                   />
                 ) : (
@@ -99,7 +100,7 @@ export default async function PricingSection({
                     href="/login"
                     className="inline-flex w-full items-center justify-center rounded-lg bg-[#6a00ff] py-3 text-sm font-semibold text-white hover:bg-[#5a00d9]"
                   >
-                    {t("upgradeNow")}
+                    {ctaLabel}
                   </Link>
                 )}
               </div>

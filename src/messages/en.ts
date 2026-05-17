@@ -24,15 +24,15 @@ const messages = {
     footerRights: "All rights reserved.",
   },
   MarketingHome: {
-    heroBadge: "Flux Leads · Lead Engine",
-    heroH1: "AI lead gen for web agencies",
+    heroBadge: "Flux Leads · Audit-led outreach",
+    heroH1: "Find businesses with weak websites. Turn audits into clients.",
     heroSub:
-      "Find local prospects, audit their websites, and send cold email backed by real issues—not manual scraping or spreadsheet chaos.",
+      "Flux Leads helps web agencies find local businesses, detect website issues, and generate personalized cold emails based on real problems.",
     heroCta: "Start for free",
     heroSecondary: "Features",
     featuresEyebrow: "Features",
     heroImageAlt: "Flux Leads product interface",
-    featuresH2: "From search to closed deal in one system",
+    featuresH2: "One workflow from prospect to pitch",
     featureSearchH3: "AI lead search",
     featureSearchP:
       "Niche + city → Gemini with Google Search grounding finds businesses from public sources. A starting point for outbound, not a certified database.",
@@ -45,6 +45,73 @@ const messages = {
     featureCrmH3: "Kanban CRM",
     featureCrmP:
       "Statuses from New to Won, message history, and AI drafts—without HubSpot overhead for small teams.",
+    exampleEyebrow: "Example audit",
+    exampleH2: "See the exact reason to start the conversation",
+    exampleIntro:
+      "A sample local prospect shows the site issues, score, and email angle before you spend time on outreach.",
+    exampleBusinessLabel: "Business",
+    exampleBusiness: "Local dentist in Warsaw",
+    exampleIssuesLabel: "Website issues found",
+    exampleIssue1: "No clear H1",
+    exampleIssue2: "Slow mobile loading",
+    exampleIssue3: "Missing contact email",
+    exampleIssue4: "Weak SEO title",
+    exampleScoreLabel: "Opportunity Score",
+    exampleEmailLabel: "Generated email draft",
+    exampleEmail:
+      "Hi, I noticed your website has a few issues that may reduce trust and leads, especially on mobile. I prepared a short audit and can show you what could be improved.",
+    workflowEyebrow: "Product workflow",
+    workflowH2: "Four screens, one repeatable sales motion",
+    workflowLeadSearchTitle: "Lead Search",
+    workflowLeadSearchBody:
+      "Enter niche + city and get local businesses from public sources.",
+    workflowAuditTitle: "Website Audit",
+    workflowAuditBody:
+      "See SSL, mobile, SEO and performance issues before outreach.",
+    workflowEmailTitle: "AI Email Draft",
+    workflowEmailBody:
+      "Generate personalized cold emails based on real site problems.",
+    workflowCrmTitle: "Kanban CRM",
+    workflowCrmBody: "Track leads from New to Won without spreadsheets.",
+    scoreEyebrow: "Opportunity Score",
+    scoreH2: "Why one lead gets 82 and another gets 35",
+    scoreIntro:
+      "The score prioritizes businesses where the website gap is visible enough to support a relevant outreach pitch.",
+    scoreItem1: "Website technical issues",
+    scoreItem2: "Missing or weak SEO basics",
+    scoreItem3: "Mobile usability",
+    scoreItem4: "Contact availability",
+    scoreItem5: "Business relevance",
+    scoreItem6: "Outreach potential",
+    audienceEyebrow: "Who is it for?",
+    audienceH2: "Built for focused B2B outreach",
+    builtForTitle: "Built for",
+    builtFor1: "Freelance web developers",
+    builtFor2: "Small web agencies",
+    builtFor3: "SEO specialists",
+    builtFor4: "Landing page creators",
+    builtFor5: "Local marketing agencies",
+    notForTitle: "Not built for",
+    notFor1: "Spam campaigns",
+    notFor2: "Mass scraping",
+    notFor3: "Buying random email lists",
+    notFor4: "Enterprise CRM replacement",
+    emailCompareEyebrow: "Before / after",
+    emailCompareH2: "Turn generic outreach into evidence-based outreach",
+    genericEmailTitle: "Generic cold email",
+    genericEmailBody: "Hi, I build websites. Do you need a new website?",
+    fluxEmailTitle: "Flux Leads email",
+    fluxEmailBody:
+      "Hi, I checked your website and noticed it loads slowly on mobile and does not have a clear H1/title structure. These issues can reduce trust and make it harder for customers to contact you. I can send you a short improvement plan if you are interested.",
+    trustEyebrow: "Trust",
+    trustH2: "Built by NeoFlux Software",
+    trustP:
+      "Flux Leads is built by NeoFlux Software — a small Ukrainian engineering team building practical tools for digital businesses.",
+    trustItem1: "No credit card required",
+    trustItem2: "Public-source lead discovery",
+    trustItem3: "Stripe payments",
+    trustItem4: "Lightweight CRM included",
+    trustItem5: "Cancel anytime",
     faqH2: "FAQ",
     faq1Q: "How is Flux Leads different from a CRM?",
     faq1A:
@@ -54,9 +121,34 @@ const messages = {
       "No. Enter niche and city, run an audit, edit the AI email, and send.",
     faq3Q: "What does it cost to start?",
     faq3A: "Starter is $0 with 50 leads/month. Pro is $20, Agency is $60.",
+    faq4Q: "Where does lead data come from?",
+    faq4A:
+      "Flux Leads uses AI search over publicly indexed sources and stores useful business context for review. Always verify data before outreach.",
+    faq5Q: "Does Flux Leads send emails for me?",
+    faq5A:
+      "It can draft emails and send via your configured SMTP. You stay responsible for the message, targeting, and compliance.",
+    faq6Q: "Is Flux Leads GDPR compliant?",
+    faq6A:
+      "Flux Leads helps users discover publicly available business information and prepare outreach. Users are responsible for following local email marketing and data protection laws, including GDPR/ePrivacy rules. We recommend contacting only relevant business prospects, using business contact emails where possible, and always including an opt-out option.",
+    faq7Q: "Can I use it in Poland, Ukraine, or the EU?",
+    faq7A:
+      "Yes, but B2B outreach rules vary by country. Use relevant targeting, keep a source trail, and stop contacting anyone who opts out.",
+    faq8Q: "What happens when I reach my monthly lead limit?",
+    faq8A:
+      "New lead creation pauses until the next monthly reset or until you upgrade. Existing leads, audits, and CRM records remain available.",
+    faq9Q: "How does Opportunity Score work?",
+    faq9A:
+      "Higher score means the business has more visible website issues and may be a better fit for audit-led outreach.",
+    faq10Q: "Does it verify email addresses?",
+    faq10A:
+      "Flux Leads can enrich emails from website HTML. Treat them as confidence signals, not guaranteed deliverability verification.",
+    faq11Q: "Is there a free plan?",
+    faq11A:
+      "Yes. Starter includes 50 new leads per month and does not require a card.",
     ctaH2: "Ready for systematic outreach?",
     ctaP: "50 leads per month free on Starter. No card required.",
-    ctaButton: "Sign in with Flux ID",
+    ctaButton: "Create free account",
+    ctaFluxId: "Powered by Flux ID — one account for NeoFlux products.",
   },
   WebAgencies: {
     h1: "Lead engine for web agencies",
@@ -77,6 +169,7 @@ const messages = {
     label: "Language",
     uk: "Українська",
     en: "English",
+    pl: "Polski",
   },
   ThemeToggle: {
     toggle: "Toggle theme",
@@ -400,6 +493,7 @@ const messages = {
         tagline: "Free",
         description:
           "Try the product and learn how lead search works.",
+        cta: "Start free",
         highlights: {
           localSearch: "Local search (AI + Google)",
           simpleAi: "Simplified AI email drafts",
@@ -409,6 +503,7 @@ const messages = {
         tagline: "Most popular",
         description:
           "For freelancers and small teams doing outreach every day.",
+        cta: "Upgrade to Pro",
         highlights: {
           fullAudit: "Full website audit (SSL, mobile, performance)",
           emailEnrichment: "Email enrichment from HTML",
@@ -416,12 +511,13 @@ const messages = {
         },
       },
       AGENCY: {
-        tagline: "No limits",
+        tagline: "High-volume",
         description:
-          "For agencies working multiple niches at once.",
+          "For agencies working multiple niches with a concrete monthly lead cap and fair use included.",
+        cta: "Start Agency plan",
         highlights: {
           allPro: "Everything in Pro",
-          csvExport: "CSV export",
+          csvExport: "Full CSV export",
         },
       },
     },
@@ -823,6 +919,9 @@ const messages = {
     linkSettings: "Settings",
     linkLogin: "Log in",
     linkPolicy: "Privacy policy",
+    linkTerms: "Terms",
+    linkCookies: "Cookies",
+    linkAcceptableUse: "Acceptable use",
     socialTelegram: "Telegram",
     socialYoutube: "YouTube",
     socialTiktok: "TikTok",

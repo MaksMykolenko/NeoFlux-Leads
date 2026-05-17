@@ -24,15 +24,15 @@ const messages = {
     footerRights: "Усі права захищено.",
   },
   MarketingHome: {
-    heroBadge: "Flux Leads · Lead Engine",
-    heroH1: "AI-лідоген для веб-студій",
+    heroBadge: "Flux Leads · Outreach через аудит",
+    heroH1: "Знаходь бізнеси зі слабкими сайтами. Перетворюй аудит у клієнтів.",
     heroSub:
-      "Знаходьте локальних клієнтів, аудитуйте їхні сайти та надсилайте cold email з конкретними доказами — без ручного скрапінгу та хаосу в таблицях.",
+      "Flux Leads допомагає веб-студіям знаходити локальні бізнеси, перевіряти їхні сайти та генерувати персоналізовані cold email на основі реальних проблем.",
     heroCta: "Почати безкоштовно",
     heroSecondary: "Можливості",
     featuresEyebrow: "Можливості",
     heroImageAlt: "Інтерфейс Flux Leads",
-    featuresH2: "Від пошуку до угоди — в одній системі",
+    featuresH2: "Один процес від пошуку до пітчу",
     featureSearchH3: "AI-пошук лідів",
     featureSearchP:
       "Ніша й місто → Gemini з Google Search grounding знаходить бізнеси з публічних джерел. Стартова точка для outbound, не «чорна база».",
@@ -45,6 +45,73 @@ const messages = {
     featureCrmH3: "Kanban CRM",
     featureCrmP:
       "Статуси New → Contacted → Won, історія листів і AI-генерація — без HubSpot для малої команди.",
+    exampleEyebrow: "Приклад аудиту",
+    exampleH2: "Покажи конкретну причину для першого контакту",
+    exampleIntro:
+      "Приклад локального ліда показує проблеми сайту, score і кут для листа ще до того, як ти витрачаєш час на outreach.",
+    exampleBusinessLabel: "Бізнес",
+    exampleBusiness: "Локальна стоматологія у Варшаві",
+    exampleIssuesLabel: "Знайдені проблеми сайту",
+    exampleIssue1: "Немає чіткого H1",
+    exampleIssue2: "Повільне завантаження на mobile",
+    exampleIssue3: "Не знайдено контактний email",
+    exampleIssue4: "Слабкий SEO title",
+    exampleScoreLabel: "Opportunity Score",
+    exampleEmailLabel: "Згенерована чернетка листа",
+    exampleEmail:
+      "Привіт, я помітив, що на вашому сайті є кілька проблем, які можуть знижувати довіру й кількість заявок, особливо на mobile. Я підготував короткий аудит і можу показати, що варто покращити.",
+    workflowEyebrow: "Процес у продукті",
+    workflowH2: "Чотири екрани, один повторюваний sales-процес",
+    workflowLeadSearchTitle: "Lead Search",
+    workflowLeadSearchBody:
+      "Вкажіть нішу й місто та отримайте локальні бізнеси з публічних джерел.",
+    workflowAuditTitle: "Website Audit",
+    workflowAuditBody:
+      "Перевіряйте SSL, mobile, SEO та performance проблеми до outreach.",
+    workflowEmailTitle: "AI Email Draft",
+    workflowEmailBody:
+      "Генеруйте персоналізовані cold email на основі реальних проблем сайту.",
+    workflowCrmTitle: "Kanban CRM",
+    workflowCrmBody: "Ведіть лідів від New до Won без таблиць.",
+    scoreEyebrow: "Opportunity Score",
+    scoreH2: "Чому один лід має 82, а інший 35",
+    scoreIntro:
+      "Score пріоритезує бізнеси, де проблема сайту достатньо видима для релевантного sales-пітчу.",
+    scoreItem1: "Технічні проблеми сайту",
+    scoreItem2: "Відсутні або слабкі SEO-основи",
+    scoreItem3: "Mobile usability",
+    scoreItem4: "Наявність контактів",
+    scoreItem5: "Релевантність бізнесу",
+    scoreItem6: "Потенціал для outreach",
+    audienceEyebrow: "Для кого?",
+    audienceH2: "Створено для сфокусованого B2B outreach",
+    builtForTitle: "Підходить для",
+    builtFor1: "Фриланс веб-розробників",
+    builtFor2: "Невеликих веб-студій",
+    builtFor3: "SEO-спеціалістів",
+    builtFor4: "Розробників landing page",
+    builtFor5: "Локальних marketing agencies",
+    notForTitle: "Не для",
+    notFor1: "Spam campaigns",
+    notFor2: "Масового scraping",
+    notFor3: "Купівлі випадкових email-баз",
+    notFor4: "Заміни enterprise CRM",
+    emailCompareEyebrow: "Before / after",
+    emailCompareH2: "Заміни generic outreach на лист із доказами",
+    genericEmailTitle: "Generic cold email",
+    genericEmailBody: "Привіт, я роблю сайти. Вам потрібен новий сайт?",
+    fluxEmailTitle: "Flux Leads email",
+    fluxEmailBody:
+      "Привіт, я перевірив ваш сайт і помітив, що він повільно завантажується на mobile та не має чіткої H1/title структури. Це може знижувати довіру й ускладнювати контакт клієнтів з вами. Можу надіслати короткий план покращень, якщо актуально.",
+    trustEyebrow: "Довіра",
+    trustH2: "Створено NeoFlux Software",
+    trustP:
+      "Flux Leads створює NeoFlux Software — невелика українська engineering team, яка будує практичні інструменти для digital-бізнесів.",
+    trustItem1: "Без картки на старті",
+    trustItem2: "Пошук лідів з публічних джерел",
+    trustItem3: "Оплата через Stripe",
+    trustItem4: "Легка CRM включена",
+    trustItem5: "Можна скасувати будь-коли",
     faqH2: "Питання",
     faq1Q: "Чим Flux Leads відрізняється від CRM?",
     faq1A:
@@ -54,9 +121,34 @@ const messages = {
       "Ні. Вкажіть нішу та місто, запустіть аудит, відредагуйте AI-лист і надішліть.",
     faq3Q: "Скільки коштує старт?",
     faq3A: "Starter — $0, 50 лідів на місяць. Pro — $20, Agency — $60.",
+    faq4Q: "Звідки беруться дані лідів?",
+    faq4A:
+      "Flux Leads використовує AI-пошук по публічно індексованих джерелах і зберігає корисний контекст бізнесу для перевірки. Дані варто верифікувати перед outreach.",
+    faq5Q: "Flux Leads відправляє email за мене?",
+    faq5A:
+      "Сервіс може генерувати листи й відправляти їх через ваш SMTP. Ви відповідаєте за текст, таргетинг і compliance.",
+    faq6Q: "Flux Leads сумісний із GDPR?",
+    faq6A:
+      "Flux Leads допомагає знаходити публічно доступну бізнес-інформацію й готувати outreach. Користувачі відповідають за дотримання локальних правил email marketing і захисту даних, зокрема GDPR/ePrivacy. Ми радимо писати лише релевантним B2B prospects, використовувати business email, де можливо, і завжди додавати opt-out.",
+    faq7Q: "Чи можна використовувати в Польщі, Україні або ЄС?",
+    faq7A:
+      "Так, але правила B2B outreach відрізняються за країнами. Працюйте з релевантними контактами, зберігайте source trail і припиняйте контакт після opt-out.",
+    faq8Q: "Що буде після досягнення місячного ліміту?",
+    faq8A:
+      "Створення нових лідів зупиниться до наступного reset або upgrade. Існуючі ліди, аудити й CRM записи залишаються доступними.",
+    faq9Q: "Як працює Opportunity Score?",
+    faq9A:
+      "Вищий score означає, що бізнес має більше видимих проблем сайту і може краще підходити для outreach через аудит.",
+    faq10Q: "Чи перевіряє сервіс email адреси?",
+    faq10A:
+      "Flux Leads може знаходити email у HTML сайту. Це confidence signal, а не гарантія deliverability.",
+    faq11Q: "Чи є безкоштовний план?",
+    faq11A:
+      "Так. Starter включає 50 нових лідів на місяць і не потребує картки.",
     ctaH2: "Готові до системного аутрічу?",
     ctaP: "50 лідів на місяць безкоштовно. Без картки на Starter.",
-    ctaButton: "Увійти через Flux ID",
+    ctaButton: "Створити безкоштовний акаунт",
+    ctaFluxId: "Powered by Flux ID — один акаунт для продуктів NeoFlux.",
   },
   WebAgencies: {
     h1: "Lead Engine для веб-студій",
@@ -77,6 +169,7 @@ const messages = {
     label: "Мова",
     uk: "Українська",
     en: "English",
+    pl: "Polski",
   },
   ThemeToggle: {
     toggle: "Перемкнути тему",
@@ -401,6 +494,7 @@ const messages = {
         tagline: "Безкоштовно",
         description:
           "Спробувати продукт і зрозуміти, як працює пошук лідів.",
+        cta: "Почати безкоштовно",
         highlights: {
           localSearch: "Локальний пошук (AI + Google)",
           simpleAi: "Спрощена AI-генерація листів",
@@ -410,6 +504,7 @@ const messages = {
         tagline: "Найпопулярніший",
         description:
           "Для фрилансерів і малих команд, які роблять outreach щодня.",
+        cta: "Оновити до Pro",
         highlights: {
           fullAudit: "Повний аудит сайтів (SSL, mobile, performance)",
           emailEnrichment: "Email enrichment з HTML",
@@ -417,12 +512,13 @@ const messages = {
         },
       },
       AGENCY: {
-        tagline: "Без обмежень",
+        tagline: "High-volume",
         description:
-          "Для агенцій, які працюють з кількома нішами одночасно.",
+          "Для агенцій, які працюють з кількома нішами й хочуть конкретний місячний ліміт із fair use.",
+        cta: "Запустити Agency plan",
         highlights: {
           allPro: "Усі функції Pro",
-          csvExport: "Експорт у CSV",
+          csvExport: "Повний експорт у CSV",
         },
       },
     },
@@ -827,6 +923,9 @@ const messages = {
     linkSettings: "Налаштування",
     linkLogin: "Увійти",
     linkPolicy: "Політика конфіденційності",
+    linkTerms: "Умови",
+    linkCookies: "Cookies",
+    linkAcceptableUse: "Acceptable use",
     socialTelegram: "Telegram",
     socialYoutube: "YouTube",
     socialTiktok: "TikTok",

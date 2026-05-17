@@ -30,7 +30,7 @@ export interface Plan {
   name: string;
   priceUsd: number;
   // Скільки нових лідів дозволено зберегти на місяць.
-  // Number.POSITIVE_INFINITY = без обмежень.
+  // Ліміт має бути явним: пошук/аудит/AI draft мають реальну собівартість.
   leadsPerMonth: number;
   features: Record<FeatureKey, boolean>;
   // Stripe Price ID (price_…) або Product ID (prod_…) для Checkout.
@@ -72,7 +72,7 @@ export const PLANS: Record<PlanId, Plan> = {
     id: "AGENCY",
     name: "Agency",
     priceUsd: 60,
-    leadsPerMonth: Number.POSITIVE_INFINITY,
+    leadsPerMonth: 10000,
     features: {
       websiteAudit: true,
       emailEnrichment: true,

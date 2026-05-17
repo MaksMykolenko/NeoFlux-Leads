@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { redirect } from "next/navigation";
+import { notFound } from "next/navigation";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { Link } from "@/src/i18n/navigation";
 import { marketingPageMetadata } from "@/src/lib/seo/pageMetadata";
@@ -10,16 +10,17 @@ export async function generateMetadata({
   params: Promise<{ locale: string }>;
 }): Promise<Metadata> {
   const { locale } = await params;
+  if (locale !== "pl") notFound();
   return marketingPageMetadata("webAgencies", locale);
 }
 
-export default async function WebAgenciesPage({
+export default async function PolishWebAgenciesPage({
   params,
 }: {
   params: Promise<{ locale: string }>;
 }) {
   const { locale } = await params;
-  if (locale === "pl") redirect("/pl/solutions/agencje-webowe");
+  if (locale !== "pl") notFound();
   setRequestLocale(locale);
   const t = await getTranslations("WebAgencies");
 

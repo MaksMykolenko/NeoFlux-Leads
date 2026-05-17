@@ -1,4 +1,4 @@
-import { getTranslations } from "next-intl/server";
+import { getLocale, getTranslations } from "next-intl/server";
 import { Link } from "@/src/i18n/navigation";
 import BrandMark from "@/src/components/BrandMark";
 import LanguageSwitcher from "@/src/components/LanguageSwitcher";
@@ -6,7 +6,10 @@ import { getCurrentUser } from "@/src/lib/session";
 
 export default async function MarketingHeader() {
   const t = await getTranslations("Marketing");
+  const locale = await getLocale();
   const user = await getCurrentUser();
+  const webAgenciesHref =
+    locale === "pl" ? "/solutions/agencje-webowe" : "/solutions/web-agencies";
 
   return (
     <header className="sticky top-0 z-30 border-b border-white/10 bg-[#0b0c10]/95 backdrop-blur-sm">
@@ -15,7 +18,7 @@ export default async function MarketingHeader() {
           href="/"
           className="flex items-center gap-3 text-white transition-opacity hover:opacity-90"
         >
-          <BrandMark href="/" className="h-9 w-9" />
+          <BrandMark className="h-9 w-9" />
           <span className="hidden text-base font-semibold tracking-tight sm:inline">
             {t("productName")}
           </span>
@@ -32,7 +35,7 @@ export default async function MarketingHeader() {
             {t("navPricing")}
           </Link>
           <Link
-            href="/solutions/web-agencies"
+            href={webAgenciesHref}
             className="transition-colors hover:text-white"
           >
             {t("navWebAgencies")}
@@ -44,14 +47,14 @@ export default async function MarketingHeader() {
           {user ? (
             <Link
               href="/dashboard"
-              className="inline-flex h-9 items-center rounded-lg bg-[#6a00ff] px-4 text-sm font-semibold text-white transition-colors hover:bg-[#5a00d9]"
+              className="inline-flex h-9 items-center whitespace-nowrap rounded-lg bg-[#6a00ff] px-4 text-sm font-semibold text-white transition-colors hover:bg-[#5a00d9]"
             >
               {t("ctaDashboard")}
             </Link>
           ) : (
             <Link
               href="/login"
-              className="inline-flex h-9 items-center rounded-lg bg-[#6a00ff] px-4 text-sm font-semibold text-white transition-colors hover:bg-[#5a00d9]"
+              className="inline-flex h-9 items-center whitespace-nowrap rounded-lg bg-[#6a00ff] px-4 text-sm font-semibold text-white transition-colors hover:bg-[#5a00d9]"
             >
               {t("ctaLogin")}
             </Link>

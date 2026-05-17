@@ -21,7 +21,7 @@ export default async function MarketingHomePage({
 }) {
   const { locale } = await params;
   setRequestLocale(locale);
-  const loc = locale === "en" ? "en" : "uk";
+  const loc = locale === "en" || locale === "pl" ? locale : "uk";
   const canonicalUrl = `${getEnvSiteHref().replace(/\/$/, "")}/${loc}`;
 
   return (
