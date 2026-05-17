@@ -1,4 +1,5 @@
 import { revalidateLocalizedPath } from "@/src/i18n/revalidateLocalized";
+import { actionError } from "@/src/lib/i18n/actionErrors";
 import { requireGeminiKey } from "@/src/lib/gemini";
 import { searchLocalBusinessesViaGemini } from "@/src/lib/geminiLocalBusinessSearch";
 import { prisma } from "@/src/lib/prisma";
@@ -66,7 +67,7 @@ export async function coreSearchAndSaveLeads(
     return {
       success: false,
       count: 0,
-      error: "Query and city are required",
+      error: await actionError("queryCityRequired"),
     };
   }
 
@@ -79,7 +80,7 @@ export async function coreSearchAndSaveLeads(
       success: false,
       count: 0,
       errorCode: "USER_NOT_FOUND",
-      error: "Користувача не знайдено",
+      error: await actionError("userNotFound"),
     };
   }
 
@@ -95,7 +96,11 @@ export async function coreSearchAndSaveLeads(
       errorCode: "LIMIT_REACHED",
       limit: plan.leadsPerMonth,
       used: limitStatus.used,
-      error: `Ліміт плану ${plan.name} вичерпано (${limitStatus.used}/${plan.leadsPerMonth}). Оновіть тариф на /pricing.`,
+      error: await actionError("limitReached", {
+        plan: plan.name,
+        used: limitStatus.used,
+        limit: plan.leadsPerMonth,
+      }),
     };
   }
 
@@ -123,7 +128,7 @@ export async function coreSearchAndSaveLeads(
         count: 0,
         skipped: 0,
         errorCode: "USER_NOT_FOUND" as const,
-        error: "Користувача не знайдено",
+        error: await actionError("userNotFound"),
       };
     }
 
@@ -137,7 +142,11 @@ export async function coreSearchAndSaveLeads(
         errorCode: "LIMIT_REACHED" as const,
         limit: plan.leadsPerMonth,
         used: lockedLimit.used,
-        error: `Ліміт плану ${plan.name} вичерпано (${lockedLimit.used}/${plan.leadsPerMonth}). Оновіть тариф на /pricing.`,
+        error: await actionError("limitReached", {
+          plan: plan.name,
+          used: lockedLimit.used,
+          limit: plan.leadsPerMonth,
+        }),
       };
     }
 

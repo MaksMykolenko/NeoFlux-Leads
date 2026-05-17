@@ -208,12 +208,13 @@ function PainTags({
   points: string[];
   booking: boolean;
 }) {
+  const t = useTranslations("LeadTableRow");
   if (points.length === 0 && booking) return null;
   return (
     <div className="mt-1.5 flex flex-wrap gap-1">
       {!booking && (
         <span className="inline-flex items-center rounded-md border border-amber-200 bg-amber-50 px-1.5 py-0.5 text-[10px] font-medium text-amber-700 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-300">
-          no booking
+          {t("noBooking")}
         </span>
       )}
       {points.slice(0, 3).map((p) => (

@@ -1,6 +1,7 @@
 import { GoogleGenAI } from "@google/genai";
 import type { Prisma } from "@prisma/client";
 import { revalidateLocalizedPath } from "@/src/i18n/revalidateLocalized";
+import { actionError } from "@/src/lib/i18n/actionErrors";
 import { requireGeminiKey } from "@/src/lib/gemini";
 import { LeadMode } from "@/src/lib/leadMode";
 import { consumeLeadSlot } from "@/src/lib/leadSlotMath";
@@ -57,13 +58,15 @@ export async function coreSearchUniversalLeads(
 
   const trimmed = prompt.trim();
   if (!trimmed) {
-    return { success: false, error: "Введіть запит для пошуку" };
+    return { success: false, error: await actionError("searchPromptRequired") };
   }
   if (trimmed.length > MAX_UNIVERSAL_PROMPT_CHARS) {
     return {
       success: false,
       errorCode: "PROMPT_TOO_LONG",
-      error: `Запис занадто довгий — максимум ${MAX_UNIVERSAL_PROMPT_CHARS} символів. Спробуйте коротший або розбийте запит.`,
+      error: await actionError("searchPromptTooLong", {
+        max: MAX_UNIVERSAL_PROMPT_CHARS,
+      }),
     };
   }
 
@@ -75,7 +78,7 @@ export async function coreSearchUniversalLeads(
     return {
       success: false,
       errorCode: "USER_NOT_FOUND",
-      error: "Користувача не знайдено",
+      error: await actionError("userNotFound"),
     };
   }
 
@@ -85,7 +88,11 @@ export async function coreSearchUniversalLeads(
     return {
       success: false,
       errorCode: "LIMIT_REACHED",
-      error: `Ліміт плану ${plan.name} вичерпано (${limitStatus.used}/${plan.leadsPerMonth}). Оновіть тариф на /pricing.`,
+      error: await actionError("limitReached", {
+        plan: plan.name,
+        used: limitStatus.used,
+        limit: plan.leadsPerMonth,
+      }),
     };
   }
 
@@ -110,15 +117,14 @@ export async function coreSearchUniversalLeads(
 
     const text = response.text?.trim();
     if (!text) {
-      return { success: false, error: "AI не повернув даних. Спробуйте ще раз." };
+      return { success: false, error: await actionError("beatSearchNoData") };
     }
 
     const items = parseLeadArray(text);
     if (items.length === 0) {
       return {
         success: false,
-        error:
-          "Не вдалося розпарсити відповідь AI або масив порожній. Спростіть або скорочено сформулюйте запит і спробуйте знову.",
+        error: await actionError("universalParseFailed"),
       };
     }
 
@@ -133,7 +139,7 @@ export async function coreSearchUniversalLeads(
           saved: 0,
           skipped: 0,
           errorCode: "USER_NOT_FOUND" as const,
-          error: "Користувача не знайдено",
+          error: await actionError("userNotFound"),
         };
       }
 
@@ -145,7 +151,11 @@ export async function coreSearchUniversalLeads(
           saved: 0,
           skipped: 0,
           errorCode: "LIMIT_REACHED" as const,
-          error: `Ліміт плану ${plan.name} вичерпано (${lockedLimit.used}/${plan.leadsPerMonth}). Оновіть тариф на /pricing.`,
+          error: await actionError("limitReached", {
+            plan: plan.name,
+            used: lockedLimit.used,
+            limit: plan.leadsPerMonth,
+          }),
         };
       }
 
@@ -260,8 +270,7 @@ export async function coreSearchUniversalLeads(
     if (written === 0) {
       return {
         success: false,
-        error:
-          "AI не повернув жодного валідного запису з полем name. Спробуйте переформулювати запит.",
+        error: await actionError("universalNoValidRows"),
       };
     }
 
@@ -274,7 +283,7 @@ export async function coreSearchUniversalLeads(
     let msg =
       error instanceof Error
         ? error.message
-        : "Невідома помилка під час універсального пошуку";
+        : await actionError("genericFailed");
     const low = msg.toLowerCase();
     if (
       low.includes("timeout") ||
@@ -282,8 +291,7 @@ export async function coreSearchUniversalLeads(
       low.includes("aborted") ||
       low.includes("504")
     ) {
-      msg =
-        "Час очікування вичерпано (складний пошук займає довше). Скоростіть запит, обмежте кількість джерел або спробуйте ще раз.";
+      msg = await actionError("universalTimeout");
     }
     return { success: false, error: msg };
   }

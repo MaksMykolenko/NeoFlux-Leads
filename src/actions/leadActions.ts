@@ -1,5 +1,6 @@
 "use server";
 
+import { actionError } from "@/src/lib/i18n/actionErrors";
 import {
   coreSearchAndSaveLeads,
   type CoreLocalSearchResult,
@@ -28,7 +29,7 @@ export async function searchAndSaveLeads(
   try {
     const user = await getCurrentUser();
     if (!user) {
-      return { success: false, count: 0, error: "Не авторизовано" };
+      return { success: false, count: 0, error: await actionError("unauthorized") };
     }
 
     const result = await coreSearchAndSaveLeads({
@@ -46,7 +47,9 @@ export async function searchAndSaveLeads(
       success: false,
       count: 0,
       error:
-        error instanceof Error ? error.message : "An unexpected error occurred",
+        error instanceof Error
+          ? error.message
+          : await actionError("unexpected"),
     };
   }
 }

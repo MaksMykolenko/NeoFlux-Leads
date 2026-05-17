@@ -327,6 +327,24 @@ const messages = {
       },
     },
   },
+  AuditButton: {
+    ...enMessages.AuditButton,
+    run: "Uruchom audyt",
+    running: "Analizuję…",
+    done: "Audyt zakończony",
+    issuesOne: "{count} problem",
+    issuesFew: "{count} problemy",
+    issuesMany: "{count} problemów",
+  },
+  DatabaseConfigBanner: {
+    ...enMessages.DatabaseConfigBanner,
+    missingTitle: "Baza danych nie jest podłączona w tym środowisku",
+    queryTitle: "Nie udało się wczytać leadów z bazy",
+  },
+  LeadTableRow: {
+    ...enMessages.LeadTableRow,
+    noBooking: "brak rezerwacji online",
+  },
   Footer: {
     ...enMessages.Footer,
     tagline:

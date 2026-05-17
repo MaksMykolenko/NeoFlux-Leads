@@ -738,6 +738,25 @@ function localBuildMessage(
   const firstName = artist.realName.split(" ")[0];
   const meta = [demo.bpm && `${demo.bpm} BPM`, demo.keySig].filter(Boolean).join(", ");
   const baseName = demo.name.replace(/\.(mp3|wav|m4a|flac)$/i, "");
+  if (locale === "pl") {
+    return [
+      `Hej ${firstName},`,
+      "",
+      `Sluchalem Twoich utworow na ${artist.platform} — klimat ${artist.genre.toLowerCase()} naprawde trafia. Myślę, że świeży bit mógłby podbić kolejny track.`,
+      "",
+      `Wrzucam «${baseName}»${meta ? ` (${meta})` : ""}${
+        demo.genre ? `, ${demo.genre.toLowerCase()}` : ""
+      } — pasuje do Twojego flow.`,
+      "",
+      `Podgląd w załączniku. Jeśli siada, lease za ${
+        demo.price ? `$${demo.price}` : "uczciwą cenę"
+      } i wyślę trackouts.`,
+      "",
+      `Daj znać co myślisz — nawet szybkie „nie moje” pomaga.`,
+      "",
+      "— NeoFlux",
+    ].join("\n");
+  }
   if (locale === "en") {
     return [
       `Hey ${firstName},`,
@@ -793,7 +812,9 @@ function MessageReview({
   const [subject, setSubject] = useState(
     locale === "en"
       ? `Beat for your flow — ${artist.handle}`
-      : `Біт під твій флоу — для ${artist.handle}`
+      : locale === "pl"
+        ? `Bit pod Twój flow — ${artist.handle}`
+        : `Біт під твій флоу — для ${artist.handle}`
   );
   const [body, setBody] = useState(initialBody);
   const [generating, startGenerate] = useTransition();

@@ -107,44 +107,64 @@ export default function FluxLeadsJsonLd({
         "@type": "Question",
         name: isUk
           ? "Чим Flux Leads відрізняється від звичайної CRM?"
-          : "How is Flux Leads different from a typical CRM?",
+          : isPl
+            ? "Czym Flux Leads rozni sie od typowego CRM?"
+            : "How is Flux Leads different from a typical CRM?",
         acceptedAnswer: {
           "@type": "Answer",
           text: isUk
             ? "Flux Leads — Lead Engine: знаходить лідів, аудитує сайти, рахує пріоритет і допомагає надіслати cold email. CRM — легка воронка зі статусами та історією листів."
-            : "Flux Leads is a lead engine: finds prospects, audits sites, scores priority, and helps send cold email. CRM is a lightweight pipeline with statuses and message history.",
+            : isPl
+              ? "Flux Leads to lead engine: znajduje prospektow, audytuje strony, ocenia priorytet i pomaga wyslac cold email. CRM to lekki pipeline ze statusami i historia wiadomosci."
+              : "Flux Leads is a lead engine: finds prospects, audits sites, scores priority, and helps send cold email. CRM is a lightweight pipeline with statuses and message history.",
         },
       },
       {
         "@type": "Question",
         name: isUk
           ? "Як працює AI-пошук локальних бізнесів?"
-          : "How does AI local business search work?",
+          : isPl
+            ? "Jak dziala AI search lokalnych firm?"
+            : "How does AI local business search work?",
         acceptedAnswer: {
           "@type": "Answer",
           text: isUk
             ? "Ви вказуєте нішу та місто. Gemini з Google Search grounding збирає публічні згадки компаній. Результати варто верифікувати перед аутрічем."
-            : "You enter a niche and city. Gemini with Google Search grounding gathers public business mentions. Verify results before outreach.",
+            : isPl
+              ? "Podajesz nisze i miasto. Gemini z Google Search grounding zbiera publiczne wzmianki o firmach. Zweryfikuj wyniki przed outreachem."
+              : "You enter a niche and city. Gemini with Google Search grounding gathers public business mentions. Verify results before outreach.",
         },
       },
       {
         "@type": "Question",
-        name: isUk ? "Що перевіряє аудит сайту?" : "What does the website audit check?",
+        name: isUk
+          ? "Що перевіряє аудит сайту?"
+          : isPl
+            ? "Co sprawdza audyt strony?"
+            : "What does the website audit check?",
         acceptedAnswer: {
           "@type": "Answer",
           text: isUk
             ? "Playwright перевіряє SSL, mobile viewport, title/h1, швидкість завантаження та може витягнути email з HTML на Pro+."
-            : "Playwright checks SSL, mobile viewport, title/h1, load time, and can extract email from HTML on Pro+.",
+            : isPl
+              ? "Playwright sprawdza SSL, mobile viewport, title/h1, czas ladowania i moze wyciagnac email z HTML na Pro+."
+              : "Playwright checks SSL, mobile viewport, title/h1, load time, and can extract email from HTML on Pro+.",
         },
       },
       {
         "@type": "Question",
-        name: isUk ? "Що таке Opportunity Score?" : "What is Opportunity Score?",
+        name: isUk
+          ? "Що таке Opportunity Score?"
+          : isPl
+            ? "Czym jest Opportunity Score?"
+            : "What is Opportunity Score?",
         acceptedAnswer: {
           "@type": "Answer",
           text: isUk
             ? "Оцінка 0–100, що поєднує технічні проблеми сайту та сигнали слабкої веб-присутності для пріоритизації аутрічу."
-            : "A 0–100 score combining technical site issues and weak web presence signals to prioritize outreach.",
+            : isPl
+              ? "Ocena 0-100 laczaca problemy techniczne strony i slaba obecnosc online, aby priorytetyzowac outreach."
+              : "A 0–100 score combining technical site issues and weak web presence signals to prioritize outreach.",
         },
       },
     ],

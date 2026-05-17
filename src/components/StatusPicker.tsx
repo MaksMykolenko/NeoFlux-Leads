@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { useTranslations } from "next-intl";
 import {
   LEAD_STATUSES,
   getStatusClasses,
@@ -17,6 +18,8 @@ export default function StatusPicker({
   leadId,
   initialStatus,
 }: StatusPickerProps) {
+  const t = useTranslations("StatusPicker");
+  const tStatus = useTranslations("LeadStatus");
   const [status, setStatus] = useState<string>(initialStatus);
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
@@ -32,7 +35,7 @@ export default function StatusPicker({
       const result = await updateLeadStatus(leadId, next);
       if (!result.success) {
         setStatus(previous);
-        setError(result.error ?? "Не вдалось оновити статус");
+        setError(result.error ?? t("errorUpdate"));
       }
     });
   }
@@ -44,14 +47,18 @@ export default function StatusPicker({
           value={status}
           onChange={handleChange}
           disabled={isPending}
-          aria-label="Статус ліда"
+          aria-label={t("ariaLabel")}
           className={`appearance-none cursor-pointer rounded-full pl-3.5 pr-9 py-1.5 text-xs font-medium ring-1 ring-inset transition-colors focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-purple-500 disabled:cursor-wait disabled:opacity-60 ${getStatusClasses(
-            status
+            status,
           )}`}
         >
           {LEAD_STATUSES.map((value) => (
-            <option key={value} value={value} className="bg-white text-zinc-900 dark:bg-flux-card dark:text-zinc-50">
-              {value}
+            <option
+              key={value}
+              value={value}
+              className="bg-white text-zinc-900 dark:bg-flux-card dark:text-zinc-50"
+            >
+              {tStatus(value)}
             </option>
           ))}
         </select>
@@ -62,6 +69,7 @@ export default function StatusPicker({
               xmlns="http://www.w3.org/2000/svg"
               fill="none"
               viewBox="0 0 24 24"
+              aria-hidden="true"
             >
               <circle
                 className="opacity-25"
@@ -83,6 +91,7 @@ export default function StatusPicker({
               viewBox="0 0 20 20"
               fill="currentColor"
               className="h-3.5 w-3.5 text-current opacity-70"
+              aria-hidden="true"
             >
               <path
                 fillRule="evenodd"
@@ -94,7 +103,9 @@ export default function StatusPicker({
         </span>
       </div>
       {error && (
-        <span className="text-xs font-medium text-red-600 dark:text-red-400">{error}</span>
+        <span className="text-xs font-medium text-red-600 dark:text-red-400">
+          {error}
+        </span>
       )}
     </div>
   );

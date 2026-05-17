@@ -1,5 +1,6 @@
 import { GoogleGenAI } from "@google/genai";
 import { CHANNEL_ORDER } from "@/src/lib/channels";
+import { actionError } from "@/src/lib/i18n/actionErrors";
 import { requireGeminiKey } from "@/src/lib/gemini";
 import { prisma } from "@/src/lib/prisma";
 import {
@@ -45,7 +46,7 @@ export async function coreSearchBeatProspects(
     return {
       success: false,
       prospects: [],
-      error: "Введіть жанр, платформу або @нік для пошуку",
+      error: await actionError("searchPromptRequired"),
     };
   }
 
@@ -59,7 +60,7 @@ export async function coreSearchBeatProspects(
         success: false,
         prospects: [],
         errorCode: "USER_NOT_FOUND",
-        error: "Користувача не знайдено",
+        error: await actionError("userNotFound"),
       };
     }
     const limitStatus = getLeadLimitStatus(user);
@@ -69,7 +70,11 @@ export async function coreSearchBeatProspects(
         success: false,
         prospects: [],
         errorCode: "LIMIT_REACHED",
-        error: `Ліміт плану ${plan.name} вичерпано (${limitStatus.used}/${plan.leadsPerMonth}). Оновіть тариф на /pricing.`,
+        error: await actionError("limitReached", {
+          plan: plan.name,
+          used: limitStatus.used,
+          limit: plan.leadsPerMonth,
+        }),
       };
     }
   }
@@ -103,7 +108,7 @@ export async function coreSearchBeatProspects(
       return {
         success: false,
         prospects: [],
-        error: "AI не повернув даних. Спробуйте ще раз або змініть запит.",
+        error: await actionError("beatSearchNoData"),
       };
     }
 
@@ -112,8 +117,7 @@ export async function coreSearchBeatProspects(
       return {
         success: false,
         prospects: [],
-        error:
-          "Не знайдено артистів за цим запитом. Спробуйте інший жанр або ключове слово.",
+        error: await actionError("beatSearchEmpty"),
       };
     }
     return { success: true, prospects };
@@ -125,7 +129,7 @@ export async function coreSearchBeatProspects(
       error:
         error instanceof Error
           ? error.message
-          : "Невідома помилка під час пошуку",
+          : await actionError("genericFailed"),
     };
   }
 }

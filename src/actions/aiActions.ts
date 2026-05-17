@@ -1,6 +1,9 @@
 "use server";
 
 import { GoogleGenAI } from "@google/genai";
+import { getLocale } from "next-intl/server";
+import { actionError } from "@/src/lib/i18n/actionErrors";
+import { outputLanguageFromLocale } from "@/src/lib/i18n/outputLanguage";
 import { requireGeminiKey } from "@/src/lib/gemini";
 import { prisma } from "@/src/lib/prisma";
 import { LeadMode } from "@/src/lib/leadMode";
@@ -98,7 +101,9 @@ export async function generateProposal(
   leadId: string,
   options: { language?: string | null } = {},
 ): Promise<ProposalResult> {
-  const language = options.language ?? DEFAULT_OUTPUT_LANGUAGE;
+  const locale = await getLocale();
+  const language =
+    options.language ?? outputLanguageFromLocale(locale);
   let apiKey: string;
   try {
     apiKey = requireGeminiKey();
@@ -107,11 +112,11 @@ export async function generateProposal(
   }
 
   if (!leadId) {
-    return { success: false, error: "Missing lead id" };
+    return { success: false, error: await actionError("missingLeadId") };
   }
 
   const user = await getCurrentUser();
-  if (!user) return { success: false, error: "Не авторизовано" };
+  if (!user) return { success: false, error: await actionError("unauthorized") };
   const advancedAi = checkSubscription(user, "advancedAi");
 
   try {
@@ -121,7 +126,7 @@ export async function generateProposal(
     });
 
     if (!lead) {
-      return { success: false, error: "Лід не знайдено" };
+      return { success: false, error: await actionError("leadNotFound") };
     }
 
     // BEATS-mode leads use a peer-to-peer producer→artist tone instead of the
@@ -149,7 +154,7 @@ export async function generateProposal(
         `- Email: ${lead.email ?? "не вказано"}`,
         `- Джерело: ${lead.source ?? "Universal AI"}`,
         "",
-        "Напиши короткий B2B-холодний лист українською: звернись до опису діяльності, запропонуй цінність веб-розробки / digital і запроси на коротку зустріч.",
+        `Write a short B2B cold email in ${language}: reference the activity description, propose web/digital value, and invite a brief meeting.`,
       ]
         .filter(Boolean)
         .join("\n");
@@ -171,7 +176,7 @@ export async function generateProposal(
             },
           });
           const text = response.text?.trim();
-          if (!text) return { success: false, error: "AI не повернув тексту" };
+          if (!text) return { success: false, error: await actionError("aiNoText") };
           return { success: true, text };
         } catch (err) {
           lastError = err;

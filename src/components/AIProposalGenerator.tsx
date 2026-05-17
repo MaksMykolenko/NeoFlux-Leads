@@ -1,7 +1,8 @@
 "use client";
 
 import { Link } from "@/src/i18n/navigation";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
+import { outputLanguageFromLocale } from "@/src/lib/i18n/outputLanguage";
 import { useState, useTransition } from "react";
 import {
   generateProposal,
@@ -40,6 +41,7 @@ export default function AIProposalGenerator({
 }: AIProposalGeneratorProps) {
   const t = useTranslations("AIProposal");
   const tLead = useTranslations("LeadStatus");
+  const locale = useLocale();
   const [text, setText] = useState<string>("");
   const [subject, setSubject] = useState<string>("");
   const [error, setError] = useState<string | null>(null);
@@ -65,7 +67,9 @@ export default function AIProposalGenerator({
     setSavedFor(null);
 
     startGenerate(async () => {
-      const result = await generateProposal(leadId);
+      const result = await generateProposal(leadId, {
+        language: outputLanguageFromLocale(locale),
+      });
       if (result.success && result.text) {
         setText(result.text);
         setSubject((current) =>

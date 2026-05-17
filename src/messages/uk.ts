@@ -276,11 +276,63 @@ const messages = {
     genericError: "Щось пішло не так.",
   },
   DatabaseConfigBanner: {
-    missing_env:
-      "Змінні DATABASE_URL або DIRECT_URL не задані в .env — підключення до бази неможливе.",
-    query_failed:
-      "Не вдалося завантажити дані з бази. Перевірте DATABASE_URL і доступ до Postgres.",
-    detailPrefix: "Технічні деталі (лише dev):",
+    missingTitle: "База даних не підключена на цьому середовищі",
+    queryTitle: "Не вдалося зчитати ліди з бази",
+    vercelSteps:
+      "Для Vercel відкрийте Project → Settings → Environment Variables і додайте DATABASE_URL та DIRECT_URL (як у локальному .env / Supabase). Потім зробіть Redeploy.",
+    schemaSteps:
+      "Одноразово застосуйте схему до продакшен-БД: npx prisma db push з production DATABASE_URL.",
+    logsHint:
+      "Детальні логи: Vercel → Deployments → виберіть деплой → Runtime Logs / Functions.",
+  },
+  ActionErrors: {
+    unauthorized: "Не авторизовано",
+    notFound: "Не знайдено",
+    leadNotFound: "Лід не знайдено",
+    userNotFound: "Користувача не знайдено",
+    missingLeadId: "Відсутній id ліда",
+    queryCityRequired: "Потрібні ніша та місто",
+    limitReached:
+      "Ліміт плану {plan} вичерпано ({used}/{limit}). Оновіть тариф на /pricing.",
+    noWebsite: "У ліда немає сайту для аудиту",
+    planAuditRequired:
+      "Аудит сайту доступний на плані Pro і вище. Оновіть тариф на /pricing.",
+    bulkAuditRequired: "Масовий аудит доступний на плані Pro і вище.",
+    updateStatusFailed: "Не вдалось оновити статус",
+    genericFailed: "Щось пішло не так",
+    unexpected: "Сталася неочікувана помилка",
+    invalidStatus: "Невалідний статус: {status}",
+    saveFailed: "Не вдалось зберегти",
+    emptySubject: "Тема не може бути порожньою",
+    emptyBody: "Текст повідомлення не може бути порожнім",
+    missingArtist: "Відсутні дані артиста",
+    noArtistEmail: "У артиста немає валідного email — оберіть інший канал.",
+    missingPayload: "Відсутній payload",
+    invalidPayloadJson: "Невалідний JSON у payload",
+    stripeInvalidPrice: "Невалідний Stripe price/product ID",
+    stripeNoSessionUrl: "Stripe не повернув URL сесії",
+    stripeNoPortalUrl: "Stripe не повернув URL порталу",
+    stripeApiError: "Помилка Stripe API",
+    stripeCustomerMissing: "Customer ID не знайдено",
+    baseUrlMissing: "NEXT_PUBLIC_BASE_URL не налаштовано",
+    geminiKeyMissing:
+      "GEMINI_API_KEY не налаштовано. Додайте ключ у .env (локально) або змінні Vercel.",
+    aiNoText: "AI не повернув тексту",
+    aiGenerateFailed: "Помилка генерації",
+    searchPromptRequired: "Введіть запит для пошуку",
+    searchPromptTooLong: "Запис занадто довгий — максимум {max} символів.",
+    beatSearchEmpty: "Не знайдено артистів за цим запитом. Спробуйте інший жанр.",
+    beatSearchNoData: "AI не повернув даних. Спробуйте ще раз або змініть запит.",
+    universalParseFailed:
+      "Не вдалося розпарсити відповідь AI. Спростіть або скоротіть запит.",
+    universalNoValidRows: "AI не повернув жодного валідного запису з полем name.",
+    universalTimeout:
+      "Час очікування вичерпано. Скоротіть запит або спробуйте ще раз.",
+    importEmpty: "Немає рядків для імпорту",
+    importTooMany: "Занадто багато рядків (макс. {max})",
+    bulkNoSelection: "Не вибрано жодного ліда",
+    telegramNotConnected: "Telegram не підключено",
+    fluxPromoteForbidden: "Flux Promote недоступний для вашого акаунта",
   },
   UsageMeter: {
     unlimited: "Безліміт лідів за тарифом",
@@ -381,6 +433,7 @@ const messages = {
     genericError: "Не вдалося виконати дію",
   },
   LeadTableRow: {
+    noBooking: "немає бронювання",
     noLink: "Немає",
     followers: "{count} фоловерів",
     seekingType: "Шукає type beats",
@@ -805,6 +858,10 @@ const messages = {
     run: "Зробити аудит",
     running: "Аналізую…",
     refresh: "Оновити аудит",
+    done: "Аудит пройдено",
+    issuesOne: "{count} проблема",
+    issuesFew: "{count} проблеми",
+    issuesMany: "{count} проблем",
   },
   AIProposal: {
     sectionLabel: "AI Proposal",
@@ -1049,6 +1106,15 @@ const messages = {
     },
   },
   AdminUsersTable: {
+    empty: "Користувачів ще немає.",
+    colUser: "Користувач",
+    colRole: "Роль",
+    colPlan: "План",
+    colLeads: "Ліди",
+    colUsed: "Викор.",
+    colLastLogin: "Останній вхід",
+    noEmail: "немає email",
+    genericFailed: "Не вдалося",
     email: "Email",
     role: "Роль",
     plan: "План",

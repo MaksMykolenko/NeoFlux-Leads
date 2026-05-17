@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { runAuditForLead } from "@/src/actions/auditActions";
 
 interface AuditButtonProps {
@@ -15,8 +16,19 @@ export default function AuditButton({
   hasAudit,
   issuesCount,
 }: AuditButtonProps) {
+  const t = useTranslations("AuditButton");
   const router = useRouter();
   const [loading, setLoading] = useState(false);
+
+  function issuesLabel(count: number): string {
+    const mod10 = count % 10;
+    const mod100 = count % 100;
+    if (mod10 === 1 && mod100 !== 11) return t("issuesOne", { count });
+    if (mod10 >= 2 && mod10 <= 4 && (mod100 < 10 || mod100 >= 20)) {
+      return t("issuesFew", { count });
+    }
+    return t("issuesMany", { count });
+  }
 
   async function handleClick() {
     setLoading(true);
@@ -33,10 +45,12 @@ export default function AuditButton({
   if (hasAudit) {
     return (
       <div className="flex flex-col items-start gap-0.5">
-        <span className="text-xs font-medium text-green-700 dark:text-emerald-300">Аудит пройдено</span>
+        <span className="text-xs font-medium text-green-700 dark:text-emerald-300">
+          {t("done")}
+        </span>
         {issuesCount !== undefined && issuesCount > 0 && (
           <span className="text-xs text-zinc-400 dark:text-zinc-500">
-            {issuesCount} {issuesCount === 1 ? "проблема" : issuesCount < 5 ? "проблеми" : "проблем"}
+            {issuesLabel(issuesCount)}
           </span>
         )}
       </div>
@@ -52,10 +66,11 @@ export default function AuditButton({
       {loading ? (
         <>
           <svg
-            className="animate-spin h-3 w-3 text-purple-700 dark:text-flux-purple-soft"
+            className="h-3 w-3 animate-spin text-purple-700 dark:text-flux-purple-soft"
             xmlns="http://www.w3.org/2000/svg"
             fill="none"
             viewBox="0 0 24 24"
+            aria-hidden="true"
           >
             <circle
               className="opacity-25"
@@ -71,10 +86,10 @@ export default function AuditButton({
               d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
             />
           </svg>
-          Аналізуємо…
+          {t("running")}
         </>
       ) : (
-        "Зробити аудит"
+        t("run")
       )}
     </button>
   );

@@ -1,5 +1,6 @@
 "use server";
 
+import { actionError } from "@/src/lib/i18n/actionErrors";
 import { prisma } from "@/src/lib/prisma";
 import { recalculateLeadScore } from "@/src/lib/scoring";
 import { getCurrentUser } from "@/src/lib/session";
@@ -20,13 +21,13 @@ export async function runAuditForLead(
 ): Promise<AuditActionResult> {
   try {
     const user = await getCurrentUser();
-    if (!user) return { success: false, error: "Не авторизовано" };
+    if (!user) return { success: false, error: await actionError("unauthorized") };
 
     if (!checkSubscription(user, "websiteAudit")) {
       return {
         success: false,
         errorCode: "PLAN_REQUIRED",
-        error: "Аудит сайту доступний на плані Pro і вище. Оновіть тариф на /pricing.",
+        error: await actionError("planAuditRequired"),
       };
     }
 
@@ -35,11 +36,11 @@ export async function runAuditForLead(
     });
 
     if (!lead) {
-      return { success: false, error: "Лід не знайдено" };
+      return { success: false, error: await actionError("leadNotFound") };
     }
 
     if (!lead.website) {
-      return { success: false, error: "У ліда немає сайту для аудиту" };
+      return { success: false, error: await actionError("noWebsite") };
     }
 
     const { analyzeWebsite, calculatePerformanceScore } = await import(
@@ -105,7 +106,9 @@ export async function runAuditForLead(
     return {
       success: false,
       error:
-        error instanceof Error ? error.message : "An unexpected error occurred",
+        error instanceof Error
+          ? error.message
+          : await actionError("unexpected"),
     };
   }
 }

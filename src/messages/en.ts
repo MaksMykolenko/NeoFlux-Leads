@@ -275,11 +275,63 @@ const messages = {
     genericError: "Something went wrong.",
   },
   DatabaseConfigBanner: {
-    missing_env:
-      "DATABASE_URL or DIRECT_URL is not set in .env — cannot connect to the database.",
-    query_failed:
-      "Could not load data from the database. Check DATABASE_URL and Postgres access.",
-    detailPrefix: "Technical details (dev only):",
+    missingTitle: "Database not connected in this environment",
+    queryTitle: "Could not load leads from the database",
+    vercelSteps:
+      "In Vercel open Project → Settings → Environment Variables and add DATABASE_URL and DIRECT_URL (same as local .env / Supabase). Then Redeploy.",
+    schemaSteps:
+      "Apply the schema to production once: npx prisma db push with production DATABASE_URL.",
+    logsHint:
+      "Details: Vercel → Deployments → select deploy → Runtime Logs / Functions.",
+  },
+  ActionErrors: {
+    unauthorized: "Not signed in",
+    notFound: "Not found",
+    leadNotFound: "Lead not found",
+    userNotFound: "User not found",
+    missingLeadId: "Missing lead id",
+    queryCityRequired: "Query and city are required",
+    limitReached:
+      "Plan {plan} limit reached ({used}/{limit}). Upgrade at /pricing.",
+    noWebsite: "This lead has no website to audit",
+    planAuditRequired:
+      "Website audit requires Pro or higher. Upgrade at /pricing.",
+    bulkAuditRequired: "Bulk audit requires Pro or higher.",
+    updateStatusFailed: "Could not update status",
+    genericFailed: "Something went wrong",
+    unexpected: "An unexpected error occurred",
+    invalidStatus: "Invalid status: {status}",
+    saveFailed: "Could not save",
+    emptySubject: "Subject cannot be empty",
+    emptyBody: "Message body cannot be empty",
+    missingArtist: "Missing artist data",
+    noArtistEmail: "No valid email for this artist — choose another channel.",
+    missingPayload: "Missing payload",
+    invalidPayloadJson: "Invalid JSON in payload",
+    stripeInvalidPrice: "Invalid Stripe price/product ID",
+    stripeNoSessionUrl: "Stripe did not return a session URL",
+    stripeNoPortalUrl: "Stripe did not return a portal URL",
+    stripeApiError: "Stripe API error",
+    stripeCustomerMissing: "Customer ID not found",
+    baseUrlMissing: "NEXT_PUBLIC_BASE_URL is not configured",
+    geminiKeyMissing:
+      "GEMINI_API_KEY is not set. Add it to .env locally or in Vercel.",
+    aiNoText: "AI returned no text",
+    aiGenerateFailed: "Generation failed",
+    searchPromptRequired: "Enter a search query",
+    searchPromptTooLong: "Query too long — max {max} characters.",
+    beatSearchEmpty: "No artists found. Try another genre or keyword.",
+    beatSearchNoData: "AI returned no data. Try again or change the query.",
+    universalParseFailed:
+      "Could not parse AI response. Simplify or shorten your query.",
+    universalNoValidRows: "AI returned no valid rows with a name field.",
+    universalTimeout:
+      "Timed out (complex search). Shorten the query or try again.",
+    importEmpty: "No rows to import",
+    importTooMany: "Too many rows (max {max})",
+    bulkNoSelection: "No leads selected",
+    telegramNotConnected: "Telegram not connected",
+    fluxPromoteForbidden: "Flux Promote is not available for your account",
   },
   UsageMeter: {
     unlimited: "Unlimited leads on your plan",
@@ -380,6 +432,7 @@ const messages = {
     genericError: "Operation failed",
   },
   LeadTableRow: {
+    noBooking: "no booking",
     noLink: "None",
     followers: "{count} followers",
     seekingType: "Looking for type beats",
@@ -802,6 +855,10 @@ const messages = {
     run: "Run audit",
     running: "Analyzing…",
     refresh: "Refresh audit",
+    done: "Audit complete",
+    issuesOne: "{count} issue",
+    issuesFew: "{count} issues",
+    issuesMany: "{count} issues",
   },
   AIProposal: {
     sectionLabel: "AI proposal",
@@ -1044,6 +1101,15 @@ const messages = {
     },
   },
   AdminUsersTable: {
+    empty: "No users yet.",
+    colUser: "User",
+    colRole: "Role",
+    colPlan: "Plan",
+    colLeads: "Leads",
+    colUsed: "Used",
+    colLastLogin: "Last sign-in",
+    noEmail: "no email",
+    genericFailed: "Could not update",
     email: "Email",
     role: "Role",
     plan: "Plan",

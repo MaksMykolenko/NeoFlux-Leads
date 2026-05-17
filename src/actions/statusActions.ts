@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidateLocalizedPath } from "@/src/i18n/revalidateLocalized";
+import { actionError } from "@/src/lib/i18n/actionErrors";
 import { prisma } from "@/src/lib/prisma";
 import { isLeadStatus } from "@/src/lib/leadStatus";
 import { getRequestUserId } from "@/src/lib/session";
@@ -15,15 +16,18 @@ export async function updateLeadStatus(
   newStatus: string
 ): Promise<UpdateStatusResult> {
   if (!leadId) {
-    return { success: false, error: "Missing lead id" };
+    return { success: false, error: await actionError("missingLeadId") };
   }
 
   if (!isLeadStatus(newStatus)) {
-    return { success: false, error: `Невалідний статус: ${newStatus}` };
+    return {
+      success: false,
+      error: await actionError("invalidStatus", { status: newStatus }),
+    };
   }
 
   const userId = await getRequestUserId();
-  if (!userId) return { success: false, error: "Не авторизовано" };
+  if (!userId) return { success: false, error: await actionError("unauthorized") };
 
   try {
     // updateMany замість update — щоб where міг включати userId фільтр.
@@ -34,7 +38,7 @@ export async function updateLeadStatus(
     });
 
     if (result.count === 0) {
-      return { success: false, error: "Лід не знайдено" };
+      return { success: false, error: await actionError("leadNotFound") };
     }
 
     await revalidateLocalizedPath(`/leads/${leadId}`);
@@ -44,7 +48,9 @@ export async function updateLeadStatus(
     return {
       success: false,
       error:
-        error instanceof Error ? error.message : "An unexpected error occurred",
+        error instanceof Error
+          ? error.message
+          : await actionError("unexpected"),
     };
   }
 }
