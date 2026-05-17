@@ -210,6 +210,11 @@ const messages = {
     ctaTitle: "Start with 50 free leads per month",
     ctaBody: "No card required. No time limit on Starter. Upgrade when ready.",
     cta: "Try for free",
+    relatedHeading: "Related",
+    relatedPricing: "Pricing — Starter / Pro / Agency",
+    relatedFindClients: "Find web design clients with audits",
+    relatedLeadGen: "Lead generation for web agencies (in-depth)",
+    relatedAuditTool: "Local business website audit tool",
   },
   LanguageSwitcher: {
     label: "Language",

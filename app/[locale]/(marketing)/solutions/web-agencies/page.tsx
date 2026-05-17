@@ -2,6 +2,11 @@ import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { Link } from "@/src/i18n/navigation";
+import {
+  isMarketingLocale,
+  localizedHref,
+  type MarketingLocale,
+} from "@/src/lib/seo/localizedPaths";
 import { marketingPageMetadata } from "@/src/lib/seo/pageMetadata";
 
 export async function generateMetadata({
@@ -33,7 +38,22 @@ export function WebAgenciesContent({
   t: (key: string) => string;
   locale: string;
 }) {
-  void locale;
+  const loc: MarketingLocale = isMarketingLocale(locale) ? locale : "uk";
+  // Use the EN slug as the canonical key — `localizedHref` will translate it
+  // to the right locale-specific URL (or fall back to home for single-locale
+  // pages like the EN-only audit tool).
+  const hrefFindClients = localizedHref(
+    "en",
+    "/find-web-design-clients",
+    loc,
+  );
+  const hrefLeadGen = localizedHref(
+    "en",
+    "/lead-generation-for-web-agencies",
+    loc,
+  );
+  // Audit tool is EN-only — hide on UK/PL to avoid a "→ home" tease.
+  const showAuditToolLink = loc === "en";
   return (
     <article className="mx-auto max-w-3xl px-4 py-16 sm:px-6 lg:px-8">
       <header>
@@ -211,11 +231,11 @@ export function WebAgenciesContent({
       </section>
 
       <nav
-        aria-label="Related"
+        aria-label={t("relatedHeading")}
         className="mt-16 border-t border-zinc-800 pt-8"
       >
         <p className="text-xs font-semibold uppercase tracking-wider text-zinc-500">
-          Related
+          {t("relatedHeading")}
         </p>
         <ul className="mt-4 grid gap-3 text-sm text-zinc-300 sm:grid-cols-2">
           <li>
@@ -223,33 +243,35 @@ export function WebAgenciesContent({
               href="/pricing"
               className="hover:text-flux-purple-soft hover:underline"
             >
-              Pricing — Starter / Pro / Agency
+              {t("relatedPricing")}
             </Link>
           </li>
           <li>
             <Link
-              href="/find-web-design-clients"
+              href={hrefFindClients}
               className="hover:text-flux-purple-soft hover:underline"
             >
-              Find web design clients with audits
+              {t("relatedFindClients")}
             </Link>
           </li>
           <li>
             <Link
-              href="/local-business-website-audit-tool"
+              href={hrefLeadGen}
               className="hover:text-flux-purple-soft hover:underline"
             >
-              Local business website audit tool
+              {t("relatedLeadGen")}
             </Link>
           </li>
-          <li>
-            <Link
-              href="/lead-generation-for-web-agencies"
-              className="hover:text-flux-purple-soft hover:underline"
-            >
-              Lead generation for web agencies (in-depth)
-            </Link>
-          </li>
+          {showAuditToolLink && (
+            <li>
+              <Link
+                href="/local-business-website-audit-tool"
+                className="hover:text-flux-purple-soft hover:underline"
+              >
+                {t("relatedAuditTool")}
+              </Link>
+            </li>
+          )}
         </ul>
       </nav>
     </article>

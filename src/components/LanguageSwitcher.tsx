@@ -2,16 +2,34 @@
 
 import { useLocale, useTranslations } from "next-intl";
 import { Link, usePathname } from "@/src/i18n/navigation";
+import {
+  localizedHref,
+  isMarketingLocale,
+  type MarketingLocale,
+} from "@/src/lib/seo/localizedPaths";
 
 /**
- * Компактний segmented control UK / EN. Без декорацій, узгоджується по
- * висоті з іншими хедер-кнопками (h-8). Активний сегмент — pill з
+ * Компактний segmented control UK / EN / PL. Активний сегмент — pill з
  * фіолетовим текстом і білим фоном.
+ *
+ * Linkування з урахуванням локалізованих slug:
+ *   /en/find-web-design-clients   →  /uk/yak-znajty-klientiv-na-sajty
+ *   /en/find-web-design-clients   →  /pl/jak-znalezc-klientow-na-strony-internetowe
+ *
+ * Якщо поточний шлях не має сібла у цільовій локалі (single-locale page),
+ * перемикач веде на home у тій локалі — щоб ніколи не приземлити юзера на
+ * 404. Маппінг централізовано в `@/src/lib/seo/localizedPaths`.
  */
 export default function LanguageSwitcher() {
-  const locale = useLocale();
+  const localeRaw = useLocale();
   const pathname = usePathname();
   const t = useTranslations("LanguageSwitcher");
+
+  const locale: MarketingLocale = isMarketingLocale(localeRaw)
+    ? localeRaw
+    : "uk";
+
+  const targets: MarketingLocale[] = ["uk", "en", "pl"];
 
   return (
     <div
@@ -19,24 +37,15 @@ export default function LanguageSwitcher() {
       aria-label={t("label")}
       className="inline-flex h-8 items-center gap-0.5 rounded-md border border-zinc-200 bg-zinc-50 p-0.5 dark:border-flux-border dark:bg-flux-card"
     >
-      <LangLink
-        href={pathname}
-        locale="uk"
-        active={locale === "uk"}
-        label={t("uk")}
-      />
-      <LangLink
-        href={pathname}
-        locale="en"
-        active={locale === "en"}
-        label={t("en")}
-      />
-      <LangLink
-        href={pathname}
-        locale="pl"
-        active={locale === "pl"}
-        label={t("pl")}
-      />
+      {targets.map((target) => (
+        <LangLink
+          key={target}
+          href={localizedHref(locale, pathname, target)}
+          locale={target}
+          active={locale === target}
+          label={t(target)}
+        />
+      ))}
     </div>
   );
 }
@@ -48,7 +57,7 @@ function LangLink({
   label,
 }: {
   href: string;
-  locale: "uk" | "en" | "pl";
+  locale: MarketingLocale;
   active: boolean;
   label: string;
 }) {

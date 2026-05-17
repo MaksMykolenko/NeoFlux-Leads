@@ -2,6 +2,10 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { setRequestLocale } from "next-intl/server";
 import { Link } from "@/src/i18n/navigation";
+import {
+  getHreflangMap,
+  isMarketingLocale,
+} from "@/src/lib/seo/localizedPaths";
 import { buildPageMetadata } from "@/src/lib/seo/metadata";
 import {
   getStaticMarketingPage,
@@ -23,12 +27,18 @@ export async function generateMetadata({
   const page = getStaticMarketingPage(locale, slug);
   if (!page) return {};
 
+  const pathname = `/${slug}`;
+  const hreflangMap = isMarketingLocale(locale)
+    ? getHreflangMap(locale, pathname)
+    : undefined;
+
   return buildPageMetadata({
     locale,
-    pathname: `/${slug}`,
+    pathname,
     title: page.title,
     description: page.description,
     ogImagePath: "/logo-mark.svg",
+    hreflangMap,
   });
 }
 

@@ -206,6 +206,11 @@ const messages = {
     ctaBody:
       "Bez karty. Bez ograniczeń czasowych na Starterze. Upgrade, kiedy będziesz gotowy.",
     cta: "Spróbuj za darmo",
+    relatedHeading: "Zobacz też",
+    relatedPricing: "Cennik — Starter / Pro / Agency",
+    relatedFindClients: "Jak znaleźć klientów na strony",
+    relatedLeadGen: "Pozyskiwanie klientów dla agencji webowych (szczegóły)",
+    relatedAuditTool: "Narzędzie audytu stron lokalnych firm",
   },
   LanguageSwitcher: {
     label: "Język",
@@ -273,10 +278,10 @@ const messages = {
     linkPricing: "Cennik",
     linkSettings: "Ustawienia",
     linkLogin: "Zaloguj",
-    linkPolicy: "Privacy policy",
-    linkTerms: "Terms",
-    linkCookies: "Cookies",
-    linkAcceptableUse: "Acceptable use",
+    linkPolicy: "Polityka prywatności",
+    linkTerms: "Regulamin",
+    linkCookies: "Pliki cookies",
+    linkAcceptableUse: "Zasady dopuszczalnego użytkowania",
     rightsReserved: "Wszelkie prawa zastrzeżone.",
   },
 } satisfies AbstractIntlMessages;
