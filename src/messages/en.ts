@@ -301,16 +301,41 @@ const messages = {
     portHint: "465 for SSL, 587 for STARTTLS",
     username: "Username",
     usernameHint: "usually your email",
-    password: "App password",
+    password: "Password",
     passwordHint:
-      "Leave empty to keep the stored password unchanged.",
+      "App password or SMTP token. Stored AES-256-GCM-encrypted.",
+    passwordPlaceholderExisting: "Keep current",
+    passwordPlaceholderNew: "App password…",
     fromEmail: "From email",
     fromEmailHint: "sender address in outgoing mail",
+    fromEmailLabelPlatform: "Reply-to email",
+    fromEmailLabelCustom: "From email",
+    fromEmailHintPlatform:
+      "clients will reply here — your working inbox",
+    fromEmailHintCustom:
+      "address in the From: header of your mail",
     fromName: "Sender name",
     fromNameHint: "optional — shown instead of the raw address",
-    save: "Save SMTP",
+    fromNameHintPlatform:
+      "how to sign in emails; shown instead of email",
+    fromNameHintCustom: "optional — shown instead of email",
+    fromNamePlaceholder: "Sales Team",
+    save: "Save",
     saving: "Saving…",
     success: "Saved. SMTP is ready to send.",
+    successPlatform:
+      "Saved. Mail will now go through the platform — replies arrive at your email.",
+    successCustom: "Saved. Your SMTP is ready to send.",
+    errorSave: "Could not save settings.",
+    tablistLabel: "Email send mode",
+    platformBannerTitle: "Mail goes via the Flux Leads server",
+    platformBannerBody:
+      "Nothing to configure — just click Send. All client replies arrive at the email you set below (Reply-To).",
+    customBannerTitle: "Your own SMTP",
+    customBannerBody:
+      "Works with any SMTP — Gmail (App Password), Hostinger, SendGrid, Mailgun, AWS SES. Mail leaves from the address you set — sender reputation is built on it.",
+    footerSignature:
+      "Every email sent from Flux Leads gets a small footer with a link to the service.",
     errors: {
       generic: "Could not save settings",
       host: "Host is required",
@@ -809,8 +834,10 @@ const messages = {
       "Connect your number so Autopilot can DM leads directly via Telegram.",
     statusConnected: "Connected",
     statusDisconnected: "Not connected",
+    statusStep2: "Step 2 of 2",
     connectedPhone: "Active number",
     sentToday: "{count} messages today",
+    appIdSuffix: " · App ID {apiId}",
     disconnect: "Disconnect",
     sendCode: "Send code",
     sending: "Sending…",
@@ -828,12 +855,44 @@ const messages = {
     infoNeedsPassword: "2FA password required.",
     infoConnected: "Connected successfully.",
     infoDisconnected: "Disconnected.",
+    infoCredsSaved: "Keys saved. Now enter your phone number.",
     errPhoneRequired: "Enter a phone number in international format.",
     errCodeRequired: "Enter the Telegram code.",
     errPasswordRequired: "Enter your 2FA password.",
     errStartFailed: "Failed to start authorization.",
     errVerifyFailed: "Failed to verify the code.",
     errDisconnectFailed: "Failed to disconnect.",
+    errCredsRequired: "Fill both fields: API ID + API Hash.",
+    errCredsSaveFailed: "Failed to save keys.",
+    errInvalidApiId: "API ID must be a positive number (e.g. 12345678).",
+    errInvalidApiHash:
+      "API HASH must be a 32-char hex string (a-f, 0-9).",
+    errNoCredentials: "Save Telegram API keys first.",
+    errCredsNotFound: "No saved API keys found.",
+    credsAccordion: "How to get API keys (2 min)",
+    credsStep1:
+      "1. Open <link>my.telegram.org/apps</link> — log in with the phone your Telegram is registered to.",
+    credsStep2:
+      "2. If it's your first time — Telegram will send a code to your Telegram app, enter it.",
+    credsStep3Header: "3. Fill the «Create application» form:",
+    credsStep3AppTitle:
+      "<strong>App title:</strong> any name (e.g. <em>Flux Leads</em>)",
+    credsStep3ShortName:
+      "<strong>Short name:</strong> 5+ Latin chars (e.g. <em>fluxleads</em>)",
+    credsStep3Platform:
+      "<strong>Platform:</strong> Web (or any other — not critical)",
+    credsStep3UrlDesc: "URL/Description can be left empty",
+    credsStep4:
+      "4. Click <strong>Create application</strong>. The next screen will show <code>api_id</code> (number) and <code>api_hash</code> (32 hex chars).",
+    credsStep5: "5. Copy both and paste them below ↓",
+    credsSecurity:
+      "⚠️ These keys are tied to your Telegram account. DO NOT share them publicly. We encrypt api_hash in the database via AES-256-GCM.",
+    apiIdLabel: "API ID",
+    apiHashLabel: "API Hash",
+    saveCreds: "Save keys",
+    savingCreds: "Saving…",
+    phoneInstruction:
+      "Step 2 of 2. Enter the phone number your Telegram account is registered to.",
     disclaimer:
       "Session stored AES-256-GCM-encrypted. No bot token — this is an MTProto userbot under your account, so follow Telegram rules (no mass spam).",
   },

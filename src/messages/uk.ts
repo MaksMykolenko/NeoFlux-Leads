@@ -301,16 +301,40 @@ const messages = {
     portHint: "465 для SSL, 587 для STARTTLS",
     username: "Username",
     usernameHint: "зазвичай — твій email",
-    password: "Пароль застосунку",
+    password: "Password",
     passwordHint:
-      "Залиш порожнім, щоб не змінювати збережений пароль.",
+      "App password або SMTP-токен. Зберігається зашифровано (AES-256-GCM).",
+    passwordPlaceholderExisting: "Не міняти існуючий",
+    passwordPlaceholderNew: "App password…",
     fromEmail: "From Email",
     fromEmailHint: "адреса відправника в листах",
+    fromEmailLabelPlatform: "Email для відповідей",
+    fromEmailLabelCustom: "From Email",
+    fromEmailHintPlatform:
+      "клієнти відповідатимуть саме сюди — це твій робочий інбокс",
+    fromEmailHintCustom: "адреса в заголовку From: твоїх листів",
     fromName: "Ім'я відправника",
     fromNameHint: "необов'язково — показується замість email",
-    save: "Зберегти SMTP",
+    fromNameHintPlatform:
+      "як підписатись в листах; показується замість email",
+    fromNameHintCustom: "опційно — показується замість email",
+    fromNamePlaceholder: "Sales Team",
+    save: "Зберегти",
     saving: "Зберігаю…",
     success: "Збережено. SMTP готовий до відправок.",
+    successPlatform:
+      "Збережено. Тепер можна слати листи через платформу — відповіді приходитимуть на твій email.",
+    successCustom: "Збережено. Власний SMTP готовий до відправок.",
+    errorSave: "Не вдалось зберегти налаштування.",
+    tablistLabel: "Режим відправки email",
+    platformBannerTitle: "Листи летять через сервер Flux Leads",
+    platformBannerBody:
+      "Нічого не налаштовуєш — просто натискаєш Send. Всі відповіді від клієнтів приходитимуть тобі на email, який ти вкажеш нижче (Reply-To).",
+    customBannerTitle: "Власний SMTP",
+    customBannerBody:
+      "Підтримує будь-який SMTP — Gmail (App Password), Hostinger, SendGrid, Mailgun, AWS SES. Лист буде з адреси, яку ти вкажеш — на ній будується репутація відправника.",
+    footerSignature:
+      "Кожен лист, відправлений з Flux Leads, отримує невеликий підпис із посиланням на сервіс.",
     errors: {
       generic: "Не вдалось зберегти налаштування",
       host: "Host обов'язковий",
@@ -814,8 +838,10 @@ const messages = {
       "Підключіть свій номер, щоб Автопілот міг писати лідам прямо в Telegram.",
     statusConnected: "Підключено",
     statusDisconnected: "Не підключено",
+    statusStep2: "Крок 2 з 2",
     connectedPhone: "Активний номер",
     sentToday: "{count} повідомлень за сьогодні",
+    appIdSuffix: " · App ID {apiId}",
     disconnect: "Відключити",
     sendCode: "Надіслати код",
     sending: "Надсилаю…",
@@ -833,12 +859,45 @@ const messages = {
     infoNeedsPassword: "Потрібен 2FA пароль.",
     infoConnected: "Підключено успішно.",
     infoDisconnected: "Відключено.",
+    infoCredsSaved: "Ключі збережено. Тепер введіть номер телефону.",
     errPhoneRequired: "Введіть номер телефону у міжнародному форматі.",
     errCodeRequired: "Введіть код з Telegram.",
     errPasswordRequired: "Введіть 2FA пароль.",
     errStartFailed: "Не вдалося ініціювати авторизацію.",
     errVerifyFailed: "Не вдалося завершити авторизацію.",
     errDisconnectFailed: "Не вдалося відключити сесію.",
+    errCredsRequired: "Заповніть обидва поля: API ID + API Hash.",
+    errCredsSaveFailed: "Не вдалося зберегти ключі.",
+    errInvalidApiId:
+      "API ID має бути додатним числом (наприклад 12345678).",
+    errInvalidApiHash:
+      "API HASH має бути hex-рядком 32 символи (a-f, 0-9).",
+    errNoCredentials: "Спочатку збережіть Telegram API ключі.",
+    errCredsNotFound: "Не знайдено збережених API ключів.",
+    credsAccordion: "Як отримати API ключі (2 хв)",
+    credsStep1:
+      "1. Відкрий <link>my.telegram.org/apps</link> — увійди номером телефону, на який зареєстрований Telegram.",
+    credsStep2:
+      "2. Якщо це перший раз — Telegram пришле код у твій Telegram-додаток, введи його.",
+    credsStep3Header: "3. Заповни форму «Create application»:",
+    credsStep3AppTitle:
+      "<strong>App title:</strong> будь-яка назва (напр. <em>Flux Leads</em>)",
+    credsStep3ShortName:
+      "<strong>Short name:</strong> 5+ латинських символів (напр. <em>fluxleads</em>)",
+    credsStep3Platform:
+      "<strong>Platform:</strong> Web (або інше — не критично)",
+    credsStep3UrlDesc: "URL/Description можна лишити порожніми",
+    credsStep4:
+      "4. Натисни <strong>Create application</strong>. На наступному екрані побачиш <code>api_id</code> (число) та <code>api_hash</code> (32 hex-символи).",
+    credsStep5: "5. Скопіюй обидва й встав сюди ↓",
+    credsSecurity:
+      "⚠️ Ці ключі прив'язані до твого Telegram акаунту. НЕ ділись ними публічно. Ми шифруємо api_hash у БД через AES-256-GCM.",
+    apiIdLabel: "API ID",
+    apiHashLabel: "API Hash",
+    saveCreds: "Зберегти ключі",
+    savingCreds: "Зберігаю…",
+    phoneInstruction:
+      "Крок 2 з 2. Введи номер телефону, на який зареєстрований твій Telegram акаунт.",
     disclaimer:
       "Ми зберігаємо сесію зашифрованою AES-256-GCM. Bot-token не використовується — це MTProto userbot під вашим акаунтом, тож дотримуйтесь правил Telegram (без масового спаму).",
   },

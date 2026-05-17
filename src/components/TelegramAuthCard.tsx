@@ -48,7 +48,7 @@ export default function TelegramAuthCard({
 
   function onSaveCreds() {
     if (!apiIdInput.trim() || !apiHashInput.trim()) {
-      setError("Заповніть обидва поля: API ID + API Hash.");
+      setError(t("errCredsRequired"));
       return;
     }
     setError(null);
@@ -56,7 +56,10 @@ export default function TelegramAuthCard({
     startTransition(async () => {
       const res = await saveTelegramApiCredentials(apiIdInput, apiHashInput);
       if (!res.success) {
-        setError(res.error ?? "Не вдалося зберегти ключі");
+        if (res.errorCode === "INVALID_API_ID") setError(t("errInvalidApiId"));
+        else if (res.errorCode === "INVALID_API_HASH")
+          setError(t("errInvalidApiHash"));
+        else setError(res.error ?? t("errCredsSaveFailed"));
         return;
       }
       setStatus((prev) => ({
@@ -67,7 +70,7 @@ export default function TelegramAuthCard({
       setApiIdInput("");
       setApiHashInput("");
       setShowInstructions(false);
-      setInfo("Ключі збережено. Тепер введи номер телефону.");
+      setInfo(t("infoCredsSaved"));
     });
   }
 
@@ -81,7 +84,9 @@ export default function TelegramAuthCard({
     startTransition(async () => {
       const res = await startTelegramAuth(phone);
       if (!res.success || !res.phoneCodeHash || !res.phone) {
-        setError(res.error ?? t("errStartFailed"));
+        if (res.errorCode === "NO_CREDENTIALS")
+          setError(t("errNoCredentials"));
+        else setError(res.error ?? t("errStartFailed"));
         return;
       }
       setPending({ phone: res.phone, phoneCodeHash: res.phoneCodeHash });
@@ -123,6 +128,10 @@ export default function TelegramAuthCard({
       if (res.needsPassword || res.errorCode === "PASSWORD_REQUIRED") {
         setStep("password");
         setInfo(t("infoNeedsPassword"));
+        return;
+      }
+      if (res.errorCode === "NO_CREDENTIALS") {
+        setError(t("errCredsNotFound"));
         return;
       }
       setError(res.error ?? t("errVerifyFailed"));
@@ -226,7 +235,7 @@ export default function TelegramAuthCard({
             className="flex w-full items-center justify-between rounded-lg border border-purple-200 bg-purple-50 px-4 py-3 text-left text-xs text-purple-900 transition-colors hover:bg-purple-100 dark:border-flux-purple/40 dark:bg-flux-purple/10 dark:text-flux-purple-soft dark:hover:bg-flux-purple/15"
           >
             <span className="font-semibold uppercase tracking-wider">
-              Як отримати API ключі (2 хв)
+              {t("credsAccordion")}
             </span>
             <span className="font-mono">{showInstructions ? "−" : "+"}</span>
           </button>
@@ -234,58 +243,57 @@ export default function TelegramAuthCard({
           {showInstructions && (
             <ol className="space-y-2 rounded-lg border border-zinc-200 bg-zinc-50 p-4 text-xs leading-relaxed text-zinc-700 dark:border-flux-border dark:bg-flux-bg dark:text-flux-text">
               <li>
-                <span className="font-semibold">1.</span> Відкрий{" "}
-                <a
-                  href="https://my.telegram.org/apps"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="font-mono text-purple-700 underline hover:text-purple-900 dark:text-flux-purple-soft dark:hover:text-flux-purple"
-                >
-                  my.telegram.org/apps
-                </a>{" "}
-                — увійди номером телефону, на який зареєстрований Telegram.
+                {t.rich("credsStep1", {
+                  link: (chunks) => (
+                    <a
+                      href="https://my.telegram.org/apps"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="font-mono text-purple-700 underline hover:text-purple-900 dark:text-flux-purple-soft dark:hover:text-flux-purple"
+                    >
+                      {chunks}
+                    </a>
+                  ),
+                })}
               </li>
+              <li>{t("credsStep2")}</li>
               <li>
-                <span className="font-semibold">2.</span> Якщо це перший раз —
-                Telegram пришле код у твій Telegram-додаток, введи його.
-              </li>
-              <li>
-                <span className="font-semibold">3.</span> Заповни форму
-                «Create application»:
+                {t("credsStep3Header")}
                 <ul className="mt-1 ml-4 list-disc space-y-0.5 text-zinc-500 dark:text-flux-muted">
                   <li>
-                    <b>App title:</b> будь-яка назва (напр. <em>Flux Leads</em>)
+                    {t.rich("credsStep3AppTitle", {
+                      strong: (c) => <strong>{c}</strong>,
+                      em: (c) => <em>{c}</em>,
+                    })}
                   </li>
                   <li>
-                    <b>Short name:</b> 5+ латинських символів (напр.{" "}
-                    <em>fluxleads</em>)
+                    {t.rich("credsStep3ShortName", {
+                      strong: (c) => <strong>{c}</strong>,
+                      em: (c) => <em>{c}</em>,
+                    })}
                   </li>
                   <li>
-                    <b>Platform:</b> Web (або інше — не критично)
+                    {t.rich("credsStep3Platform", {
+                      strong: (c) => <strong>{c}</strong>,
+                      em: (c) => <em>{c}</em>,
+                    })}
                   </li>
-                  <li>URL/Description можна лишити порожніми</li>
+                  <li>{t("credsStep3UrlDesc")}</li>
                 </ul>
               </li>
               <li>
-                <span className="font-semibold">4.</span> Натисни{" "}
-                <b>Create application</b>. На наступному екрані побачиш{" "}
-                <code className="font-mono text-purple-700 dark:text-flux-purple-soft">
-                  api_id
-                </code>{" "}
-                (число) та{" "}
-                <code className="font-mono text-purple-700 dark:text-flux-purple-soft">
-                  api_hash
-                </code>{" "}
-                (32 hex-символи).
+                {t.rich("credsStep4", {
+                  strong: (c) => <strong>{c}</strong>,
+                  code: (c) => (
+                    <code className="font-mono text-purple-700 dark:text-flux-purple-soft">
+                      {c}
+                    </code>
+                  ),
+                })}
               </li>
-              <li>
-                <span className="font-semibold">5.</span> Скопіюй обидва й
-                встав сюди ↓
-              </li>
+              <li>{t("credsStep5")}</li>
               <li className="border-t border-zinc-200 pt-2 text-[10px] text-zinc-500 dark:border-flux-border dark:text-flux-muted">
-                ⚠️ Ці ключі прив'язані до твого Telegram акаунту. НЕ ділись
-                ними публічно. Ми шифруємо <code>api_hash</code> у БД через
-                AES-256-GCM.
+                {t("credsSecurity")}
               </li>
             </ol>
           )}
@@ -293,7 +301,7 @@ export default function TelegramAuthCard({
           <div className="grid gap-3 sm:grid-cols-2">
             <div>
               <label className="block text-[11px] font-semibold uppercase tracking-wider text-zinc-500 dark:text-flux-muted">
-                API ID
+                {t("apiIdLabel")}
               </label>
               <input
                 type="text"
@@ -307,7 +315,7 @@ export default function TelegramAuthCard({
             </div>
             <div>
               <label className="block text-[11px] font-semibold uppercase tracking-wider text-zinc-500 dark:text-flux-muted">
-                API Hash
+                {t("apiHashLabel")}
               </label>
               <input
                 type="text"
@@ -328,7 +336,7 @@ export default function TelegramAuthCard({
             disabled={isSubmitting}
             className="inline-flex h-[42px] items-center justify-center rounded-lg bg-purple-600 px-5 text-sm font-semibold text-white transition-all duration-200 hover:bg-purple-700 active:scale-95 disabled:opacity-60 dark:bg-flux-purple dark:hover:bg-flux-purple-hover"
           >
-            {isSubmitting ? "Зберігаю…" : "Зберегти ключі"}
+            {isSubmitting ? t("savingCreds") : t("saveCreds")}
           </button>
         </div>
       )}
@@ -345,7 +353,7 @@ export default function TelegramAuthCard({
             </p>
             <p className="mt-1 text-[11px] text-zinc-500 dark:text-flux-muted">
               {t("sentToday", { count: status.dailyCount })}
-              {status.apiId ? ` · App ID ${status.apiId}` : ""}
+              {status.apiId ? t("appIdSuffix", { apiId: status.apiId }) : ""}
             </p>
           </div>
           <button
@@ -363,11 +371,10 @@ export default function TelegramAuthCard({
       {showPhoneForm && (
         <div className="mt-5 space-y-3">
           <p className="text-xs text-zinc-600 dark:text-flux-muted">
-            Крок 2 з 2. Введи номер телефону, на який зареєстрований твій
-            Telegram акаунт.
+            {t("phoneInstruction")}
             {status.apiId ? (
               <span className="ml-1 text-zinc-400 dark:text-flux-muted">
-                · App ID {status.apiId}
+                {t("appIdSuffix", { apiId: status.apiId })}
               </span>
             ) : null}
           </p>
@@ -504,7 +511,7 @@ function StatusPill({
     return (
       <span className="inline-flex items-center gap-1.5 rounded-full border border-amber-200 bg-amber-50 px-2.5 py-0.5 text-[11px] font-semibold uppercase tracking-wider text-amber-700 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-300">
         <span className="inline-block h-1.5 w-1.5 rounded-full bg-amber-500" />
-        Крок 2 з 2
+        {t("statusStep2")}
       </span>
     );
   }

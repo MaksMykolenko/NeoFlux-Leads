@@ -67,9 +67,7 @@ export default function SmtpSettingsForm({ user }: SmtpSettingsFormProps) {
       if (result.success) {
         setStatus({
           type: "success",
-          msg: isPlatform
-            ? "Збережено. Тепер можна слати листи через платформу — відповіді приходитимуть на твій email."
-            : "Збережено. Власний SMTP готовий до відправок.",
+          msg: isPlatform ? t("successPlatform") : t("successCustom"),
         });
         if (password && password !== PASSWORD_PLACEHOLDER) {
           setPassword(PASSWORD_PLACEHOLDER);
@@ -77,7 +75,7 @@ export default function SmtpSettingsForm({ user }: SmtpSettingsFormProps) {
       } else {
         setStatus({
           type: "error",
-          msg: result.error ?? "Не вдалось зберегти налаштування",
+          msg: result.error ?? t("errorSave"),
         });
       }
     });
@@ -110,32 +108,36 @@ export default function SmtpSettingsForm({ user }: SmtpSettingsFormProps) {
         />
       ) : (
         <form onSubmit={handleSubmit} className="space-y-5">
-          {isPlatform ? <PlatformBanner /> : <CustomBanner />}
+          {isPlatform ? <PlatformBanner t={t} /> : <CustomBanner t={t} />}
 
           <div className="grid gap-5 sm:grid-cols-2">
             <Field
-              label="Ім'я відправника"
+              label={t("fromName")}
               hint={
                 isPlatform
-                  ? "як підписатись в листах; показується замість email"
-                  : "опційно — показується замість email"
+                  ? t("fromNameHintPlatform")
+                  : t("fromNameHintCustom")
               }
             >
               <input
                 type="text"
                 value={fromName}
                 onChange={(e) => setFromName(e.target.value)}
-                placeholder="Sales Team"
+                placeholder={t("fromNamePlaceholder")}
                 className={inputClass}
                 disabled={isPending}
               />
             </Field>
             <Field
-              label={isPlatform ? "Email для відповідей" : "From Email"}
+              label={
+                isPlatform
+                  ? t("fromEmailLabelPlatform")
+                  : t("fromEmailLabelCustom")
+              }
               hint={
                 isPlatform
-                  ? "клієнти відповідатимуть саме сюди — це твій робочий інбокс"
-                  : "адреса в заголовку From: твоїх листів"
+                  ? t("fromEmailHintPlatform")
+                  : t("fromEmailHintCustom")
               }
             >
               <input
@@ -152,24 +154,21 @@ export default function SmtpSettingsForm({ user }: SmtpSettingsFormProps) {
 
           {!isPlatform && (
             <>
-              <Field
-                label="Host"
-                hint="напр. smtp.gmail.com або smtp.hostinger.com"
-              >
+              <Field label={t("host")} hint={t("hostHint")}>
                 <input
                   type="text"
                   value={host}
                   onChange={(e) => setHost(e.target.value)}
                   required
                   autoComplete="off"
-                  placeholder="smtp.example.com"
+                  placeholder={t("hostPlaceholder")}
                   className={inputClass}
                   disabled={isPending}
                 />
               </Field>
 
               <div className="grid gap-5 sm:grid-cols-2">
-                <Field label="Port" hint="465 для SSL, 587 для STARTTLS">
+                <Field label={t("port")} hint={t("portHint")}>
                   <input
                     type="number"
                     min={1}
@@ -181,7 +180,7 @@ export default function SmtpSettingsForm({ user }: SmtpSettingsFormProps) {
                     disabled={isPending}
                   />
                 </Field>
-                <Field label="Username" hint="зазвичай — твій email">
+                <Field label={t("username")} hint={t("usernameHint")}>
                   <input
                     type="text"
                     value={username}
@@ -194,17 +193,16 @@ export default function SmtpSettingsForm({ user }: SmtpSettingsFormProps) {
                 </Field>
               </div>
 
-              <Field
-                label="Password"
-                hint="App password або SMTP-токен. Зберігається зашифровано (AES-256-GCM)."
-              >
+              <Field label={t("password")} hint={t("passwordHint")}>
                 <input
                   type="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   autoComplete="new-password"
                   placeholder={
-                    user.hasSmtpPass ? "Не міняти існуючий" : "App password..."
+                    user.hasSmtpPass
+                      ? t("passwordPlaceholderExisting")
+                      : t("passwordPlaceholderNew")
                   }
                   className={inputClass}
                   disabled={isPending}
@@ -215,15 +213,14 @@ export default function SmtpSettingsForm({ user }: SmtpSettingsFormProps) {
 
           <div className="flex items-center justify-between gap-4 border-t border-zinc-100 pt-4 dark:border-flux-border">
             <p className="text-xs text-zinc-500 dark:text-zinc-400">
-              Кожен лист, відправлений з Flux Leads, отримує невеликий підпис із
-              посиланням на сервіс.
+              {t("footerSignature")}
             </p>
             <button
               type="submit"
               disabled={isPending}
               className="inline-flex items-center justify-center gap-2 rounded-lg bg-zinc-900 px-4 py-2 text-sm font-medium text-white shadow-sm transition hover:bg-zinc-800 disabled:opacity-60 dark:bg-flux-purple dark:shadow-[0_4px_20px_rgba(106,0,255,0.4)] dark:hover:bg-flux-purple-hover"
             >
-              {isPending ? "Зберігаю..." : "Зберегти"}
+              {isPending ? t("saving") : t("save")}
             </button>
           </div>
 
@@ -258,7 +255,7 @@ function ModeTabs({
   return (
     <div
       role="tablist"
-      aria-label="Режим відправки email"
+      aria-label={t("tablistLabel")}
       className="inline-flex w-full rounded-lg border border-zinc-200 bg-zinc-50 p-1 dark:border-flux-border dark:bg-flux-bg"
     >
       <ModeTab
@@ -326,30 +323,35 @@ function ModeTab({
   );
 }
 
-function PlatformBanner() {
+function PlatformBanner({
+  t,
+}: {
+  t: (key: string, values?: Record<string, string | number>) => string;
+}) {
   return (
     <div className="rounded-lg border border-purple-200 bg-purple-50/60 px-4 py-3 text-sm dark:border-flux-purple-ring dark:bg-flux-purple-tint">
       <p className="font-semibold text-purple-900 dark:text-flux-purple-soft">
-        Листи летять через сервер Flux Leads
+        {t("platformBannerTitle")}
       </p>
       <p className="mt-1 text-xs text-purple-800/90 dark:text-flux-purple-soft/85">
-        Нічого не налаштовуєш — просто натискаєш Send. Всі відповіді від
-        клієнтів приходитимуть тобі на email, який ти вкажеш нижче (Reply-To).
+        {t("platformBannerBody")}
       </p>
     </div>
   );
 }
 
-function CustomBanner() {
+function CustomBanner({
+  t,
+}: {
+  t: (key: string, values?: Record<string, string | number>) => string;
+}) {
   return (
     <div className="rounded-lg border border-zinc-200 bg-zinc-50 px-4 py-3 text-sm dark:border-flux-border dark:bg-flux-bg">
       <p className="font-semibold text-zinc-800 dark:text-zinc-200">
-        Власний SMTP
+        {t("customBannerTitle")}
       </p>
       <p className="mt-1 text-xs text-zinc-600 dark:text-zinc-400">
-        Підтримує будь-який SMTP — Gmail (App Password), Hostinger, SendGrid,
-        Mailgun, AWS SES. Лист буде з адреси, яку ти вкажеш — на ній
-        будується репутація відправника.
+        {t("customBannerBody")}
       </p>
     </div>
   );

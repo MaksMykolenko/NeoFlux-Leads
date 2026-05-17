@@ -94,6 +94,7 @@ export async function getTelegramStatus(): Promise<TelegramStatus> {
 export interface SaveCredentialsResult {
   success: boolean;
   error?: string;
+  errorCode?: "INVALID_API_ID" | "INVALID_API_HASH" | "INTERNAL";
 }
 
 /**
@@ -106,7 +107,7 @@ export async function saveTelegramApiCredentials(
   apiHashRaw: string,
 ): Promise<SaveCredentialsResult> {
   const userId = await getRequestUserId();
-  if (!userId) return { success: false, error: "Не авторизовано" };
+  if (!userId) return { success: false, error: "Not authorized" };
 
   const apiIdTrim = apiIdRaw.trim();
   const apiHashTrim = apiHashRaw.trim().toLowerCase();
@@ -115,13 +116,15 @@ export async function saveTelegramApiCredentials(
   if (!Number.isFinite(apiId) || apiId <= 0) {
     return {
       success: false,
-      error: "API_ID має бути додатним числом (наприклад 12345678).",
+      errorCode: "INVALID_API_ID",
+      error: "API ID must be a positive number.",
     };
   }
   if (!API_HASH_RE.test(apiHashTrim)) {
     return {
       success: false,
-      error: "API_HASH має бути hex-рядком 32 символи (a-f, 0-9).",
+      errorCode: "INVALID_API_HASH",
+      error: "API HASH must be 32 hex chars.",
     };
   }
 
@@ -167,7 +170,8 @@ export async function saveTelegramApiCredentials(
     console.error("saveTelegramApiCredentials error", err);
     return {
       success: false,
-      error: err instanceof Error ? err.message : "Не вдалося зберегти ключі",
+      errorCode: "INTERNAL",
+      error: err instanceof Error ? err.message : "Failed to save credentials",
     };
   }
 }
@@ -185,20 +189,20 @@ export async function startTelegramAuth(
   phoneInput: string,
 ): Promise<StartTelegramAuthResult> {
   const userId = await getRequestUserId();
-  if (!userId) return { success: false, error: "Не авторизовано" };
+  if (!userId) return { success: false, error: "Not authorized" };
 
   const creds = await loadCreds(userId);
   if (!creds) {
     return {
       success: false,
       errorCode: "NO_CREDENTIALS",
-      error: "Спочатку збережіть Telegram API ключі (Step 1).",
+      error: "Save Telegram API keys first.",
     };
   }
 
   const phone = sanitizePhone(phoneInput);
   if (!phone) {
-    return { success: false, error: "Невалідний номер телефону" };
+    return { success: false, error: "Invalid phone number" };
   }
 
   try {
@@ -206,7 +210,7 @@ export async function startTelegramAuth(
     if (!res.success || !res.phoneCodeHash) {
       return {
         success: false,
-        error: res.error ?? "Не вдалося надіслати код",
+        error: res.error ?? "Failed to send code",
       };
     }
     return {
@@ -243,21 +247,21 @@ export async function confirmTelegramAuth(
   password?: string,
 ): Promise<ConfirmTelegramAuthResult> {
   const userId = await getRequestUserId();
-  if (!userId) return { success: false, error: "Не авторизовано" };
+  if (!userId) return { success: false, error: "Not authorized" };
 
   const creds = await loadCreds(userId);
   if (!creds) {
     return {
       success: false,
       errorCode: "NO_CREDENTIALS",
-      error: "Не знайдено збережених API ключів.",
+      error: "No saved API credentials found.",
     };
   }
 
   const phone = sanitizePhone(phoneInput);
-  if (!phone) return { success: false, error: "Невалідний номер телефону" };
+  if (!phone) return { success: false, error: "Invalid phone number" };
   if (!phoneCodeHash) return { success: false, error: "Missing phoneCodeHash" };
-  if (!code.trim()) return { success: false, error: "Введіть код з Telegram" };
+  if (!code.trim()) return { success: false, error: "Telegram code is required" };
 
   try {
     const res = await verifyAuthCode(creds, phone, phoneCodeHash, code, password);
@@ -266,7 +270,7 @@ export async function confirmTelegramAuth(
         success: false,
         needsPassword: res.needsPassword,
         errorCode: res.errorCode,
-        error: res.error ?? "Не вдалося завершити авторизацію",
+        error: res.error ?? "Failed to complete authorization",
       };
     }
 
@@ -306,7 +310,7 @@ export interface DisconnectTelegramResult {
  */
 export async function disconnectTelegramSession(): Promise<DisconnectTelegramResult> {
   const userId = await getRequestUserId();
-  if (!userId) return { success: false, error: "Не авторизовано" };
+  if (!userId) return { success: false, error: "Not authorized" };
 
   try {
     await prisma.telegramSession.deleteMany({ where: { userId } });
